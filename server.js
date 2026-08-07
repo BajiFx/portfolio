@@ -1,3 +1,7 @@
+// ============================================
+// SERVER.JS - Cloudinary Upload Server
+// ============================================
+
 const express = require('express');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
@@ -21,7 +25,7 @@ console.log('✅ Cloudinary configured successfully!');
 console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 
 // ============================================
-// CORS CONFIGURATION
+// CORS CONFIGURATION - FIXED FOR RENDER
 // ============================================
 
 app.use(cors({
@@ -30,6 +34,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Handle preflight requests
 app.options('*', cors());
 
 app.use(express.json());
@@ -44,7 +49,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 50 * 1024 * 1024
+        fileSize: 50 * 1024 * 1024 // 50MB max
     }
 });
 
@@ -52,10 +57,10 @@ const upload = multer({
 // API ENDPOINTS
 // ============================================
 
-// Root route – avoid 404
+// Root route – shows API info
 app.get('/', (req, res) => {
     res.json({
-        message: 'Portfolio API is running.',
+        message: 'Portfolio API is running!',
         endpoints: {
             test: '/api/test',
             upload: '/api/upload',
@@ -82,9 +87,11 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         console.log(`📤 Uploading: ${req.file.originalname} (${req.file.size} bytes)`);
 
+        // Convert buffer to base64
         const fileStr = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${fileStr}`;
 
+        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload(dataUri, {
             folder: 'portfolio-projects',
             resource_type: 'auto',

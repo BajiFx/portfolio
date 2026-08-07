@@ -467,10 +467,18 @@
     <!-- ===== SCRIPTS ===== -->
     <script>
         // ============================================
-        // CLOUDINARY UPLOAD (IMAGES)
+        // SERVER URL - CHANGE THIS FOR PRODUCTION
         // ============================================
 
-        const SERVER_URL = 'http://localhost:3000';
+        // For local development:
+        // const SERVER_URL = 'http://localhost:3000';
+
+        // For production (Render):
+        const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
+
+        // ============================================
+        // CLOUDINARY UPLOAD (IMAGES)
+        // ============================================
 
         document.getElementById('uploadToCloudinaryBtn').addEventListener('click', async function() {
             const fileInput = document.getElementById('projectImageUpload');
