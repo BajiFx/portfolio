@@ -1,0 +1,77 @@
+{
+  "personal": {
+    "name": "Your Name",
+    "title": "Web Designer & Developer",
+    "badge": "🚀 Available for Freelance Work",
+    "heroSubtitle": "Building exceptional digital experiences with modern web technologies.",
+    "welcomeMessage": "Welcome to my portfolio! I'm passionate about creating beautiful, functional websites that make a difference.",
+    "email": "your.email@gmail.com"
+  },
+  "about": {
+    "paragraphs": [
+      "I'm a passionate Web Designer & Developer with expertise in creating beautiful, functional digital experiences. I specialize in building responsive, user-friendly websites and web applications.",
+      "My journey started with a curiosity for design and technology, which evolved into a deep passion for creating software that makes a difference. I believe great code is not just about functionality—it's about creating experiences that are intuitive, accessible, and enjoyable.",
+      "I have expertise in modern frontend frameworks like React and Vue.js, as well as backend technologies including Node.js and Python. I'm equally comfortable working with databases, APIs, and cloud infrastructure."
+    ]
+  },
+  "skills": [
+    {
+      "category": "Frontend Development",
+      "icon": "fas fa-code",
+      "items": ["React", "Vue.js", "Next.js", "TypeScript", "Tailwind CSS", "Sass"]
+    },
+    {
+      "category": "Backend Development",
+      "icon": "fas fa-server",
+      "items": ["Node.js", "Python", "Django", "Express", "PostgreSQL", "MongoDB"]
+    },
+    {
+      "category": "Design & UI/UX",
+      "icon": "fas fa-paint-brush",
+      "items": ["Figma", "Adobe XD", "Responsive Design", "Prototyping", "Design Systems"]
+    },
+    {
+      "category": "DevOps & Tools",
+      "icon": "fas fa-tools",
+      "items": ["Git", "Docker", "AWS", "Vercel", "Netlify", "CI/CD"]
+    }
+  ],
+  "projects": [],
+  "experience": [
+    {
+      "company": "Freelance / Self-Employed",
+      "role": "Web Designer & Developer",
+      "period": "2020 - Present",
+      "description": "Providing comprehensive web design and development services to clients worldwide. Specializing in creating responsive, user-friendly websites and web applications that drive business growth and enhance online presence. Built 30+ custom websites, improved client conversion rates by 40%, and maintained 95% client satisfaction."
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Technology",
+      "degree": "Bachelor of Science in Computer Science",
+      "field": "Computer Science",
+      "period": "2018 - 2022",
+      "description": "Graduated with First Class Honours. Specialized in Web Development, Database Systems, and User Experience Design."
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Google UX Design Certificate",
+      "issuer": "Google / Coursera",
+      "date": "June 2023",
+      "description": "Completed professional training in User Experience Design including user research, wireframing, prototyping, and usability testing.",
+      "link": "",
+      "file": ""
+    }
+  ],
+  "social": {
+    "whatsapp": "1234567890",
+    "linkedin": "https://linkedin.com/in/yourusername",
+    "github": "https://github.com/yourusername",
+    "twitter": "https://twitter.com/yourusername"
+  },
+  "videos": {
+    "welcome": ""
+  },
+  "footer": "© 2025 Your Name. Built with ❤️ using modern web technologies"
+}

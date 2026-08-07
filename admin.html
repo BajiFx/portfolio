@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>George Onyango Ochieng - Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- ===== ADMIN NAV ===== -->
+    <nav class="admin-nav">
+        <div class="container">
+            <div class="nav-container">
+                <a href="#" class="logo">Dev<span>.</span> <span style="font-size:0.8rem;color:var(--text-secondary);font-weight:400;">Admin</span></a>
+                <div class="nav-actions">
+                    <a href="index.html" target="_blank" class="btn primary" style="padding:0.5rem 1.2rem;font-size:0.85rem;">
+                        <i class="fas fa-eye"></i> View Site
+                    </a>
+                    <button onclick="logout()" class="btn" style="background:#ef4444;color:white;padding:0.5rem 1.2rem;font-size:0.85rem;border:none;border-radius:50px;cursor:pointer;transition:var(--transition);">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== ADMIN CONTENT ===== -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <button class="sidebar-btn active" data-tab="dashboard">
+                <i class="fas fa-home"></i> <span>Dashboard</span>
+            </button>
+            <button class="sidebar-btn" data-tab="profile">
+                <i class="fas fa-user"></i> <span>Profile & Bio</span>
+            </button>
+            <button class="sidebar-btn" data-tab="projects">
+                <i class="fas fa-folder"></i> <span>Projects</span>
+            </button>
+            <button class="sidebar-btn" data-tab="experience">
+                <i class="fas fa-briefcase"></i> <span>Experience</span>
+            </button>
+            <button class="sidebar-btn" data-tab="education">
+                <i class="fas fa-graduation-cap"></i> <span>Education</span>
+            </button>
+            <button class="sidebar-btn" data-tab="certifications">
+                <i class="fas fa-certificate"></i> <span>Certifications</span>
+            </button>
+            <button class="sidebar-btn" data-tab="social">
+                <i class="fas fa-share-alt"></i> <span>Social Links</span>
+            </button>
+            <button class="sidebar-btn" data-tab="resume">
+                <i class="fas fa-file-pdf"></i> <span>Resume</span>
+            </button>
+            <button class="sidebar-btn" data-tab="videos">
+                <i class="fas fa-video"></i> <span>Videos</span>
+            </button>
+            <button class="sidebar-btn" data-tab="messages">
+                <i class="fas fa-envelope"></i> <span>Messages</span>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="admin-content">
+            <!-- ===== DASHBOARD ===== -->
+            <div id="tab-dashboard" class="tab-content active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statGroups">0</div>
+                        <div class="stat-label">Total Groups</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statProjects">0</div>
+                        <div class="stat-label">Total Projects</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statExperience">0</div>
+                        <div class="stat-label">Experience</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statEducation">0</div>
+                        <div class="stat-label">Education</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statCertifications">0</div>
+                        <div class="stat-label">Certifications</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statMessages">0</div>
+                        <div class="stat-label">Messages</div>
+                    </div>
+                </div>
+                <div style="margin-top:2rem;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
+                    <h3 style="margin-bottom:1rem;">Quick Actions</h3>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                        <button onclick="switchTab('projects')" class="btn primary">Create Group</button>
+                        <button onclick="showAddProject()" class="btn secondary">Add Project</button>
+                        <button onclick="switchTab('profile')" class="btn secondary">Update Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PROFILE TAB ===== -->
+            <div id="tab-profile" class="tab-content">
+                <h2>Profile & Bio</h2>
+                <form id="profileForm" class="admin-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="profileName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Title / Role</label>
+                        <input type="text" id="profileTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hero Badge</label>
+                        <input type="text" id="profileBadge" placeholder="e.g., Available for Freelance Work">
+                    </div>
+                    <div class="form-group">
+                        <label>Hero Subtitle</label>
+                        <input type="text" id="profileSubtitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Welcome Message</label>
+                        <textarea id="welcomeMessage" rows="4" placeholder="Write a welcome message..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>About Me (Bio)</label>
+                        <textarea id="profileBio" rows="6" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="profileEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Profile Picture</label>
+                        <input type="file" id="profilePicture" accept="image/*">
+                        <div id="profilePicturePreview" style="margin-top:0.5rem;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>About Section Image</label>
+                        <input type="file" id="aboutImage" accept="image/*">
+                        <div id="aboutImagePreview" style="margin-top:0.5rem;"></div>
+                    </div>
+                    <button type="submit" class="btn primary">Save Profile</button>
+                </form>
+            </div>
+
+            <!-- ===== PROJECTS TAB ===== -->
+            <div id="tab-projects" class="tab-content">
+                <h2>📁 Projects</h2>
+                
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
+                    <button onclick="showAddGroup()" class="btn primary">
+                        <i class="fas fa-folder-plus"></i> Create New Group
+                    </button>
+                    <button onclick="showAddProject()" class="btn secondary">
+                        <i class="fas fa-plus"></i> Add Project
+                    </button>
+                </div>
+                
+                <!-- ===== CREATE GROUP FORM ===== -->
+                <div id="addGroupForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="groupFormTitle" style="margin-bottom:1.5rem;">📂 Create New Project Group</h3>
+                    <form id="groupForm" class="admin-form">
+                        <input type="hidden" id="groupEditIndex" value="-1">
+                        <div class="form-group">
+                            <label>Group Name</label>
+                            <input type="text" id="groupName" placeholder="e.g., Web Development, Data Science, Machine Learning" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Icon (Font Awesome class)</label>
+                            <input type="text" id="groupIcon" placeholder="fas fa-code" value="fas fa-folder">
+                            <small>Choose from <a href="https://fontawesome.com/icons" target="_blank">FontAwesome</a></small>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="groupDescription" rows="2" placeholder="Brief description of this group"></textarea>
+                        </div>
+                        <button type="submit" class="btn primary" id="groupSubmitBtn">Create Group</button>
+                        <button type="button" onclick="hideAddGroup()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+                
+                <!-- ===== ADD PROJECT FORM ===== -->
+                <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
+                    
+                    <!-- Selected Group Display -->
+                    <div id="selectedGroupDisplay" style="display:none;padding:0.8rem 1.2rem;background:var(--accent-gradient);color:white;border-radius:12px;margin-bottom:1.5rem;font-weight:600;display:flex;align-items:center;gap:0.8rem;">
+                        <i class="fas fa-folder"></i>
+                        Adding project to: <span id="selectedGroupName">Web Development</span>
+                    </div>
+                    
+                    <!-- Group Selection Dropdown -->
+                    <div id="groupSelectWrapper" style="margin-bottom:1.5rem;padding:1rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);">
+                        <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Select Which Group This Project Belongs To:</label>
+                        <select id="projectGroupSelect" style="width:100%;padding:0.8rem 1rem;border:2px solid var(--border-color);border-radius:12px;background:var(--bg-primary);color:var(--text-primary);font-size:1rem;">
+                            <option value="">-- Select a group --</option>
+                        </select>
+                        <small style="color:var(--text-light);">If no groups exist, create one first using "Create New Group"</small>
+                    </div>
+                    
+                    <form id="projectForm" class="admin-form" enctype="multipart/form-data">
+                        <input type="hidden" id="projectEditIndex" value="-1">
+                        <input type="hidden" id="projectGroupId" value="">
+                        <div class="form-group">
+                            <label>Project Title</label>
+                            <input type="text" id="projectTitle" placeholder="e.g., E-commerce Platform" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Project Description</label>
+                            <textarea id="projectDescription" rows="3" placeholder="Describe your project..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Technologies Used (comma separated)</label>
+                            <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
+                        </div>
+                        <div class="form-group">
+                            <label>Multiple Images</label>
+                            <input type="file" id="projectImages" accept="image/*" multiple>
+                            <div id="projectImagesPreview" style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
+                            <small>You can select multiple images</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Project Video</label>
+                            <input type="file" id="projectVideo" accept="video/*">
+                            <div id="projectVideoPreview" style="margin-top:0.5rem;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>GitHub Repository URL</label>
+                            <input type="url" id="projectGithub" placeholder="https://github.com/username/repository-name">
+                            <small>Visitors will see a GitHub icon that links directly to your repository</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Live Demo Link</label>
+                            <input type="url" id="projectDemo" placeholder="https://demo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>README / Documentation</label>
+                            <textarea id="projectReadme" rows="5" placeholder="Write detailed documentation, installation steps, features, etc..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Attach Files (PDF, Documents, ZIP)</label>
+                            <input type="file" id="projectFiles" accept=".pdf,.doc,.docx,.txt,.zip,.pptx" multiple>
+                            <div id="projectFilesPreview" style="margin-top:0.5rem;"></div>
+                            <small>You can select multiple files</small>
+                        </div>
+                        <button type="submit" class="btn primary" id="projectSubmitBtn">Save Project</button>
+                        <button type="button" onclick="hideAddProject()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+
+                <!-- ===== GROUPS & PROJECTS LIST ===== -->
+                <div id="groupsList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== EXPERIENCE TAB ===== -->
+            <div id="tab-experience" class="tab-content">
+                <h2>Experience</h2>
+                <button onclick="showAddExperience()" class="btn primary" style="margin-bottom:2rem;">
+                    <i class="fas fa-plus"></i> Add Experience
+                </button>
+                <div id="addExperienceForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="experienceFormTitle" style="margin-bottom:1.5rem;">Add Experience</h3>
+                    <form id="experienceForm" class="admin-form">
+                        <input type="hidden" id="expEditIndex" value="-1">
+                        <div class="form-group">
+                            <label>Company</label>
+                            <input type="text" id="expCompany" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Role / Position</label>
+                            <input type="text" id="expRole" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Period</label>
+                            <input type="text" id="expPeriod" placeholder="2022 - Present" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="expDescription" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary" id="expSubmitBtn">Add Experience</button>
+                        <button type="button" onclick="hideAddExperience()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+                <div id="experienceList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== EDUCATION TAB ===== -->
+            <div id="tab-education" class="tab-content">
+                <h2>Education</h2>
+                <button onclick="showAddEducation()" class="btn primary" style="margin-bottom:2rem;">
+                    <i class="fas fa-plus"></i> Add Education
+                </button>
+                <div id="addEducationForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="educationFormTitle" style="margin-bottom:1.5rem;">Add Education</h3>
+                    <form id="educationForm" class="admin-form">
+                        <input type="hidden" id="eduEditIndex" value="-1">
+                        <div class="form-group">
+                            <label>Institution</label>
+                            <input type="text" id="eduInstitution" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Degree</label>
+                            <input type="text" id="eduDegree" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Field of Study</label>
+                            <input type="text" id="eduField">
+                        </div>
+                        <div class="form-group">
+                            <label>Period</label>
+                            <input type="text" id="eduPeriod" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description / Achievements</label>
+                            <textarea id="eduDescription" rows="6"></textarea>
+                        </div>
+                        <button type="submit" class="btn primary" id="eduSubmitBtn">Add Education</button>
+                        <button type="button" onclick="hideAddEducation()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+                <div id="educationList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== CERTIFICATIONS TAB ===== -->
+            <div id="tab-certifications" class="tab-content">
+                <h2>Certifications</h2>
+                <button onclick="showAddCertification()" class="btn primary" style="margin-bottom:2rem;">
+                    <i class="fas fa-plus"></i> Add Certification
+                </button>
+                <div id="addCertificationForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="certFormTitle" style="margin-bottom:1.5rem;">Add Certification</h3>
+                    <form id="certificationForm" class="admin-form" enctype="multipart/form-data">
+                        <input type="hidden" id="certEditIndex" value="-1">
+                        <div class="form-group">
+                            <label>Certification Name</label>
+                            <input type="text" id="certName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Issuing Organization</label>
+                            <input type="text" id="certIssuer" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date Earned</label>
+                            <input type="text" id="certDate" placeholder="June 2023">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="certDescription" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Certificate File</label>
+                            <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png">
+                            <div id="certFilePreview" style="margin-top:0.5rem;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Verification Link</label>
+                            <input type="url" id="certLink" placeholder="https://verify.certificate.com/...">
+                        </div>
+                        <button type="submit" class="btn primary" id="certSubmitBtn">Add Certification</button>
+                        <button type="button" onclick="hideAddCertification()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+                <div id="certificationsList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== SOCIAL LINKS TAB ===== -->
+            <div id="tab-social" class="tab-content">
+                <h2>Social Links</h2>
+                <button onclick="showAddSocial()" class="btn primary" style="margin-bottom:2rem;">
+                    <i class="fas fa-plus"></i> Add Social Link
+                </button>
+                <div id="addSocialForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
+                    <h3 id="socialFormTitle" style="margin-bottom:1.5rem;">Add Social Link</h3>
+                    <form id="socialForm" class="admin-form">
+                        <input type="hidden" id="socialEditIndex" value="-1">
+                        <div class="form-group">
+                            <label>Platform Name</label>
+                            <input type="text" id="socialPlatform" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Icon Class</label>
+                            <input type="text" id="socialIcon" placeholder="fab fa-whatsapp" required>
+                        </div>
+                        <div class="form-group">
+                            <label>URL</label>
+                            <input type="text" id="socialUrl" required>
+                        </div>
+                        <button type="submit" class="btn primary" id="socialSubmitBtn">Add Link</button>
+                        <button type="button" onclick="hideAddSocial()" class="btn secondary">Cancel</button>
+                    </form>
+                </div>
+                <div id="socialList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== RESUME TAB ===== -->
+            <div id="tab-resume" class="tab-content">
+                <h2>Resume</h2>
+                <div style="background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
+                    <h3 style="margin-bottom:1.5rem;">Upload Resume (PDF)</h3>
+                    <form id="resumeForm" class="admin-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>Resume PDF</label>
+                            <input type="file" id="resumeFile" accept=".pdf">
+                            <div id="resumePreview" style="margin-top:0.5rem;"></div>
+                        </div>
+                        <button type="submit" class="btn primary">Upload Resume</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===== VIDEOS TAB ===== -->
+            <div id="tab-videos" class="tab-content">
+                <h2>Videos</h2>
+                <div style="background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);margin-bottom:2rem;">
+                    <h3 style="margin-bottom:1.5rem;">Welcome Video</h3>
+                    <form id="welcomeVideoForm" class="admin-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label>Upload Welcome Video</label>
+                            <input type="file" id="welcomeVideo" accept="video/*">
+                            <div id="welcomeVideoPreview" style="margin-top:0.5rem;"></div>
+                        </div>
+                        <button type="submit" class="btn primary">Upload Welcome Video</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===== MESSAGES TAB ===== -->
+            <div id="tab-messages" class="tab-content">
+                <h2>Messages</h2>
+                <div id="messagesList" class="admin-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

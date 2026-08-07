@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- TITLE - Change this -->
+    <title>George Onyango Ochieng - Data Scientist & Web Developer</title>
+    
+    <!-- DESCRIPTION - Add this -->
+    <meta name="description" content="George Onyango Ochieng - Data Scientist and Web Developer. Building fast, responsive websites and helping businesses grow with data.">
+    
+    <!-- KEYWORDS - Add this -->
+    <meta name="keywords" content="George Onyango Ochieng, Data Scientist, Web Developer, Portfolio, Kenya, Data Analysis">
+    
+    <!-- AUTHOR - Add this -->
+    <meta name="author" content="George Onyango Ochieng">
+    
+    <!-- OPEN GRAPH (For social media) - Add this -->
+    <meta property="og:title" content="George Onyango Ochieng - Portfolio">
+    <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://george-onyango-ochieng.netlify.app">
+    
+    <!-- TWITTER CARD - Add this -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
+    <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- ===== NAVIGATION ===== -->
+    <nav>
+        <div class="container nav-container">
+            <a href="#" class="logo" id="logo">Dev<span>.</span></a>
+            <div class="nav-links" id="navLinks">
+                <a href="#projects">Projects</a>
+                <a href="#skills">Skills</a>
+                <a href="#about">About</a>
+                <a href="#experience">Experience</a>
+                <a href="#education">Education</a>
+                <a href="#certifications">Certifications</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html" class="btn-login">
+                    <i class="fas fa-lock"></i> Admin
+                </a>
+                <a href="#" id="resume-link" class="btn-resume" download style="display:none;">
+                    <i class="fas fa-file-pdf"></i> Resume
+                </a>
+                <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+                <button class="hamburger" id="hamburger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section id="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <span class="badge" id="hero-badge">👋 Welcome</span>
+                <h1 id="hero-title">Hi, I'm <span>Your Name</span></h1>
+                <p id="hero-subtitle">Web Developer creating amazing experiences</p>
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn primary">View Projects <i class="fas fa-arrow-right"></i></a>
+                    <a href="#" id="resume-btn" class="btn secondary" download style="display:none;">
+                        <i class="fas fa-file-pdf"></i> Download Resume
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="projects-count">0</span>
+                        <span class="stat-label">Projects</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="clients-count">0</span>
+                        <span class="stat-label">Happy Clients</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="experience-count">0</span>
+                        <span class="stat-label">Years Experience</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="profile-wrapper">
+                    <img src="uploads/profile/profile.jpg" alt="Profile" id="profile-img" onerror="this.src='https://via.placeholder.com/400x400/6c63ff/ffffff?text=Profile'">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PROJECTS SECTION ===== -->
+    <section id="projects">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">My Work</span>
+                <h2>Featured <span>Projects</span></h2>
+                <p>Each project is crafted with attention to detail and user experience</p>
+            </div>
+            <div id="projects-grid" class="projects-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading projects...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SKILLS SECTION ===== -->
+    <section id="skills">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Skills</span>
+                <h2>Tech <span>Stack</span></h2>
+            </div>
+            <div id="skills-grid" class="skills-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading skills...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ABOUT SECTION ===== -->
+    <section id="about">
+        <div class="container about-content">
+            <div class="about-image">
+                <img src="uploads/profile/about.jpg" alt="About" id="about-img" onerror="this.src='https://via.placeholder.com/600x400/6c63ff/ffffff?text=About+Me'">
+            </div>
+            <div class="about-text">
+                <span class="label">About Me</span>
+                <h2>Passionate about <span>building</span> great software</h2>
+                <div id="about-text">
+                    <p>Loading about information...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== EXPERIENCE SECTION ===== -->
+    <section id="experience">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Experience</span>
+                <h2>Work <span>Experience</span></h2>
+            </div>
+            <div id="timeline" class="timeline">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading experience...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== EDUCATION SECTION ===== -->
+    <section id="education">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Education</span>
+                <h2>My <span>Education</span></h2>
+                <p>My academic background and qualifications</p>
+            </div>
+            <div id="education-list" class="education-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading education...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CERTIFICATIONS SECTION ===== -->
+    <section id="certifications">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Certifications</span>
+                <h2>My <span>Certifications</span></h2>
+                <p>Professional certifications and credentials</p>
+            </div>
+            <div id="certifications-list" class="certifications-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading certifications...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CONTACT SECTION ===== -->
+    <section id="contact">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Contact</span>
+                <h2>Let's <span>connect</span></h2>
+                <p>Have a project in mind? I'd love to hear about it.</p>
+            </div>
+            
+            <div class="contact-wrapper">
+                <!-- Contact Info -->
+                <div class="contact-info">
+                    <div class="contact-card">
+                        <h3>Get in Touch</h3>
+                        <p>Feel free to reach out through any of these channels</p>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4>Email</h4>
+                                <a href="mailto:georgebabji1220@gmail.com" id="contact-email">georgebabji1220@gmail.com</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4>Phone</h4>
+                                <a href="tel:+254115136359" id="contact-phone">+254 115 136 359</a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fab fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <h4>WhatsApp</h4>
+                                <a href="https://wa.me/254115136359" id="contact-whatsapp" target="_blank">Chat on WhatsApp</a>
+                            </div>
+                        </div>
+                        
+                        <div class="social-links" id="social-links">
+                            <!-- Social links loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Form -->
+                <div class="contact-form-wrapper">
+                    <form id="contact-form" class="contact-form">
+                        <h3>Send a Message</h3>
+                        
+                        <div class="form-group">
+                            <label for="form-name">
+                                <i class="fas fa-user"></i> Your Name
+                            </label>
+                            <input type="text" id="form-name" placeholder="Enter your full name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="form-email">
+                                <i class="fas fa-envelope"></i> Your Email
+                            </label>
+                            <input type="email" id="form-email" placeholder="Enter your email address" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="form-subject">
+                                <i class="fas fa-tag"></i> Subject
+                            </label>
+                            <input type="text" id="form-subject" placeholder="What's this about?">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="form-message">
+                                <i class="fas fa-comment"></i> Your Message
+                            </label>
+                            <textarea id="form-message" rows="5" placeholder="Tell me about your project..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="container footer-content">
+            <p id="footer-text">© 2025 Built with <i class="fas fa-heart"></i></p>
+            <a href="login.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;">
+                <i class="fas fa-lock"></i> Admin
+            </a>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
