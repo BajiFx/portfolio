@@ -24,7 +24,7 @@ console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 // CORS CONFIGURATION - FIXED FOR EXPRESS v5
 // ============================================
 
-// Allow all origins – this also handles preflight (OPTIONS) requests automatically
+// Use CORS middleware – it automatically handles preflight (OPTIONS) requests
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -32,7 +32,7 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// Removed app.options('*', cors()) because it's not needed and causes an error in Express v5
+// REMOVED: app.options('*', cors()); // This line causes the error!
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
