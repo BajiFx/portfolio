@@ -1,7 +1,3 @@
-// ============================================
-// SERVER.JS - Cloudinary Upload Server
-// ============================================
-
 const express = require('express');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
@@ -25,17 +21,18 @@ console.log('✅ Cloudinary configured successfully!');
 console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 
 // ============================================
-// CORS CONFIGURATION - FIXED FOR RENDER
+// CORS CONFIGURATION - FIXED FOR EXPRESS v5
 // ============================================
 
+// Allow all origins – this also handles preflight (OPTIONS) requests automatically
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
 }));
 
-// Handle preflight requests
-app.options('*', cors());
+// Removed app.options('*', cors()) because it's not needed and causes an error in Express v5
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -87,11 +84,9 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         console.log(`📤 Uploading: ${req.file.originalname} (${req.file.size} bytes)`);
 
-        // Convert buffer to base64
         const fileStr = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${fileStr}`;
 
-        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload(dataUri, {
             folder: 'portfolio-projects',
             resource_type: 'auto',
