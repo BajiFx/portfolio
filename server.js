@@ -1,7 +1,3 @@
-// ============================================
-// SERVER.JS - Cloudinary Upload Server
-// ============================================
-
 const express = require('express');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
@@ -25,10 +21,17 @@ console.log('✅ Cloudinary configured successfully!');
 console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 
 // ============================================
-// MIDDLEWARE
+// CORS CONFIGURATION
 // ============================================
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -41,13 +44,25 @@ const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 50 * 1024 * 1024 // 50MB max
+        fileSize: 50 * 1024 * 1024
     }
 });
 
 // ============================================
 // API ENDPOINTS
 // ============================================
+
+// Root route – avoid 404
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Portfolio API is running.',
+        endpoints: {
+            test: '/api/test',
+            upload: '/api/upload',
+            uploadMultiple: '/api/upload-multiple'
+        }
+    });
+});
 
 // Test endpoint
 app.get('/api/test', (req, res) => {
@@ -67,11 +82,9 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
 
         console.log(`📤 Uploading: ${req.file.originalname} (${req.file.size} bytes)`);
 
-        // Convert buffer to base64
         const fileStr = req.file.buffer.toString('base64');
         const dataUri = `data:${req.file.mimetype};base64,${fileStr}`;
 
-        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload(dataUri, {
             folder: 'portfolio-projects',
             resource_type: 'auto',
@@ -146,10 +159,10 @@ app.post('/api/upload-multiple', upload.array('images', 10), async (req, res) =>
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
-    console.log(`\n✅ Server running on http://localhost:${PORT}`);
-    console.log(`   Test: http://localhost:${PORT}/api/test`);
-    console.log(`   Upload: http://localhost:${PORT}/api/upload`);
-    console.log(`   Multiple Upload: http://localhost:${PORT}/api/upload-multiple`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n✅ Server running on http://0.0.0.0:${PORT}`);
+    console.log(`   Test: http://0.0.0.0:${PORT}/api/test`);
+    console.log(`   Upload: http://0.0.0.0:${PORT}/api/upload`);
+    console.log(`   Multiple Upload: http://0.0.0.0:${PORT}/api/upload-multiple`);
     console.log('\n📌 Make sure your admin panel points to this server!\n');
 });
