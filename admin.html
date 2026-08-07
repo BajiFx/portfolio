@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>George Onyango Ochieng - Admin Dashboard</title>
+    <title>George Onyango Ochieng - Admin</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -170,7 +170,7 @@
                         <input type="hidden" id="groupEditIndex" value="-1">
                         <div class="form-group">
                             <label>Group Name</label>
-                            <input type="text" id="groupName" placeholder="e.g., Web Development, Data Science, Machine Learning" required>
+                            <input type="text" id="groupName" placeholder="e.g., Web Development, Data Science" required>
                         </div>
                         <div class="form-group">
                             <label>Icon (Font Awesome class)</label>
@@ -186,7 +186,7 @@
                     </form>
                 </div>
                 
-                <!-- ===== ADD PROJECT FORM ===== -->
+                <!-- ===== ADD PROJECT FORM WITH CLOUDINARY ===== -->
                 <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
                     
@@ -208,48 +208,72 @@
                     <form id="projectForm" class="admin-form" enctype="multipart/form-data">
                         <input type="hidden" id="projectEditIndex" value="-1">
                         <input type="hidden" id="projectGroupId" value="">
+                        
                         <div class="form-group">
                             <label>Project Title</label>
                             <input type="text" id="projectTitle" placeholder="e.g., E-commerce Platform" required>
                         </div>
+                        
                         <div class="form-group">
                             <label>Project Description</label>
                             <textarea id="projectDescription" rows="3" placeholder="Describe your project..." required></textarea>
                         </div>
+                        
                         <div class="form-group">
                             <label>Technologies Used (comma separated)</label>
                             <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
                         </div>
+                        
+                        <!-- ===== CLOUDINARY IMAGE UPLOAD ===== -->
                         <div class="form-group">
-                            <label>Multiple Images</label>
-                            <input type="file" id="projectImages" accept="image/*" multiple>
-                            <div id="projectImagesPreview" style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
-                            <small>You can select multiple images</small>
+                            <label>Project Images</label>
+                            <input type="file" id="projectImageUpload" accept="image/*" multiple>
+                            <button type="button" id="uploadToCloudinaryBtn" class="btn secondary" style="margin-top:0.5rem;background:#22c55e;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
+                                <i class="fas fa-cloud-upload-alt"></i> Upload to Cloudinary
+                            </button>
+                            <div id="uploadedImagesPreview" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+                            <input type="hidden" id="projectImagesUrls" value="[]">
+                            <small>Select images, then click "Upload to Cloudinary"</small>
                         </div>
+                        
+                        <!-- ===== PROJECT VIDEO ===== -->
                         <div class="form-group">
-                            <label>Project Video</label>
-                            <input type="file" id="projectVideo" accept="video/*">
-                            <div id="projectVideoPreview" style="margin-top:0.5rem;"></div>
+                            <label>Project Video (Upload to Cloudinary)</label>
+                            <input type="file" id="projectVideoUpload" accept="video/*">
+                            <button type="button" id="uploadVideoToCloudinaryBtn" class="btn secondary" style="margin-top:0.5rem;background:#8b5cf6;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
+                                <i class="fas fa-cloud-upload-alt"></i> Upload Video to Cloudinary
+                            </button>
+                            <div id="uploadedVideoPreview" style="margin-top:0.5rem;"></div>
+                            <input type="hidden" id="projectVideoUrl" value="">
+                            <small>Select a video, then click "Upload Video to Cloudinary"</small>
                         </div>
+                        
+                        <!-- ===== GITHUB & DEMO LINKS ===== -->
                         <div class="form-group">
                             <label>GitHub Repository URL</label>
                             <input type="url" id="projectGithub" placeholder="https://github.com/username/repository-name">
                             <small>Visitors will see a GitHub icon that links directly to your repository</small>
                         </div>
+                        
                         <div class="form-group">
                             <label>Live Demo Link</label>
                             <input type="url" id="projectDemo" placeholder="https://demo.com">
                         </div>
+                        
+                        <!-- ===== README ===== -->
                         <div class="form-group">
                             <label>README / Documentation</label>
                             <textarea id="projectReadme" rows="5" placeholder="Write detailed documentation, installation steps, features, etc..."></textarea>
                         </div>
+                        
+                        <!-- ===== ATTACH FILES ===== -->
                         <div class="form-group">
                             <label>Attach Files (PDF, Documents, ZIP)</label>
                             <input type="file" id="projectFiles" accept=".pdf,.doc,.docx,.txt,.zip,.pptx" multiple>
                             <div id="projectFilesPreview" style="margin-top:0.5rem;"></div>
                             <small>You can select multiple files</small>
                         </div>
+                        
                         <button type="submit" class="btn primary" id="projectSubmitBtn">Save Project</button>
                         <button type="button" onclick="hideAddProject()" class="btn secondary">Cancel</button>
                     </form>
@@ -439,6 +463,121 @@
             </div>
         </div>
     </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script>
+        // ============================================
+        // CLOUDINARY UPLOAD (IMAGES)
+        // ============================================
+
+        const SERVER_URL = 'http://localhost:3000';
+
+        document.getElementById('uploadToCloudinaryBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('projectImageUpload');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert('⚠️ Please select images first!');
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+            
+            this.textContent = '⏳ Uploading...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const urlsInput = document.getElementById('projectImagesUrls');
+                    let urls = JSON.parse(urlsInput.value || '[]');
+                    
+                    result.urls.forEach(url => urls.push(url));
+                    urlsInput.value = JSON.stringify(urls);
+                    
+                    const preview = document.getElementById('uploadedImagesPreview');
+                    result.urls.forEach(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);';
+                        preview.appendChild(img);
+                    });
+                    
+                    fileInput.value = '';
+                    alert(`✅ ${result.count} images uploaded successfully!`);
+                } else {
+                    alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
+            } finally {
+                this.textContent = '📤 Upload to Cloudinary';
+                this.disabled = false;
+            }
+        });
+
+        // ============================================
+        // CLOUDINARY UPLOAD (VIDEOS)
+        // ============================================
+
+        document.getElementById('uploadVideoToCloudinaryBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('projectVideoUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('⚠️ Please select a video first!');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            this.textContent = '⏳ Uploading video...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/api/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('projectVideoUrl').value = result.url;
+                    
+                    const preview = document.getElementById('uploadedVideoPreview');
+                    preview.innerHTML = `
+                        <video controls style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
+                            <source src="${result.url}">
+                        </video>
+                        <p style="font-size:0.8rem;color:var(--text-light);">Video uploaded successfully!</p>
+                    `;
+                    
+                    fileInput.value = '';
+                    alert('✅ Video uploaded successfully!');
+                } else {
+                    alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
+            } finally {
+                this.textContent = '📤 Upload Video to Cloudinary';
+                this.disabled = false;
+            }
+        });
+    </script>
 
     <script src="js/admin.js"></script>
 </body>

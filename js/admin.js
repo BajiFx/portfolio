@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete with Project Groups
+// ADMIN.JS - Complete with Cloudinary Integration
 // ============================================
 
 console.log('✅ admin.js loaded');
@@ -307,8 +307,9 @@ function showAddProjectForm(groupIndex) {
     document.getElementById('projectSubmitBtn').textContent = 'Save Project';
     document.getElementById('projectEditIndex').value = '-1';
     document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesPreview').innerHTML = '';
-    document.getElementById('projectVideoPreview').innerHTML = '';
+    document.getElementById('projectImagesUrls').value = '[]';
+    document.getElementById('uploadedImagesPreview').innerHTML = '';
+    document.getElementById('uploadedVideoPreview').innerHTML = '';
     document.getElementById('projectFilesPreview').innerHTML = '';
     
     const groupDisplay = document.getElementById('selectedGroupDisplay');
@@ -317,7 +318,6 @@ function showAddProjectForm(groupIndex) {
         groupDisplay.innerHTML = `
             <i class="fas fa-folder"></i>
             Adding project to: <strong>${group.name}</strong>
-            <span style="font-weight:400;font-size:0.85rem;opacity:0.8;">(Group: ${group.name})</span>
         `;
     }
     
@@ -351,8 +351,9 @@ function showAddProject() {
     document.getElementById('projectSubmitBtn').textContent = 'Save Project';
     document.getElementById('projectEditIndex').value = '-1';
     document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesPreview').innerHTML = '';
-    document.getElementById('projectVideoPreview').innerHTML = '';
+    document.getElementById('projectImagesUrls').value = '[]';
+    document.getElementById('uploadedImagesPreview').innerHTML = '';
+    document.getElementById('uploadedVideoPreview').innerHTML = '';
     document.getElementById('projectFilesPreview').innerHTML = '';
     
     const wrapper = document.getElementById('groupSelectWrapper');
@@ -385,8 +386,9 @@ function showAddProject() {
 function hideAddProject() {
     document.getElementById('addProjectForm').style.display = 'none';
     document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesPreview').innerHTML = '';
-    document.getElementById('projectVideoPreview').innerHTML = '';
+    document.getElementById('projectImagesUrls').value = '[]';
+    document.getElementById('uploadedImagesPreview').innerHTML = '';
+    document.getElementById('uploadedVideoPreview').innerHTML = '';
     document.getElementById('projectFilesPreview').innerHTML = '';
     
     const wrapper = document.getElementById('groupSelectWrapper');
@@ -505,18 +507,23 @@ function editProject(groupIndex, projectIndex) {
     document.getElementById('projectDemo').value = project.demo || '';
     document.getElementById('projectReadme').value = project.readme || '';
     
+    // Show existing Cloudinary images
     if (project.images && project.images.length > 0) {
-        document.getElementById('projectImagesPreview').innerHTML = project.images.map(img => `
+        document.getElementById('uploadedImagesPreview').innerHTML = project.images.map(img => `
             <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);">
         `).join('');
+        document.getElementById('projectImagesUrls').value = JSON.stringify(project.images);
     }
     
+    // Show existing Cloudinary video
     if (project.video) {
-        document.getElementById('projectVideoPreview').innerHTML = `
-            <video controls style="max-width:200px;max-height:150px;border-radius:8px;">
+        document.getElementById('uploadedVideoPreview').innerHTML = `
+            <video controls style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
                 <source src="${project.video}">
             </video>
+            <p style="font-size:0.8rem;color:var(--text-light);">Current video</p>
         `;
+        document.getElementById('projectVideoUrl').value = project.video;
     }
     
     if (project.files && project.files.length > 0) {
@@ -529,54 +536,6 @@ function editProject(groupIndex, projectIndex) {
     
     document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
 }
-
-document.getElementById('projectImages').addEventListener('change', function(e) {
-    const preview = document.getElementById('projectImagesPreview');
-    preview.innerHTML = '';
-    if (this.files) {
-        for (let i = 0; i < this.files.length; i++) {
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);';
-                preview.appendChild(img);
-            };
-            reader.readAsDataURL(this.files[i]);
-        }
-    }
-});
-
-document.getElementById('projectVideo').addEventListener('change', function(e) {
-    const preview = document.getElementById('projectVideoPreview');
-    if (this.files && this.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            preview.innerHTML = `
-                <video controls style="max-width:200px;max-height:150px;border-radius:8px;">
-                    <source src="${ev.target.result}">
-                </video>
-            `;
-        };
-        reader.readAsDataURL(this.files[0]);
-    }
-});
-
-document.getElementById('projectFiles').addEventListener('change', function(e) {
-    const preview = document.getElementById('projectFilesPreview');
-    if (this.files && this.files.length > 0) {
-        let html = '<div style="display:flex;flex-wrap:wrap;gap:0.5rem;">';
-        for (let i = 0; i < this.files.length; i++) {
-            html += `
-                <div style="padding:0.3rem 0.8rem;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);font-size:0.85rem;">
-                    <i class="fas fa-file"></i> ${this.files[i].name}
-                </div>
-            `;
-        }
-        html += '</div>';
-        preview.innerHTML = html;
-    }
-});
 
 document.getElementById('projectForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -600,6 +559,13 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
     
     const tech = document.getElementById('projectTech').value.split(',').map(t => t.trim()).filter(t => t);
     
+    // Get Cloudinary image URLs
+    const urlsInput = document.getElementById('projectImagesUrls');
+    const imageUrls = JSON.parse(urlsInput.value || '[]');
+    
+    // Get Cloudinary video URL
+    const videoUrl = document.getElementById('projectVideoUrl').value;
+    
     const projectData = {
         title: document.getElementById('projectTitle').value,
         description: document.getElementById('projectDescription').value,
@@ -607,56 +573,20 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
         github: document.getElementById('projectGithub').value,
         demo: document.getElementById('projectDemo').value,
         readme: document.getElementById('projectReadme').value,
-        images: [],
-        video: null,
+        images: imageUrls,
+        video: videoUrl || null,
         files: []
     };
     
+    // If editing, keep existing files
     if (editIndex >= 0 && portfolioData.projectGroups[groupIndex].projects[editIndex]) {
         const existing = portfolioData.projectGroups[groupIndex].projects[editIndex];
-        projectData.images = existing.images || [];
-        projectData.video = existing.video;
         projectData.files = existing.files || [];
     }
     
-    let uploads = 0;
-    let totalUploads = 0;
-    
-    const imageFiles = document.getElementById('projectImages').files;
-    if (imageFiles.length > 0) {
-        totalUploads++;
-        const imagePromises = [];
-        for (let i = 0; i < imageFiles.length; i++) {
-            imagePromises.push(new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    resolve(e.target.result);
-                };
-                reader.readAsDataURL(imageFiles[i]);
-            }));
-        }
-        Promise.all(imagePromises).then(results => {
-            projectData.images = results;
-            uploads++;
-            if (uploads === totalUploads) saveProject(projectData, groupIndex, editIndex);
-        });
-    }
-    
-    const videoFile = document.getElementById('projectVideo').files[0];
-    if (videoFile) {
-        totalUploads++;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            projectData.video = e.target.result;
-            uploads++;
-            if (uploads === totalUploads) saveProject(projectData, groupIndex, editIndex);
-        };
-        reader.readAsDataURL(videoFile);
-    }
-    
+    // Handle file attachments
     const fileInput = document.getElementById('projectFiles');
     if (fileInput.files.length > 0) {
-        totalUploads++;
         const filePromises = [];
         for (let i = 0; i < fileInput.files.length; i++) {
             const file = fileInput.files[i];
@@ -673,14 +603,12 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
                 reader.readAsDataURL(file);
             }));
         }
+        
         Promise.all(filePromises).then(results => {
             projectData.files = results;
-            uploads++;
-            if (uploads === totalUploads) saveProject(projectData, groupIndex, editIndex);
+            saveProject(projectData, groupIndex, editIndex);
         });
-    }
-    
-    if (totalUploads === 0) {
+    } else {
         saveProject(projectData, groupIndex, editIndex);
     }
 });
@@ -695,7 +623,7 @@ function saveProject(projectData, groupIndex, editIndex) {
         alert('✅ Project updated successfully!');
     } else {
         portfolioData.projectGroups[groupIndex].projects.push(projectData);
-        alert('✅ Project added successfully to "' + portfolioData.projectGroups[groupIndex].name + '"!');
+        alert('✅ Project added successfully!');
     }
     
     saveData();
