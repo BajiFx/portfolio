@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (Step 1 - Fixed)
+// ADMIN.JS - Complete Admin Panel (Step 2: Skills)
 // ============================================
 
 console.log('✅ admin.js loaded');
@@ -98,6 +98,7 @@ function renderAll() {
     renderExperienceList();
     renderEducationList();
     renderCertificationsList();
+    renderSkillsList();
     renderSocialList();
     renderMessages();
     renderResumePreview();
@@ -118,6 +119,7 @@ function updateDashboard() {
     document.getElementById('statExperience').textContent = portfolioData.experience?.length || 0;
     document.getElementById('statEducation').textContent = portfolioData.education?.length || 0;
     document.getElementById('statCertifications').textContent = portfolioData.certifications?.length || 0;
+    document.getElementById('statSkills').textContent = portfolioData.skills?.length || 0;
     const messages = JSON.parse(localStorage.getItem('messages') || '[]');
     document.getElementById('statMessages').textContent = messages.length;
 }
@@ -146,6 +148,7 @@ function switchTab(tabId) {
     if (tabId === 'experience') renderExperienceList();
     if (tabId === 'education') renderEducationList();
     if (tabId === 'certifications') renderCertificationsList();
+    if (tabId === 'skills') renderSkillsList();
     if (tabId === 'social') renderSocialList();
     if (tabId === 'messages') renderMessages();
     if (tabId === 'profile') renderProfileForm();
@@ -362,11 +365,9 @@ function showAddProject(groupIndex) {
     document.getElementById('projectGithub').value = '';
     document.getElementById('projectDemo').value = '';
     document.getElementById('projectReadme').value = '';
-    // Clear dynamic upload containers
     document.getElementById('imageUploadContainer').innerHTML = '';
     document.getElementById('videoUploadContainer').innerHTML = '';
     document.getElementById('projectFilesPreview').innerHTML = '';
-    // Reset counters
     imageCounter = 0;
     videoCounter = 0;
     document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
@@ -398,25 +399,21 @@ function editProject(gIndex, pIndex) {
     document.getElementById('projectDemo').value = project.demo || '';
     document.getElementById('projectReadme').value = project.readme || '';
     
-    // Reset dynamic containers
     document.getElementById('imageUploadContainer').innerHTML = '';
     document.getElementById('videoUploadContainer').innerHTML = '';
     imageCounter = 0;
     videoCounter = 0;
     
-    // Render existing images
     const images = project.images || [];
     images.forEach(url => {
         addImagePreview(url);
     });
     
-    // Render existing videos
     const videos = project.videos || [];
     videos.forEach(url => {
         addVideoPreview(url);
     });
     
-    // Files preview
     const filesPreview = document.getElementById('projectFilesPreview');
     filesPreview.innerHTML = '';
     (project.files || []).forEach(f => {
@@ -469,12 +466,9 @@ document.getElementById('projectGroupSelect').addEventListener('change', functio
 // ============================================
 
 function setupDynamicUploads() {
-    // Add Image button
     document.getElementById('addImageBtn').addEventListener('click', function() {
         addImageUploadRow();
     });
-    
-    // Add Video button
     document.getElementById('addVideoBtn').addEventListener('click', function() {
         addVideoUploadRow();
     });
@@ -498,7 +492,6 @@ function addImageUploadRow() {
     `;
     container.appendChild(row);
     
-    // Upload button handler
     const uploadBtn = row.querySelector('.btn-upload-image');
     const fileInput = row.querySelector('input[type="file"]');
     const previewDiv = row.querySelector('.upload-preview');
@@ -507,13 +500,11 @@ function addImageUploadRow() {
         await uploadFile(fileInput, previewDiv, 'image');
     });
     
-    // Remove button handler
     const removeBtn = row.querySelector('.btn-remove-row');
     removeBtn.addEventListener('click', function() {
         row.remove();
     });
     
-    // Auto-upload on file selection (optional convenience)
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
             uploadBtn.click();
@@ -566,11 +557,9 @@ async function uploadFile(fileInput, previewDiv, type) {
         return;
     }
     
-    // Get the button that triggered the upload (find it from the row)
     const row = fileInput.closest('div');
     let btn = row ? row.querySelector('.btn-upload-image, .btn-upload-video') : null;
     if (!btn) {
-        // Fallback: find any button in the row
         btn = row ? row.querySelector('button') : null;
     }
     
@@ -591,11 +580,9 @@ async function uploadFile(fileInput, previewDiv, type) {
         const result = await response.json();
         if (result.success && result.urls && result.urls.length > 0) {
             const url = result.urls[0];
-            // Store URL in row's dataset
             if (row) {
                 row.dataset.uploadedUrl = url;
             }
-            // Show preview
             if (previewDiv) {
                 if (type === 'image') {
                     previewDiv.innerHTML = `<img src="${url}" style="max-width:80px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);">`;
@@ -603,7 +590,6 @@ async function uploadFile(fileInput, previewDiv, type) {
                     previewDiv.innerHTML = `<video src="${url}" style="max-width:100px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);" controls></video>`;
                 }
             }
-            // Hide file input and disable button
             if (fileInput) fileInput.style.display = 'none';
             if (btn) {
                 btn.innerHTML = '✅ Uploaded';
@@ -666,7 +652,7 @@ function addVideoPreview(url) {
 }
 
 // ============================================
-// SAVE PROJECT (with dynamic upload URLs)
+// SAVE PROJECT
 // ============================================
 
 document.getElementById('projectForm').addEventListener('submit', function(e) {
@@ -687,7 +673,6 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
     const demo = document.getElementById('projectDemo').value.trim();
     const readme = document.getElementById('projectReadme').value.trim();
     
-    // Collect image URLs from existing previews (hidden inputs) and new uploads (dataset)
     const imageUrls = [];
     document.querySelectorAll('#imageUploadContainer .existing-image-url').forEach(el => {
         imageUrls.push(el.value);
@@ -696,7 +681,6 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
         imageUrls.push(row.dataset.uploadedUrl);
     });
     
-    // Collect video URLs similarly
     const videoUrls = [];
     document.querySelectorAll('#videoUploadContainer .existing-video-url').forEach(el => {
         videoUrls.push(el.value);
@@ -705,7 +689,6 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
         videoUrls.push(row.dataset.uploadedUrl);
     });
     
-    // Handle attached files
     const fileInput = document.getElementById('projectFiles');
     const files = [];
     if (fileInput.files.length > 0) {
@@ -1041,7 +1024,87 @@ function saveCertData(editIndex, name, issuer, date, description, link, fileData
     renderCertificationsList();
     updateDashboard();
     alert('✅ Certification saved!');
+});
+
+// ============================================
+// SKILLS CRUD
+// ============================================
+
+function renderSkillsList() {
+    const container = document.getElementById('skillsList');
+    const skills = portfolioData.skills || [];
+    if (skills.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No skill categories added yet.</p>`;
+        return;
+    }
+    container.innerHTML = skills.map((skill, i) => `
+        <div class="admin-item">
+            <div class="item-info">
+                <h4><i class="${skill.icon || 'fas fa-code'}"></i> ${skill.category}</h4>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">${skill.items ? skill.items.join(', ') : ''}</p>
+            </div>
+            <div class="item-actions">
+                <button onclick="editSkill(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteSkill(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
 }
+
+function showAddSkill() {
+    document.getElementById('addSkillForm').style.display = 'block';
+    document.getElementById('skillFormTitle').textContent = 'Add Skill Category';
+    document.getElementById('skillSubmitBtn').textContent = 'Add Skill Category';
+    document.getElementById('skillEditIndex').value = -1;
+    document.getElementById('skillCategory').value = '';
+    document.getElementById('skillIcon').value = 'fas fa-code';
+    document.getElementById('skillItems').value = '';
+    document.getElementById('addSkillForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideAddSkill() {
+    document.getElementById('addSkillForm').style.display = 'none';
+}
+
+function editSkill(index) {
+    const skill = portfolioData.skills[index];
+    if (!skill) return;
+    document.getElementById('addSkillForm').style.display = 'block';
+    document.getElementById('skillFormTitle').textContent = '✏️ Edit Skill Category';
+    document.getElementById('skillSubmitBtn').textContent = 'Update Skill Category';
+    document.getElementById('skillEditIndex').value = index;
+    document.getElementById('skillCategory').value = skill.category;
+    document.getElementById('skillIcon').value = skill.icon || 'fas fa-code';
+    document.getElementById('skillItems').value = (skill.items || []).join(', ');
+    document.getElementById('addSkillForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteSkill(index) {
+    if (!confirm('Delete this skill category?')) return;
+    portfolioData.skills.splice(index, 1);
+    saveData();
+    renderSkillsList();
+    updateDashboard();
+}
+
+document.getElementById('skillForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const editIndex = parseInt(document.getElementById('skillEditIndex').value);
+    const category = document.getElementById('skillCategory').value.trim();
+    const icon = document.getElementById('skillIcon').value.trim() || 'fas fa-code';
+    const items = document.getElementById('skillItems').value.split(',').map(s => s.trim()).filter(Boolean);
+    const skillData = { category, icon, items };
+    if (editIndex >= 0) {
+        portfolioData.skills[editIndex] = skillData;
+    } else {
+        portfolioData.skills.push(skillData);
+    }
+    saveData();
+    hideAddSkill();
+    renderSkillsList();
+    updateDashboard();
+    alert('✅ Skill category saved!');
+});
 
 // ============================================
 // SOCIAL LINKS CRUD
