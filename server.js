@@ -21,15 +21,18 @@ console.log('✅ Cloudinary configured successfully!');
 console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 
 // ============================================
-// CORS CONFIGURATION
+// CORS CONFIGURATION - FIXED FOR EXPRESS v5
 // ============================================
 
+// Use CORS middleware – it automatically handles preflight (OPTIONS) requests
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 200
 }));
+
+// REMOVED: app.options('*', cors()); // This line causes the error!
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -51,7 +54,7 @@ const upload = multer({
 // API ENDPOINTS
 // ============================================
 
-// Root route
+// Root route – shows API info
 app.get('/', (req, res) => {
     res.json({
         message: 'Portfolio API is running!',

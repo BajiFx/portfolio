@@ -224,38 +224,28 @@
                             <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
                         </div>
                         
-                        <!-- ===== DYNAMIC IMAGE UPLOADS ===== -->
+                        <!-- ===== DYNAMIC IMAGES SECTION ===== -->
                         <div class="form-group">
                             <label>Project Images</label>
-                            <div id="imageUploadsContainer">
-                                <!-- Existing images will be shown here -->
+                            <div id="imageUploadContainer">
+                                <!-- Existing images will be rendered here by JS -->
                             </div>
-                            <div id="imageUploadRow" style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;align-items:center;">
-                                <input type="file" id="newImageInput" accept="image/*" style="flex:1;min-width:150px;">
-                                <button type="button" id="addImageBtn" class="btn secondary" style="background:#22c55e;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
-                                    <i class="fas fa-plus"></i> Add Image
-                                </button>
-                            </div>
-                            <div id="imagePreviewsContainer" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
-                            <input type="hidden" id="projectImagesUrls" value="[]">
-                            <small>Upload images one by one using "Add Image" button.</small>
+                            <button type="button" id="addImageBtn" class="btn secondary" style="margin-top:0.5rem;background:#22c55e;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
+                                <i class="fas fa-plus"></i> Add Image
+                            </button>
+                            <small>Click "Add Image" to upload images one by one.</small>
                         </div>
                         
-                        <!-- ===== DYNAMIC VIDEO UPLOADS ===== -->
+                        <!-- ===== DYNAMIC VIDEOS SECTION ===== -->
                         <div class="form-group">
                             <label>Project Videos</label>
-                            <div id="videoUploadsContainer">
-                                <!-- Existing videos will be shown here -->
+                            <div id="videoUploadContainer">
+                                <!-- Existing videos will be rendered here by JS -->
                             </div>
-                            <div id="videoUploadRow" style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;align-items:center;">
-                                <input type="file" id="newVideoInput" accept="video/*" style="flex:1;min-width:150px;">
-                                <button type="button" id="addVideoBtn" class="btn secondary" style="background:#8b5cf6;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
-                                    <i class="fas fa-plus"></i> Add Video
-                                </button>
-                            </div>
-                            <div id="videoPreviewsContainer" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
-                            <input type="hidden" id="projectVideosUrls" value="[]">
-                            <small>Upload videos one by one using "Add Video" button.</small>
+                            <button type="button" id="addVideoBtn" class="btn secondary" style="margin-top:0.5rem;background:#8b5cf6;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
+                                <i class="fas fa-plus"></i> Add Video
+                            </button>
+                            <small>Click "Add Video" to upload videos one by one.</small>
                         </div>
                         
                         <!-- ===== GITHUB & DEMO LINKS ===== -->
@@ -282,7 +272,7 @@
                             <label>Attach Files (PDF, Documents, ZIP)</label>
                             <input type="file" id="projectFiles" accept=".pdf,.doc,.docx,.txt,.zip,.pptx" multiple>
                             <div id="projectFilesPreview" style="margin-top:0.5rem;"></div>
-                            <small>You can select multiple files</small>
+                            <small>You can select multiple files at once</small>
                         </div>
                         
                         <button type="submit" class="btn primary" id="projectSubmitBtn">Save Project</button>
@@ -474,128 +464,6 @@
             </div>
         </div>
     </div>
-
-    <!-- ===== SCRIPTS ===== -->
-    <script>
-        // ============================================
-        // SERVER URL - CHANGE THIS FOR PRODUCTION
-        // ============================================
-
-        // For local development:
-        // const SERVER_URL = 'http://localhost:3000';
-
-        // For production (Render):
-        const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
-
-        // ============================================
-        // DYNAMIC IMAGE UPLOAD HANDLER
-        // ============================================
-
-        document.getElementById('addImageBtn').addEventListener('click', async function() {
-            const fileInput = document.getElementById('newImageInput');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('⚠️ Please select an image first!');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('images', file);
-
-            this.textContent = '⏳ Uploading...';
-            this.disabled = true;
-
-            try {
-                const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.urls && result.urls.length > 0) {
-                    const url = result.urls[0];
-                    const urlsInput = document.getElementById('projectImagesUrls');
-                    let urls = JSON.parse(urlsInput.value || '[]');
-                    urls.push(url);
-                    urlsInput.value = JSON.stringify(urls);
-
-                    // Add preview
-                    const previewContainer = document.getElementById('imagePreviewsContainer');
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);';
-                    previewContainer.appendChild(img);
-
-                    fileInput.value = '';
-                    alert('✅ Image uploaded successfully!');
-                } else {
-                    alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
-            } finally {
-                this.textContent = '<i class="fas fa-plus"></i> Add Image';
-                this.disabled = false;
-            }
-        });
-
-        // ============================================
-        // DYNAMIC VIDEO UPLOAD HANDLER
-        // ============================================
-
-        document.getElementById('addVideoBtn').addEventListener('click', async function() {
-            const fileInput = document.getElementById('newVideoInput');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('⚠️ Please select a video first!');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('images', file); // same endpoint, resource_type auto
-
-            this.textContent = '⏳ Uploading...';
-            this.disabled = true;
-
-            try {
-                const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.urls && result.urls.length > 0) {
-                    const url = result.urls[0];
-                    const urlsInput = document.getElementById('projectVideosUrls');
-                    let urls = JSON.parse(urlsInput.value || '[]');
-                    urls.push(url);
-                    urlsInput.value = JSON.stringify(urls);
-
-                    // Add preview
-                    const previewContainer = document.getElementById('videoPreviewsContainer');
-                    const video = document.createElement('video');
-                    video.src = url;
-                    video.controls = true;
-                    video.style.cssText = 'max-width:150px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);';
-                    previewContainer.appendChild(video);
-
-                    fileInput.value = '';
-                    alert('✅ Video uploaded successfully!');
-                } else {
-                    alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
-            } finally {
-                this.textContent = '<i class="fas fa-plus"></i> Add Video';
-                this.disabled = false;
-            }
-        });
-    </script>
 
     <script src="js/admin.js"></script>
 </body>

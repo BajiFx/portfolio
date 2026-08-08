@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete with Cloudinary Integration
+// ADMIN.JS - Complete Admin Panel (Step 1 - Fixed)
 // ============================================
 
 console.log('✅ admin.js loaded');
@@ -9,86 +9,152 @@ if (!localStorage.getItem('isLoggedIn')) {
     window.location.href = 'login.html';
 }
 
-let portfolioData = {
-    personal: {},
-    about: { paragraphs: [] },
-    skills: [],
-    projectGroups: [],
-    experience: [],
-    education: [],
-    certifications: [],
-    social: {},
-    videos: {},
-    footer: ''
-};
+let portfolioData = {};
+let imageCounter = 0;
+let videoCounter = 0;
 
-let messages = [];
+// ============================================
+// SERVER URL - SET THIS FOR YOUR ENVIRONMENT
+// ============================================
+
+// For local development (server running on port 3000):
+const SERVER_URL = 'http://localhost:3000';
+// For production (Render):
+// const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+function initAdmin() {
+    loadData();
+    setupTabs();
+    setupSidebarButtons();
+    updateDashboard();
+    renderAll();
+    setupDynamicUploads();
+}
 
 // ============================================
 // LOAD DATA
 // ============================================
 
 function loadData() {
-    const savedData = localStorage.getItem('portfolioData');
-    if (savedData) {
+    const saved = localStorage.getItem('portfolioData');
+    if (saved) {
         try {
-            portfolioData = JSON.parse(savedData);
+            portfolioData = JSON.parse(saved);
             if (!portfolioData.projectGroups) portfolioData.projectGroups = [];
+            if (!portfolioData.experience) portfolioData.experience = [];
             if (!portfolioData.education) portfolioData.education = [];
             if (!portfolioData.certifications) portfolioData.certifications = [];
-            if (!portfolioData.personal) portfolioData.personal = {};
-            if (!portfolioData.about) portfolioData.about = { paragraphs: [] };
-            if (!portfolioData.experience) portfolioData.experience = [];
+            if (!portfolioData.skills) portfolioData.skills = [];
             if (!portfolioData.social) portfolioData.social = {};
             if (!portfolioData.videos) portfolioData.videos = {};
+            if (!portfolioData.personal) portfolioData.personal = {};
+            if (!portfolioData.about) portfolioData.about = { paragraphs: [] };
         } catch (e) {
             console.error('Error parsing data:', e);
+            resetDefaultData();
         }
+    } else {
+        resetDefaultData();
     }
-    
-    const savedMessages = localStorage.getItem('messages');
-    if (savedMessages) {
-        try {
-            messages = JSON.parse(savedMessages);
-        } catch (e) {
-            messages = [];
-        }
-    }
-    
     renderAll();
 }
 
+function resetDefaultData() {
+    portfolioData = {
+        personal: {
+            name: 'Your Name',
+            title: 'Web Designer & Developer',
+            badge: '🚀 Available for Freelance Work',
+            heroSubtitle: 'Building exceptional digital experiences.',
+            welcomeMessage: 'Welcome to my portfolio!',
+            email: 'your.email@gmail.com'
+        },
+        about: { paragraphs: ['I\'m a passionate developer...'] },
+        skills: [],
+        projectGroups: [],
+        experience: [],
+        education: [],
+        certifications: [],
+        social: {},
+        videos: {},
+        footer: '© 2025 Your Name. Built with ❤️'
+    };
+    saveData();
+}
+
+function saveData() {
+    localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+    updateDashboard();
+}
+
 // ============================================
-// RENDER ALL
+// RENDER ALL SECTIONS
 // ============================================
 
 function renderAll() {
-    renderStats();
     renderProfileForm();
-    renderGroupsAndProjects();
-    populateGroupSelect();
-    renderExperience();
-    renderEducation();
-    renderCertifications();
-    renderSocialLinks();
-    renderResumeInfo();
-    renderVideoInfo();
+    renderGroupsList();
+    renderExperienceList();
+    renderEducationList();
+    renderCertificationsList();
+    renderSocialList();
     renderMessages();
+    renderResumePreview();
+    renderWelcomeVideoPreview();
+    updateGroupSelect();
+    updateDashboard();
 }
 
 // ============================================
-// STATS
+// DASHBOARD
 // ============================================
 
-function renderStats() {
-    const totalProjects = portfolioData.projectGroups?.reduce((sum, g) => sum + (g.projects?.length || 0), 0) || 0;
-    document.getElementById('statGroups').textContent = portfolioData.projectGroups?.length || 0;
-    document.getElementById('statProjects').textContent = totalProjects;
+function updateDashboard() {
+    const groups = portfolioData.projectGroups || [];
+    const projects = groups.reduce((sum, g) => sum + (g.projects?.length || 0), 0);
+    document.getElementById('statGroups').textContent = groups.length;
+    document.getElementById('statProjects').textContent = projects;
     document.getElementById('statExperience').textContent = portfolioData.experience?.length || 0;
     document.getElementById('statEducation').textContent = portfolioData.education?.length || 0;
     document.getElementById('statCertifications').textContent = portfolioData.certifications?.length || 0;
-    document.getElementById('statMessages').textContent = messages?.length || 0;
+    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    document.getElementById('statMessages').textContent = messages.length;
 }
+
+// ============================================
+// TABS
+// ============================================
+
+function setupTabs() {
+    document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            switchTab(tab);
+        });
+    });
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('tab-' + tabId);
+    if (target) target.classList.add('active');
+    const btn = document.querySelector(`.sidebar-btn[data-tab="${tabId}"]`);
+    if (btn) btn.classList.add('active');
+    if (tabId === 'projects') renderGroupsList();
+    if (tabId === 'experience') renderExperienceList();
+    if (tabId === 'education') renderEducationList();
+    if (tabId === 'certifications') renderCertificationsList();
+    if (tabId === 'social') renderSocialList();
+    if (tabId === 'messages') renderMessages();
+    if (tabId === 'profile') renderProfileForm();
+}
+
+function setupSidebarButtons() {}
 
 // ============================================
 // PROFILE
@@ -101,569 +167,624 @@ function renderProfileForm() {
     document.getElementById('profileBadge').value = p.badge || '';
     document.getElementById('profileSubtitle').value = p.heroSubtitle || '';
     document.getElementById('welcomeMessage').value = p.welcomeMessage || '';
-    document.getElementById('profileBio').value = (portfolioData.about?.paragraphs || []).join('\n\n');
     document.getElementById('profileEmail').value = p.email || '';
-    
+    const bio = portfolioData.about?.paragraphs?.join('\n\n') || '';
+    document.getElementById('profileBio').value = bio;
     if (p.profileImage) {
-        document.getElementById('profilePicturePreview').innerHTML = `
-            <img src="${p.profileImage}" style="width:150px;height:150px;border-radius:50%;border:3px solid var(--accent-primary);">
-        `;
+        document.getElementById('profilePicturePreview').innerHTML = `<img src="${p.profileImage}" style="width:150px;height:150px;border-radius:50%;object-fit:cover;">`;
     }
     if (p.aboutImage) {
-        document.getElementById('aboutImagePreview').innerHTML = `
-            <img src="${p.aboutImage}" style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
-        `;
+        document.getElementById('aboutImagePreview').innerHTML = `<img src="${p.aboutImage}" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;">`;
     }
 }
 
 document.getElementById('profileForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    const bioText = document.getElementById('profileBio').value;
-    const paragraphs = bioText.split('\n\n').filter(p => p.trim());
-    
-    portfolioData.personal.name = document.getElementById('profileName').value;
-    portfolioData.personal.title = document.getElementById('profileTitle').value;
-    portfolioData.personal.badge = document.getElementById('profileBadge').value;
-    portfolioData.personal.heroSubtitle = document.getElementById('profileSubtitle').value;
-    portfolioData.personal.welcomeMessage = document.getElementById('welcomeMessage').value;
-    portfolioData.personal.email = document.getElementById('profileEmail').value;
-    portfolioData.about.paragraphs = paragraphs;
-    
-    let uploads = 0;
-    let totalUploads = 0;
-    
-    const picFile = document.getElementById('profilePicture').files[0];
-    if (picFile) {
-        totalUploads++;
+    const p = portfolioData.personal || {};
+    p.name = document.getElementById('profileName').value.trim();
+    p.title = document.getElementById('profileTitle').value.trim();
+    p.badge = document.getElementById('profileBadge').value.trim();
+    p.heroSubtitle = document.getElementById('profileSubtitle').value.trim();
+    p.welcomeMessage = document.getElementById('welcomeMessage').value.trim();
+    p.email = document.getElementById('profileEmail').value.trim();
+    portfolioData.personal = p;
+    const bioText = document.getElementById('profileBio').value.trim();
+    portfolioData.about = {
+        paragraphs: bioText ? bioText.split('\n\n').filter(p => p.trim()) : []
+    };
+    saveData();
+    alert('✅ Profile saved!');
+    renderProfileForm();
+    updateDashboard();
+});
+
+document.getElementById('profilePicture').addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            portfolioData.personal.profileImage = e.target.result;
-            uploads++;
-            if (uploads === totalUploads) saveAndRefresh();
+        reader.onload = function(ev) {
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.style.cssText = 'width:150px;height:150px;border-radius:50%;object-fit:cover;';
+            document.getElementById('profilePicturePreview').innerHTML = '';
+            document.getElementById('profilePicturePreview').appendChild(img);
+            portfolioData.personal.profileImage = ev.target.result;
+            saveData();
         };
-        reader.readAsDataURL(picFile);
+        reader.readAsDataURL(file);
     }
-    
-    const aboutFile = document.getElementById('aboutImage').files[0];
-    if (aboutFile) {
-        totalUploads++;
+});
+
+document.getElementById('aboutImage').addEventListener('change', function(e) {
+    const file = this.files[0];
+    if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            portfolioData.personal.aboutImage = e.target.result;
-            uploads++;
-            if (uploads === totalUploads) saveAndRefresh();
+        reader.onload = function(ev) {
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.style.cssText = 'max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;';
+            document.getElementById('aboutImagePreview').innerHTML = '';
+            document.getElementById('aboutImagePreview').appendChild(img);
+            portfolioData.personal.aboutImage = ev.target.result;
+            saveData();
         };
-        reader.readAsDataURL(aboutFile);
-    }
-    
-    function saveAndRefresh() {
-        saveData();
-        renderProfileForm();
-        alert('✅ Profile updated successfully!');
-    }
-    
-    if (totalUploads === 0) {
-        saveData();
-        alert('✅ Profile updated successfully!');
+        reader.readAsDataURL(file);
     }
 });
 
 // ============================================
-// POPULATE GROUP SELECT
+// PROJECT GROUPS & PROJECTS
 // ============================================
 
-function populateGroupSelect() {
-    const select = document.getElementById('projectGroupSelect');
-    if (!select) return;
-    
-    const currentValue = select.value;
-    select.innerHTML = '<option value="">-- Select a group --</option>';
-    
-    (portfolioData.projectGroups || []).forEach((group, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = group.name;
-        select.appendChild(option);
-    });
-    
-    if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
-        select.value = currentValue;
-    }
-}
-
-// ============================================
-// GROUPS AND PROJECTS - RENDER
-// ============================================
-
-function renderGroupsAndProjects() {
-    const list = document.getElementById('groupsList');
+function renderGroupsList() {
+    const container = document.getElementById('groupsList');
     const groups = portfolioData.projectGroups || [];
-    
     if (groups.length === 0) {
-        list.innerHTML = `
-            <div style="text-align:center;padding:3rem;background:var(--bg-card);border-radius:16px;border:1px solid var(--border-color);">
-                <i class="fas fa-folder-open" style="font-size:4rem;color:var(--text-light);margin-bottom:1rem;"></i>
-                <p style="color:var(--text-secondary);font-size:1.1rem;">No project groups created yet.</p>
-                <p style="color:var(--text-light);margin-bottom:1rem;">Create your first group to start adding projects!</p>
-                <button onclick="showAddGroup()" class="btn primary" style="margin-top:0.5rem;">
-                    <i class="fas fa-folder-plus"></i> Create Your First Group
-                </button>
-            </div>
-        `;
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No groups created yet.</p>`;
         return;
     }
-    
-    list.innerHTML = groups.map((group, index) => {
-        const projectCount = group.projects?.length || 0;
-        const projects = group.projects || [];
-        
-        return `
-        <div class="admin-item" style="flex-direction:column;align-items:stretch;gap:1rem;padding:1.5rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-                <div style="display:flex;align-items:center;gap:1rem;">
-                    <div style="font-size:2.5rem;color:var(--accent-primary);"><i class="${group.icon || 'fas fa-folder'}"></i></div>
-                    <div>
-                        <h4 style="font-size:1.2rem;">${group.name}</h4>
-                        <p style="color:var(--text-secondary);font-size:0.9rem;">${group.description || ''}</p>
-                        <small style="color:var(--text-light);">${projectCount} project${projectCount !== 1 ? 's' : ''} in this group</small>
-                    </div>
+    container.innerHTML = groups.map((group, gIndex) => `
+        <div style="background:var(--bg-card);padding:1.5rem;border-radius:16px;border:1px solid var(--border-color);margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div>
+                    <h3><i class="${group.icon || 'fas fa-folder'}"></i> ${group.name}</h3>
+                    <p style="color:var(--text-secondary);font-size:0.9rem;">${group.description || ''}</p>
                 </div>
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-                    <button onclick="addProjectToGroup(${index})" class="btn-edit" style="background:#22c55e;color:white;padding:0.4rem 0.8rem;border:none;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-plus"></i> Add Project
-                    </button>
-                    <button onclick="editGroup(${index})" class="btn-edit" style="background:var(--accent-primary);color:white;padding:0.4rem 0.8rem;border:none;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button onclick="deleteGroup(${index})" class="btn-delete" style="background:#ef4444;color:white;padding:0.4rem 0.8rem;border:none;border-radius:8px;cursor:pointer;">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="editGroup(${gIndex})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteGroup(${gIndex})" class="btn-delete"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
-            ${projectCount > 0 ? `
-                <div style="display:flex;flex-wrap:wrap;gap:0.8rem;padding-top:1rem;border-top:1px solid var(--border-color);">
-                    ${projects.map((p, pIdx) => `
-                        <div style="background:var(--bg-primary);padding:0.4rem 1rem;border-radius:50px;border:1px solid var(--border-color);display:inline-flex;align-items:center;gap:0.5rem;">
-                            <i class="fas fa-file-code" style="font-size:0.8rem;color:var(--accent-primary);"></i>
-                            <span style="font-size:0.85rem;">${p.title}</span>
-                            <button onclick="editProject(${index}, ${pIdx})" style="background:none;border:none;color:var(--accent-primary);cursor:pointer;padding:0 0.3rem;">
-                                <i class="fas fa-edit" style="font-size:0.7rem;"></i>
-                            </button>
-                            <button onclick="deleteProject(${index}, ${pIdx})" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:0 0.3rem;">
-                                <i class="fas fa-trash" style="font-size:0.7rem;"></i>
-                            </button>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);">
+                <h4 style="margin-bottom:0.5rem;">Projects (${group.projects?.length || 0})</h4>
+                <div style="display:grid;gap:0.8rem;">
+                    ${(group.projects || []).map((project, pIndex) => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-primary);padding:0.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);">
+                            <div>
+                                <strong>${project.title}</strong>
+                                <span style="color:var(--text-light);font-size:0.8rem;margin-left:0.5rem;">
+                                    ${project.technologies ? project.technologies.join(', ') : ''}
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:0.5rem;">
+                                <button onclick="editProject(${gIndex}, ${pIndex})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteProject(${gIndex}, ${pIndex})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
-            ` : `
-                <p style="color:var(--text-light);font-size:0.9rem;padding-top:0.5rem;border-top:1px solid var(--border-color);">
-                    No projects in this group. 
-                    <button onclick="addProjectToGroup(${index})" style="background:none;border:none;color:var(--accent-primary);cursor:pointer;text-decoration:underline;font-weight:600;">
-                        Add a project
-                    </button>
-                </p>
-            `}
+                <button onclick="showAddProject(${gIndex})" class="btn secondary" style="margin-top:1rem;padding:0.4rem 1rem;font-size:0.85rem;">
+                    <i class="fas fa-plus"></i> Add Project
+                </button>
+            </div>
         </div>
-        `;
-    }).join('');
+    `).join('');
 }
 
-// ============================================
-// ADD PROJECT TO GROUP
-// ============================================
-
-function addProjectToGroup(groupIndex) {
-    const group = portfolioData.projectGroups[groupIndex];
-    if (!group) {
-        alert('Group not found!');
-        return;
-    }
-    
-    const select = document.getElementById('projectGroupSelect');
-    if (select) {
-        select.value = groupIndex;
-    }
-    
-    showAddProjectForm(groupIndex);
-}
-
-// ============================================
-// SHOW ADD PROJECT FORM
-// ============================================
-
-function showAddProjectForm(groupIndex) {
-    const group = portfolioData.projectGroups[groupIndex];
-    if (!group) {
-        alert('Group not found!');
-        return;
-    }
-    
-    document.getElementById('projectGroupId').value = groupIndex;
-    document.getElementById('projectGroupSelect').value = groupIndex;
-    
-    document.getElementById('addProjectForm').style.display = 'block';
-    document.getElementById('projectFormTitle').textContent = `📄 Add Project to "${group.name}"`;
-    document.getElementById('projectSubmitBtn').textContent = 'Save Project';
-    document.getElementById('projectEditIndex').value = '-1';
-    document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesUrls').value = '[]';
-    document.getElementById('uploadedImagesPreview').innerHTML = '';
-    document.getElementById('uploadedVideoPreview').innerHTML = '';
-    document.getElementById('projectFilesPreview').innerHTML = '';
-    
-    const groupDisplay = document.getElementById('selectedGroupDisplay');
-    if (groupDisplay) {
-        groupDisplay.style.display = 'flex';
-        groupDisplay.innerHTML = `
-            <i class="fas fa-folder"></i>
-            Adding project to: <strong>${group.name}</strong>
-        `;
-    }
-    
-    const wrapper = document.getElementById('groupSelectWrapper');
-    if (wrapper) {
-        wrapper.style.display = 'none';
-    }
-    
-    document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ============================================
-// SHOW ADD PROJECT (from button)
-// ============================================
-
-function showAddProject() {
-    const groups = portfolioData.projectGroups || [];
-    
-    if (groups.length === 0) {
-        alert('⚠️ Please create a group first!\n\nClick "Create New Group" to create one.');
-        return;
-    }
-    
-    if (groups.length === 1) {
-        showAddProjectForm(0);
-        return;
-    }
-    
-    document.getElementById('addProjectForm').style.display = 'block';
-    document.getElementById('projectFormTitle').textContent = '📄 Add New Project';
-    document.getElementById('projectSubmitBtn').textContent = 'Save Project';
-    document.getElementById('projectEditIndex').value = '-1';
-    document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesUrls').value = '[]';
-    document.getElementById('uploadedImagesPreview').innerHTML = '';
-    document.getElementById('uploadedVideoPreview').innerHTML = '';
-    document.getElementById('projectFilesPreview').innerHTML = '';
-    
-    const wrapper = document.getElementById('groupSelectWrapper');
-    if (wrapper) {
-        wrapper.style.display = 'block';
-    }
-    
-    const select = document.getElementById('projectGroupSelect');
-    if (select) {
-        select.value = '';
-        select.focus();
-    }
-    
-    const groupDisplay = document.getElementById('selectedGroupDisplay');
-    if (groupDisplay) {
-        groupDisplay.style.display = 'flex';
-        groupDisplay.innerHTML = `
-            <i class="fas fa-info-circle"></i>
-            Select a group from the dropdown below
-        `;
-    }
-    
-    document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ============================================
-// HIDE ADD PROJECT
-// ============================================
-
-function hideAddProject() {
-    document.getElementById('addProjectForm').style.display = 'none';
-    document.getElementById('projectForm').reset();
-    document.getElementById('projectImagesUrls').value = '[]';
-    document.getElementById('uploadedImagesPreview').innerHTML = '';
-    document.getElementById('uploadedVideoPreview').innerHTML = '';
-    document.getElementById('projectFilesPreview').innerHTML = '';
-    
-    const wrapper = document.getElementById('groupSelectWrapper');
-    if (wrapper) {
-        wrapper.style.display = 'block';
-    }
-}
-
-// ============================================
-// GROUPS - CREATE, EDIT, DELETE
-// ============================================
+// ===== GROUP CRUD =====
 
 function showAddGroup() {
     document.getElementById('addGroupForm').style.display = 'block';
     document.getElementById('groupFormTitle').textContent = '📂 Create New Project Group';
     document.getElementById('groupSubmitBtn').textContent = 'Create Group';
-    document.getElementById('groupEditIndex').value = '-1';
-    document.getElementById('groupForm').reset();
+    document.getElementById('groupEditIndex').value = -1;
+    document.getElementById('groupName').value = '';
+    document.getElementById('groupIcon').value = 'fas fa-folder';
+    document.getElementById('groupDescription').value = '';
     document.getElementById('addGroupForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideAddGroup() {
     document.getElementById('addGroupForm').style.display = 'none';
-    document.getElementById('groupForm').reset();
 }
 
 function editGroup(index) {
     const group = portfolioData.projectGroups[index];
     if (!group) return;
-    
     document.getElementById('addGroupForm').style.display = 'block';
-    document.getElementById('groupFormTitle').textContent = '✏️ Edit Group';
+    document.getElementById('groupFormTitle').textContent = '✏️ Edit Project Group';
     document.getElementById('groupSubmitBtn').textContent = 'Update Group';
     document.getElementById('groupEditIndex').value = index;
-    
-    document.getElementById('groupName').value = group.name || '';
+    document.getElementById('groupName').value = group.name;
     document.getElementById('groupIcon').value = group.icon || 'fas fa-folder';
     document.getElementById('groupDescription').value = group.description || '';
-    
     document.getElementById('addGroupForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteGroup(index) {
+    if (!confirm('Delete this group and all its projects?')) return;
+    portfolioData.projectGroups.splice(index, 1);
+    saveData();
+    renderGroupsList();
+    updateDashboard();
 }
 
 document.getElementById('groupForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const editIndex = parseInt(document.getElementById('groupEditIndex').value);
-    const group = {
-        name: document.getElementById('groupName').value,
-        icon: document.getElementById('groupIcon').value || 'fas fa-folder',
-        description: document.getElementById('groupDescription').value,
-        projects: []
-    };
-    
-    if (editIndex >= 0 && portfolioData.projectGroups[editIndex]) {
-        group.projects = portfolioData.projectGroups[editIndex].projects || [];
-        portfolioData.projectGroups[editIndex] = group;
-        alert('✅ Group updated successfully!');
+    const name = document.getElementById('groupName').value.trim();
+    const icon = document.getElementById('groupIcon').value.trim() || 'fas fa-folder';
+    const description = document.getElementById('groupDescription').value.trim();
+    const groupData = { name, icon, description, projects: [] };
+    if (editIndex >= 0) {
+        const existing = portfolioData.projectGroups[editIndex];
+        groupData.projects = existing.projects || [];
+        portfolioData.projectGroups[editIndex] = groupData;
     } else {
-        portfolioData.projectGroups.push(group);
-        alert('✅ Group created successfully!');
+        portfolioData.projectGroups.push(groupData);
     }
-    
     saveData();
-    renderGroupsAndProjects();
-    populateGroupSelect();
     hideAddGroup();
-    renderStats();
+    renderGroupsList();
+    updateDashboard();
+    alert('✅ Group saved!');
 });
 
-function deleteGroup(index) {
-    if (confirm('Delete this group and all its projects?')) {
-        portfolioData.projectGroups.splice(index, 1);
-        saveData();
-        renderGroupsAndProjects();
-        populateGroupSelect();
-        renderStats();
+// ============================================
+// PROJECT CRUD WITH DYNAMIC UPLOADS
+// ============================================
+
+function showAddProject(groupIndex) {
+    if (groupIndex !== undefined) {
+        document.getElementById('projectGroupSelect').value = groupIndex;
+        document.getElementById('selectedGroupDisplay').style.display = 'flex';
+        const group = portfolioData.projectGroups[groupIndex];
+        document.getElementById('selectedGroupName').textContent = group ? group.name : '';
+        document.getElementById('projectGroupId').value = groupIndex;
+    } else {
+        document.getElementById('selectedGroupDisplay').style.display = 'none';
+        document.getElementById('projectGroupId').value = '';
     }
+    document.getElementById('addProjectForm').style.display = 'block';
+    document.getElementById('projectFormTitle').textContent = '📄 Add New Project';
+    document.getElementById('projectSubmitBtn').textContent = 'Save Project';
+    document.getElementById('projectEditIndex').value = -1;
+    document.getElementById('projectTitle').value = '';
+    document.getElementById('projectDescription').value = '';
+    document.getElementById('projectTech').value = '';
+    document.getElementById('projectGithub').value = '';
+    document.getElementById('projectDemo').value = '';
+    document.getElementById('projectReadme').value = '';
+    // Clear dynamic upload containers
+    document.getElementById('imageUploadContainer').innerHTML = '';
+    document.getElementById('videoUploadContainer').innerHTML = '';
+    document.getElementById('projectFilesPreview').innerHTML = '';
+    // Reset counters
+    imageCounter = 0;
+    videoCounter = 0;
+    document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
+    updateGroupSelect();
 }
 
-// ============================================
-// PROJECTS - EDIT, DELETE
-// ============================================
+function hideAddProject() {
+    document.getElementById('addProjectForm').style.display = 'none';
+}
 
-function editProject(groupIndex, projectIndex) {
-    const group = portfolioData.projectGroups[parseInt(groupIndex)];
+function editProject(gIndex, pIndex) {
+    const group = portfolioData.projectGroups[gIndex];
     if (!group) return;
-    
-    const project = group.projects[parseInt(projectIndex)];
+    const project = group.projects[pIndex];
     if (!project) return;
     
     document.getElementById('addProjectForm').style.display = 'block';
     document.getElementById('projectFormTitle').textContent = '✏️ Edit Project';
     document.getElementById('projectSubmitBtn').textContent = 'Update Project';
-    document.getElementById('projectEditIndex').value = projectIndex;
-    document.getElementById('projectGroupId').value = groupIndex;
-    document.getElementById('projectGroupSelect').value = groupIndex;
-    
-    const wrapper = document.getElementById('groupSelectWrapper');
-    if (wrapper) {
-        wrapper.style.display = 'none';
-    }
-    
-    const groupDisplay = document.getElementById('selectedGroupDisplay');
-    if (groupDisplay) {
-        groupDisplay.style.display = 'flex';
-        groupDisplay.innerHTML = `
-            <i class="fas fa-folder"></i>
-            Editing project in: <strong>${group.name}</strong>
-        `;
-    }
-    
+    document.getElementById('projectEditIndex').value = pIndex;
+    document.getElementById('projectGroupId').value = gIndex;
+    document.getElementById('projectGroupSelect').value = gIndex;
+    document.getElementById('selectedGroupDisplay').style.display = 'flex';
+    document.getElementById('selectedGroupName').textContent = group.name;
     document.getElementById('projectTitle').value = project.title || '';
     document.getElementById('projectDescription').value = project.description || '';
-    document.getElementById('projectTech').value = project.technologies ? project.technologies.join(', ') : '';
+    document.getElementById('projectTech').value = (project.technologies || []).join(', ');
     document.getElementById('projectGithub').value = project.github || '';
     document.getElementById('projectDemo').value = project.demo || '';
     document.getElementById('projectReadme').value = project.readme || '';
     
-    // Show existing Cloudinary images
-    if (project.images && project.images.length > 0) {
-        document.getElementById('uploadedImagesPreview').innerHTML = project.images.map(img => `
-            <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);">
-        `).join('');
-        document.getElementById('projectImagesUrls').value = JSON.stringify(project.images);
-    }
+    // Reset dynamic containers
+    document.getElementById('imageUploadContainer').innerHTML = '';
+    document.getElementById('videoUploadContainer').innerHTML = '';
+    imageCounter = 0;
+    videoCounter = 0;
     
-    // Show existing Cloudinary video
-    if (project.video) {
-        document.getElementById('uploadedVideoPreview').innerHTML = `
-            <video controls style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
-                <source src="${project.video}">
-            </video>
-            <p style="font-size:0.8rem;color:var(--text-light);">Current video</p>
-        `;
-        document.getElementById('projectVideoUrl').value = project.video;
-    }
+    // Render existing images
+    const images = project.images || [];
+    images.forEach(url => {
+        addImagePreview(url);
+    });
     
-    if (project.files && project.files.length > 0) {
-        document.getElementById('projectFilesPreview').innerHTML = `
-            <div style="padding:0.5rem 1rem;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
-                <i class="fas fa-paperclip"></i> ${project.files.length} files attached
-            </div>
-        `;
-    }
+    // Render existing videos
+    const videos = project.videos || [];
+    videos.forEach(url => {
+        addVideoPreview(url);
+    });
+    
+    // Files preview
+    const filesPreview = document.getElementById('projectFilesPreview');
+    filesPreview.innerHTML = '';
+    (project.files || []).forEach(f => {
+        filesPreview.innerHTML += `<span style="display:inline-block;background:var(--bg-primary);padding:0.3rem 0.8rem;border-radius:50px;font-size:0.8rem;border:1px solid var(--border-color);">📎 ${f.name}</span>`;
+    });
     
     document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
+    updateGroupSelect();
 }
+
+function deleteProject(gIndex, pIndex) {
+    if (!confirm('Delete this project?')) return;
+    const group = portfolioData.projectGroups[gIndex];
+    if (!group) return;
+    group.projects.splice(pIndex, 1);
+    saveData();
+    renderGroupsList();
+    updateDashboard();
+}
+
+function updateGroupSelect() {
+    const select = document.getElementById('projectGroupSelect');
+    const groups = portfolioData.projectGroups || [];
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">-- Select a group --</option>';
+    groups.forEach((g, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+    });
+    if (currentVal) select.value = currentVal;
+}
+
+document.getElementById('projectGroupSelect').addEventListener('change', function() {
+    const idx = parseInt(this.value);
+    if (!isNaN(idx)) {
+        document.getElementById('projectGroupId').value = idx;
+        document.getElementById('selectedGroupDisplay').style.display = 'flex';
+        const group = portfolioData.projectGroups[idx];
+        document.getElementById('selectedGroupName').textContent = group ? group.name : '';
+    } else {
+        document.getElementById('projectGroupId').value = '';
+        document.getElementById('selectedGroupDisplay').style.display = 'none';
+    }
+});
+
+// ============================================
+// DYNAMIC UPLOAD SETUP
+// ============================================
+
+function setupDynamicUploads() {
+    // Add Image button
+    document.getElementById('addImageBtn').addEventListener('click', function() {
+        addImageUploadRow();
+    });
+    
+    // Add Video button
+    document.getElementById('addVideoBtn').addEventListener('click', function() {
+        addVideoUploadRow();
+    });
+}
+
+function addImageUploadRow() {
+    const container = document.getElementById('imageUploadContainer');
+    const rowId = 'img-row-' + (++imageCounter);
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;';
+    row.innerHTML = `
+        <input type="file" accept="image/*" style="flex:1;min-width:150px;padding:0.3rem;">
+        <button type="button" class="btn-upload-image" style="background:#22c55e;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-cloud-upload-alt"></i> Upload
+        </button>
+        <button type="button" class="btn-remove-row" style="background:#ef4444;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="upload-preview" style="display:inline-block;margin-left:0.3rem;"></div>
+    `;
+    container.appendChild(row);
+    
+    // Upload button handler
+    const uploadBtn = row.querySelector('.btn-upload-image');
+    const fileInput = row.querySelector('input[type="file"]');
+    const previewDiv = row.querySelector('.upload-preview');
+    
+    uploadBtn.addEventListener('click', async function() {
+        await uploadFile(fileInput, previewDiv, 'image');
+    });
+    
+    // Remove button handler
+    const removeBtn = row.querySelector('.btn-remove-row');
+    removeBtn.addEventListener('click', function() {
+        row.remove();
+    });
+    
+    // Auto-upload on file selection (optional convenience)
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            uploadBtn.click();
+        }
+    });
+}
+
+function addVideoUploadRow() {
+    const container = document.getElementById('videoUploadContainer');
+    const rowId = 'vid-row-' + (++videoCounter);
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;';
+    row.innerHTML = `
+        <input type="file" accept="video/*" style="flex:1;min-width:150px;padding:0.3rem;">
+        <button type="button" class="btn-upload-video" style="background:#8b5cf6;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-cloud-upload-alt"></i> Upload
+        </button>
+        <button type="button" class="btn-remove-row" style="background:#ef4444;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="upload-preview" style="display:inline-block;margin-left:0.3rem;"></div>
+    `;
+    container.appendChild(row);
+    
+    const uploadBtn = row.querySelector('.btn-upload-video');
+    const fileInput = row.querySelector('input[type="file"]');
+    const previewDiv = row.querySelector('.upload-preview');
+    
+    uploadBtn.addEventListener('click', async function() {
+        await uploadFile(fileInput, previewDiv, 'video');
+    });
+    
+    const removeBtn = row.querySelector('.btn-remove-row');
+    removeBtn.addEventListener('click', function() {
+        row.remove();
+    });
+    
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            uploadBtn.click();
+        }
+    });
+}
+
+async function uploadFile(fileInput, previewDiv, type) {
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Please select a file.');
+        return;
+    }
+    
+    // Get the button that triggered the upload (find it from the row)
+    const row = fileInput.closest('div');
+    let btn = row ? row.querySelector('.btn-upload-image, .btn-upload-video') : null;
+    if (!btn) {
+        // Fallback: find any button in the row
+        btn = row ? row.querySelector('button') : null;
+    }
+    
+    const originalText = btn ? btn.innerHTML : 'Upload';
+    if (btn) {
+        btn.innerHTML = '⏳';
+        btn.disabled = true;
+    }
+    
+    const formData = new FormData();
+    formData.append('images', file);
+    
+    try {
+        const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success && result.urls && result.urls.length > 0) {
+            const url = result.urls[0];
+            // Store URL in row's dataset
+            if (row) {
+                row.dataset.uploadedUrl = url;
+            }
+            // Show preview
+            if (previewDiv) {
+                if (type === 'image') {
+                    previewDiv.innerHTML = `<img src="${url}" style="max-width:80px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);">`;
+                } else {
+                    previewDiv.innerHTML = `<video src="${url}" style="max-width:100px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);" controls></video>`;
+                }
+            }
+            // Hide file input and disable button
+            if (fileInput) fileInput.style.display = 'none';
+            if (btn) {
+                btn.innerHTML = '✅ Uploaded';
+                btn.disabled = true;
+            }
+            alert('✅ Upload successful!');
+        } else {
+            alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('❌ Error connecting to server. Make sure server is running on port 3000!');
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+}
+
+function addImagePreview(url) {
+    const container = document.getElementById('imageUploadContainer');
+    const rowId = 'img-preview-' + (++imageCounter);
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;';
+    row.innerHTML = `
+        <img src="${url}" style="max-width:80px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);">
+        <input type="hidden" value="${url}" class="existing-image-url">
+        <button type="button" class="btn-remove-preview" style="background:#ef4444;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-times"></i> Remove
+        </button>
+    `;
+    container.appendChild(row);
+    row.querySelector('.btn-remove-preview').addEventListener('click', function() {
+        row.remove();
+    });
+}
+
+function addVideoPreview(url) {
+    const container = document.getElementById('videoUploadContainer');
+    const rowId = 'vid-preview-' + (++videoCounter);
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;';
+    row.innerHTML = `
+        <video src="${url}" style="max-width:100px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);" controls></video>
+        <input type="hidden" value="${url}" class="existing-video-url">
+        <button type="button" class="btn-remove-preview" style="background:#ef4444;color:white;border:none;padding:0.3rem 0.8rem;border-radius:50px;cursor:pointer;font-size:0.85rem;">
+            <i class="fas fa-times"></i> Remove
+        </button>
+    `;
+    container.appendChild(row);
+    row.querySelector('.btn-remove-preview').addEventListener('click', function() {
+        row.remove();
+    });
+}
+
+// ============================================
+// SAVE PROJECT (with dynamic upload URLs)
+// ============================================
 
 document.getElementById('projectForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    let groupIndex = parseInt(document.getElementById('projectGroupId').value);
-    const editIndex = parseInt(document.getElementById('projectEditIndex').value);
-    
-    if (isNaN(groupIndex) || groupIndex < 0) {
-        const select = document.getElementById('projectGroupSelect');
-        if (select && select.value !== '') {
-            groupIndex = parseInt(select.value);
-        }
-    }
-    
-    if (isNaN(groupIndex) || !portfolioData.projectGroups[groupIndex]) {
-        alert('❌ Please select a valid group first!');
-        const select = document.getElementById('projectGroupSelect');
-        if (select) select.focus();
+    const gIndex = parseInt(document.getElementById('projectGroupId').value);
+    if (isNaN(gIndex) || gIndex < 0 || gIndex >= portfolioData.projectGroups.length) {
+        alert('Please select a valid group.');
         return;
     }
+    const group = portfolioData.projectGroups[gIndex];
+    const editIndex = parseInt(document.getElementById('projectEditIndex').value);
     
-    const tech = document.getElementById('projectTech').value.split(',').map(t => t.trim()).filter(t => t);
+    const title = document.getElementById('projectTitle').value.trim();
+    const description = document.getElementById('projectDescription').value.trim();
+    const tech = document.getElementById('projectTech').value.split(',').map(s => s.trim()).filter(Boolean);
+    const github = document.getElementById('projectGithub').value.trim();
+    const demo = document.getElementById('projectDemo').value.trim();
+    const readme = document.getElementById('projectReadme').value.trim();
     
-    // Get Cloudinary image URLs
-    const urlsInput = document.getElementById('projectImagesUrls');
-    const imageUrls = JSON.parse(urlsInput.value || '[]');
+    // Collect image URLs from existing previews (hidden inputs) and new uploads (dataset)
+    const imageUrls = [];
+    document.querySelectorAll('#imageUploadContainer .existing-image-url').forEach(el => {
+        imageUrls.push(el.value);
+    });
+    document.querySelectorAll('#imageUploadContainer [data-uploaded-url]').forEach(row => {
+        imageUrls.push(row.dataset.uploadedUrl);
+    });
     
-    // Get Cloudinary video URL
-    const videoUrl = document.getElementById('projectVideoUrl').value;
+    // Collect video URLs similarly
+    const videoUrls = [];
+    document.querySelectorAll('#videoUploadContainer .existing-video-url').forEach(el => {
+        videoUrls.push(el.value);
+    });
+    document.querySelectorAll('#videoUploadContainer [data-uploaded-url]').forEach(row => {
+        videoUrls.push(row.dataset.uploadedUrl);
+    });
     
-    const projectData = {
-        title: document.getElementById('projectTitle').value,
-        description: document.getElementById('projectDescription').value,
-        technologies: tech,
-        github: document.getElementById('projectGithub').value,
-        demo: document.getElementById('projectDemo').value,
-        readme: document.getElementById('projectReadme').value,
-        images: imageUrls,
-        video: videoUrl || null,
-        files: []
-    };
-    
-    // If editing, keep existing files
-    if (editIndex >= 0 && portfolioData.projectGroups[groupIndex].projects[editIndex]) {
-        const existing = portfolioData.projectGroups[groupIndex].projects[editIndex];
-        projectData.files = existing.files || [];
-    }
-    
-    // Handle file attachments
+    // Handle attached files
     const fileInput = document.getElementById('projectFiles');
+    const files = [];
     if (fileInput.files.length > 0) {
-        const filePromises = [];
-        for (let i = 0; i < fileInput.files.length; i++) {
-            const file = fileInput.files[i];
-            filePromises.push(new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    resolve({
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        data: e.target.result
+        const readFiles = () => {
+            return new Promise((resolve) => {
+                const promises = [];
+                for (let f of fileInput.files) {
+                    const p = new Promise((res) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            res({ name: f.name, data: e.target.result, size: f.size, type: f.type });
+                        };
+                        reader.readAsDataURL(f);
                     });
-                };
-                reader.readAsDataURL(file);
-            }));
-        }
-        
-        Promise.all(filePromises).then(results => {
-            projectData.files = results;
-            saveProject(projectData, groupIndex, editIndex);
+                    promises.push(p);
+                }
+                Promise.all(promises).then(results => resolve(results));
+            });
+        };
+        readFiles().then((fileData) => {
+            const existingFiles = (editIndex >= 0 && group.projects[editIndex]?.files) || [];
+            const allFiles = [...existingFiles, ...fileData];
+            saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, imageUrls, videoUrls, allFiles);
         });
     } else {
-        saveProject(projectData, groupIndex, editIndex);
+        const existingFiles = (editIndex >= 0 && group.projects[editIndex]?.files) || [];
+        saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, imageUrls, videoUrls, existingFiles);
     }
 });
 
-function saveProject(projectData, groupIndex, editIndex) {
-    if (!portfolioData.projectGroups[groupIndex].projects) {
-        portfolioData.projectGroups[groupIndex].projects = [];
-    }
-    
-    if (editIndex >= 0 && editIndex < portfolioData.projectGroups[groupIndex].projects.length) {
-        portfolioData.projectGroups[groupIndex].projects[editIndex] = projectData;
-        alert('✅ Project updated successfully!');
+function saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, images, videos, files) {
+    const group = portfolioData.projectGroups[gIndex];
+    const project = {
+        title,
+        description,
+        technologies: tech,
+        github,
+        demo,
+        readme,
+        images,
+        videos,
+        files
+    };
+    if (editIndex >= 0) {
+        group.projects[editIndex] = project;
     } else {
-        portfolioData.projectGroups[groupIndex].projects.push(projectData);
-        alert('✅ Project added successfully!');
+        group.projects.push(project);
     }
-    
     saveData();
-    renderGroupsAndProjects();
     hideAddProject();
-    renderStats();
-}
-
-function deleteProject(groupIndex, projectIndex) {
-    if (confirm('Delete this project?')) {
-        portfolioData.projectGroups[parseInt(groupIndex)].projects.splice(parseInt(projectIndex), 1);
-        saveData();
-        renderGroupsAndProjects();
-        renderStats();
-    }
+    renderGroupsList();
+    updateDashboard();
+    alert('✅ Project saved!');
 }
 
 // ============================================
-// EXPERIENCE
+// EXPERIENCE CRUD
 // ============================================
 
-function renderExperience() {
-    const list = document.getElementById('experienceList');
-    const experiences = portfolioData.experience || [];
-    
-    if (experiences.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-secondary);">No experience yet.</p>';
+function renderExperienceList() {
+    const container = document.getElementById('experienceList');
+    const exps = portfolioData.experience || [];
+    if (exps.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No experience added yet.</p>`;
         return;
     }
-    
-    list.innerHTML = experiences.map((exp, index) => `
+    container.innerHTML = exps.map((exp, i) => `
         <div class="admin-item">
             <div class="item-info">
                 <h4>${exp.role} at ${exp.company}</h4>
                 <p>${exp.period}</p>
-                <small style="color:var(--text-light);">${exp.description}</small>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">${exp.description}</p>
             </div>
             <div class="item-actions">
-                <button onclick="editExperience(${index})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteExperience(${index})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editExperience(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteExperience(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -673,88 +794,82 @@ function showAddExperience() {
     document.getElementById('addExperienceForm').style.display = 'block';
     document.getElementById('experienceFormTitle').textContent = 'Add Experience';
     document.getElementById('expSubmitBtn').textContent = 'Add Experience';
-    document.getElementById('expEditIndex').value = '-1';
-    document.getElementById('experienceForm').reset();
+    document.getElementById('expEditIndex').value = -1;
+    document.getElementById('expCompany').value = '';
+    document.getElementById('expRole').value = '';
+    document.getElementById('expPeriod').value = '';
+    document.getElementById('expDescription').value = '';
+    document.getElementById('addExperienceForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideAddExperience() {
     document.getElementById('addExperienceForm').style.display = 'none';
-    document.getElementById('experienceForm').reset();
 }
 
 function editExperience(index) {
     const exp = portfolioData.experience[index];
     if (!exp) return;
-    
     document.getElementById('addExperienceForm').style.display = 'block';
-    document.getElementById('experienceFormTitle').textContent = 'Edit Experience';
+    document.getElementById('experienceFormTitle').textContent = '✏️ Edit Experience';
     document.getElementById('expSubmitBtn').textContent = 'Update Experience';
     document.getElementById('expEditIndex').value = index;
-    
-    document.getElementById('expCompany').value = exp.company || '';
-    document.getElementById('expRole').value = exp.role || '';
-    document.getElementById('expPeriod').value = exp.period || '';
-    document.getElementById('expDescription').value = exp.description || '';
+    document.getElementById('expCompany').value = exp.company;
+    document.getElementById('expRole').value = exp.role;
+    document.getElementById('expPeriod').value = exp.period;
+    document.getElementById('expDescription').value = exp.description;
+    document.getElementById('addExperienceForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteExperience(index) {
+    if (!confirm('Delete this experience?')) return;
+    portfolioData.experience.splice(index, 1);
+    saveData();
+    renderExperienceList();
+    updateDashboard();
 }
 
 document.getElementById('experienceForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const editIndex = parseInt(document.getElementById('expEditIndex').value);
-    const exp = {
-        company: document.getElementById('expCompany').value,
-        role: document.getElementById('expRole').value,
-        period: document.getElementById('expPeriod').value,
-        description: document.getElementById('expDescription').value
-    };
-    
+    const company = document.getElementById('expCompany').value.trim();
+    const role = document.getElementById('expRole').value.trim();
+    const period = document.getElementById('expPeriod').value.trim();
+    const description = document.getElementById('expDescription').value.trim();
+    const expData = { company, role, period, description };
     if (editIndex >= 0) {
-        portfolioData.experience[editIndex] = exp;
-        alert('✅ Experience updated!');
+        portfolioData.experience[editIndex] = expData;
     } else {
-        portfolioData.experience.push(exp);
-        alert('✅ Experience added!');
+        portfolioData.experience.push(expData);
     }
     saveData();
-    renderExperience();
     hideAddExperience();
-    renderStats();
+    renderExperienceList();
+    updateDashboard();
+    alert('✅ Experience saved!');
 });
 
-function deleteExperience(index) {
-    if (confirm('Delete this experience?')) {
-        portfolioData.experience.splice(index, 1);
-        saveData();
-        renderExperience();
-        renderStats();
-    }
-}
-
 // ============================================
-// EDUCATION
+// EDUCATION CRUD
 // ============================================
 
-function renderEducation() {
-    const list = document.getElementById('educationList');
-    const education = portfolioData.education || [];
-    
-    if (education.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-secondary);">No education added yet.</p>';
+function renderEducationList() {
+    const container = document.getElementById('educationList');
+    const edu = portfolioData.education || [];
+    if (edu.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No education added yet.</p>`;
         return;
     }
-    
-    list.innerHTML = education.map((edu, index) => `
+    container.innerHTML = edu.map((item, i) => `
         <div class="admin-item">
             <div class="item-info">
-                <h4>${edu.degree}</h4>
-                <p style="font-weight:600;">${edu.institution}</p>
-                ${edu.field ? `<p style="color:var(--text-secondary);">${edu.field}</p>` : ''}
-                <p style="color:var(--text-light);font-size:0.85rem;">${edu.period || ''}</p>
-                ${edu.description ? `<div style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;white-space:pre-line;">${edu.description}</div>` : ''}
+                <h4>${item.institution}</h4>
+                <p><strong>${item.degree}</strong> ${item.field ? 'in ' + item.field : ''}</p>
+                <p style="color:var(--text-light);font-size:0.85rem;">${item.period}</p>
+                ${item.description ? `<p style="color:var(--text-secondary);font-size:0.9rem;">${item.description}</p>` : ''}
             </div>
             <div class="item-actions">
-                <button onclick="editEducation(${index})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteEducation(${index})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editEducation(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteEducation(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -764,101 +879,86 @@ function showAddEducation() {
     document.getElementById('addEducationForm').style.display = 'block';
     document.getElementById('educationFormTitle').textContent = 'Add Education';
     document.getElementById('eduSubmitBtn').textContent = 'Add Education';
-    document.getElementById('eduEditIndex').value = '-1';
-    document.getElementById('educationForm').reset();
+    document.getElementById('eduEditIndex').value = -1;
+    document.getElementById('eduInstitution').value = '';
+    document.getElementById('eduDegree').value = '';
+    document.getElementById('eduField').value = '';
+    document.getElementById('eduPeriod').value = '';
+    document.getElementById('eduDescription').value = '';
+    document.getElementById('addEducationForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideAddEducation() {
     document.getElementById('addEducationForm').style.display = 'none';
-    document.getElementById('educationForm').reset();
 }
 
 function editEducation(index) {
-    const edu = portfolioData.education[index];
-    if (!edu) return;
-    
+    const item = portfolioData.education[index];
+    if (!item) return;
     document.getElementById('addEducationForm').style.display = 'block';
-    document.getElementById('educationFormTitle').textContent = 'Edit Education';
+    document.getElementById('educationFormTitle').textContent = '✏️ Edit Education';
     document.getElementById('eduSubmitBtn').textContent = 'Update Education';
     document.getElementById('eduEditIndex').value = index;
-    
-    document.getElementById('eduInstitution').value = edu.institution || '';
-    document.getElementById('eduDegree').value = edu.degree || '';
-    document.getElementById('eduField').value = edu.field || '';
-    document.getElementById('eduPeriod').value = edu.period || '';
-    document.getElementById('eduDescription').value = edu.description || '';
+    document.getElementById('eduInstitution').value = item.institution;
+    document.getElementById('eduDegree').value = item.degree;
+    document.getElementById('eduField').value = item.field || '';
+    document.getElementById('eduPeriod').value = item.period;
+    document.getElementById('eduDescription').value = item.description || '';
+    document.getElementById('addEducationForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteEducation(index) {
+    if (!confirm('Delete this education?')) return;
+    portfolioData.education.splice(index, 1);
+    saveData();
+    renderEducationList();
+    updateDashboard();
 }
 
 document.getElementById('educationForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const editIndex = parseInt(document.getElementById('eduEditIndex').value);
-    const edu = {
-        institution: document.getElementById('eduInstitution').value,
-        degree: document.getElementById('eduDegree').value,
-        field: document.getElementById('eduField').value,
-        period: document.getElementById('eduPeriod').value,
-        description: document.getElementById('eduDescription').value
-    };
-    
+    const institution = document.getElementById('eduInstitution').value.trim();
+    const degree = document.getElementById('eduDegree').value.trim();
+    const field = document.getElementById('eduField').value.trim();
+    const period = document.getElementById('eduPeriod').value.trim();
+    const description = document.getElementById('eduDescription').value.trim();
+    const eduData = { institution, degree, field, period, description };
     if (editIndex >= 0) {
-        portfolioData.education[editIndex] = edu;
-        alert('✅ Education updated!');
+        portfolioData.education[editIndex] = eduData;
     } else {
-        portfolioData.education.push(edu);
-        alert('✅ Education added!');
+        portfolioData.education.push(eduData);
     }
     saveData();
-    renderEducation();
     hideAddEducation();
-    renderStats();
+    renderEducationList();
+    updateDashboard();
+    alert('✅ Education saved!');
 });
 
-function deleteEducation(index) {
-    if (confirm('Delete this education?')) {
-        portfolioData.education.splice(index, 1);
-        saveData();
-        renderEducation();
-        renderStats();
-    }
-}
-
 // ============================================
-// CERTIFICATIONS
+// CERTIFICATIONS CRUD
 // ============================================
 
-function renderCertifications() {
-    const list = document.getElementById('certificationsList');
-    const certifications = portfolioData.certifications || [];
-    
-    if (certifications.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-secondary);">No certifications yet.</p>';
+function renderCertificationsList() {
+    const container = document.getElementById('certificationsList');
+    const certs = portfolioData.certifications || [];
+    if (certs.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No certifications added yet.</p>`;
         return;
     }
-    
-    list.innerHTML = certifications.map((cert, index) => `
+    container.innerHTML = certs.map((cert, i) => `
         <div class="admin-item">
             <div class="item-info">
-                <div style="display:flex;gap:1rem;align-items:center;">
-                    ${cert.file ? 
-                        (cert.file.startsWith('data:image') ? 
-                            `<img src="${cert.file}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">` :
-                            `<div style="width:60px;height:60px;background:var(--bg-primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--accent-primary);">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>`
-                        ) : ''
-                    }
-                    <div>
-                        <h4>${cert.name}</h4>
-                        <p style="font-weight:600;">${cert.issuer}</p>
-                        <p style="color:var(--text-light);font-size:0.85rem;">${cert.date || ''}</p>
-                        ${cert.description ? `<div style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;white-space:pre-line;">${cert.description}</div>` : ''}
-                    </div>
-                </div>
+                <h4>${cert.name}</h4>
+                <p><strong>${cert.issuer}</strong> ${cert.date ? '· ' + cert.date : ''}</p>
+                ${cert.description ? `<p style="color:var(--text-secondary);font-size:0.9rem;">${cert.description}</p>` : ''}
+                ${cert.file ? `<p><a href="${cert.file}" target="_blank" style="color:var(--accent-primary);">📎 View Certificate</a></p>` : ''}
+                ${cert.link ? `<p><a href="${cert.link}" target="_blank" style="color:var(--accent-primary);">🔗 Verify</a></p>` : ''}
             </div>
             <div class="item-actions">
-                <button onclick="editCertification(${index})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteCertification(${index})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editCertification(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteCertification(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -868,287 +968,232 @@ function showAddCertification() {
     document.getElementById('addCertificationForm').style.display = 'block';
     document.getElementById('certFormTitle').textContent = 'Add Certification';
     document.getElementById('certSubmitBtn').textContent = 'Add Certification';
-    document.getElementById('certEditIndex').value = '-1';
-    document.getElementById('certificationForm').reset();
+    document.getElementById('certEditIndex').value = -1;
+    document.getElementById('certName').value = '';
+    document.getElementById('certIssuer').value = '';
+    document.getElementById('certDate').value = '';
+    document.getElementById('certDescription').value = '';
+    document.getElementById('certLink').value = '';
     document.getElementById('certFilePreview').innerHTML = '';
+    document.getElementById('addCertificationForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideAddCertification() {
     document.getElementById('addCertificationForm').style.display = 'none';
-    document.getElementById('certificationForm').reset();
-    document.getElementById('certFilePreview').innerHTML = '';
 }
 
 function editCertification(index) {
     const cert = portfolioData.certifications[index];
     if (!cert) return;
-    
     document.getElementById('addCertificationForm').style.display = 'block';
-    document.getElementById('certFormTitle').textContent = 'Edit Certification';
+    document.getElementById('certFormTitle').textContent = '✏️ Edit Certification';
     document.getElementById('certSubmitBtn').textContent = 'Update Certification';
     document.getElementById('certEditIndex').value = index;
-    
-    document.getElementById('certName').value = cert.name || '';
-    document.getElementById('certIssuer').value = cert.issuer || '';
+    document.getElementById('certName').value = cert.name;
+    document.getElementById('certIssuer').value = cert.issuer;
     document.getElementById('certDate').value = cert.date || '';
     document.getElementById('certDescription').value = cert.description || '';
     document.getElementById('certLink').value = cert.link || '';
-    
     if (cert.file) {
-        if (cert.file.startsWith('data:image')) {
-            document.getElementById('certFilePreview').innerHTML = `
-                <img src="${cert.file}" style="max-width:150px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
-            `;
-        } else {
-            document.getElementById('certFilePreview').innerHTML = `
-                <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
-                    <i class="fas fa-file-pdf" style="font-size:2rem;color:#ef4444;"></i>
-                    <span>Current PDF</span>
-                </div>
-            `;
-        }
+        document.getElementById('certFilePreview').innerHTML = `<a href="${cert.file}" target="_blank">View File</a>`;
     }
-}
-
-document.getElementById('certFile').addEventListener('change', function(e) {
-    const preview = document.getElementById('certFilePreview');
-    if (this.files && this.files[0]) {
-        const file = this.files[0];
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            if (file.type.startsWith('image/')) {
-                preview.innerHTML = `<img src="${ev.target.result}" style="max-width:150px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">`;
-            } else {
-                preview.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
-                        <i class="fas fa-file-pdf" style="font-size:2rem;color:#ef4444;"></i>
-                        <span>${file.name}</span>
-                    </div>
-                `;
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('certificationForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const editIndex = parseInt(document.getElementById('certEditIndex').value);
-    const cert = {
-        name: document.getElementById('certName').value,
-        issuer: document.getElementById('certIssuer').value,
-        date: document.getElementById('certDate').value,
-        description: document.getElementById('certDescription').value,
-        link: document.getElementById('certLink').value,
-        file: null
-    };
-    
-    if (editIndex >= 0 && portfolioData.certifications[editIndex]) {
-        cert.file = portfolioData.certifications[editIndex].file;
-    }
-    
-    const file = document.getElementById('certFile').files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            cert.file = e.target.result;
-            saveCertification(cert, editIndex);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        saveCertification(cert, editIndex);
-    }
-});
-
-function saveCertification(cert, editIndex) {
-    if (editIndex >= 0) {
-        portfolioData.certifications[editIndex] = cert;
-        alert('✅ Certification updated!');
-    } else {
-        portfolioData.certifications.push(cert);
-        alert('✅ Certification added!');
-    }
-    saveData();
-    renderCertifications();
-    hideAddCertification();
-    renderStats();
+    document.getElementById('addCertificationForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function deleteCertification(index) {
-    if (confirm('Delete this certification?')) {
-        portfolioData.certifications.splice(index, 1);
-        saveData();
-        renderCertifications();
-        renderStats();
+    if (!confirm('Delete this certification?')) return;
+    portfolioData.certifications.splice(index, 1);
+    saveData();
+    renderCertificationsList();
+    updateDashboard();
+}
+
+document.getElementById('certificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const editIndex = parseInt(document.getElementById('certEditIndex').value);
+    const name = document.getElementById('certName').value.trim();
+    const issuer = document.getElementById('certIssuer').value.trim();
+    const date = document.getElementById('certDate').value.trim();
+    const description = document.getElementById('certDescription').value.trim();
+    const link = document.getElementById('certLink').value.trim();
+    const fileInput = document.getElementById('certFile');
+    let fileData = null;
+    if (fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            fileData = ev.target.result;
+            saveCertData(editIndex, name, issuer, date, description, link, fileData);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        const existing = (editIndex >= 0) ? portfolioData.certifications[editIndex] : null;
+        fileData = existing ? existing.file : null;
+        saveCertData(editIndex, name, issuer, date, description, link, fileData);
     }
+});
+
+function saveCertData(editIndex, name, issuer, date, description, link, fileData) {
+    const certData = { name, issuer, date, description, link, file: fileData };
+    if (editIndex >= 0) {
+        portfolioData.certifications[editIndex] = certData;
+    } else {
+        portfolioData.certifications.push(certData);
+    }
+    saveData();
+    hideAddCertification();
+    renderCertificationsList();
+    updateDashboard();
+    alert('✅ Certification saved!');
 }
 
 // ============================================
-// SOCIAL LINKS
+// SOCIAL LINKS CRUD
 // ============================================
 
-function renderSocialLinks() {
-    const list = document.getElementById('socialList');
+function renderSocialList() {
+    const container = document.getElementById('socialList');
     const social = portfolioData.social || {};
-    const links = Object.keys(social).map(key => ({
-        platform: key,
-        icon: getSocialIcon(key),
-        url: social[key]
-    }));
-    
-    if (links.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-secondary);">No social links yet.</p>';
+    const entries = Object.entries(social);
+    if (entries.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No social links added yet.</p>`;
         return;
     }
-    
-    list.innerHTML = links.map((link, index) => `
+    container.innerHTML = entries.map(([key, value], i) => `
         <div class="admin-item">
             <div class="item-info">
-                <h4><i class="${link.icon}"></i> ${link.platform}</h4>
-                <p style="color:var(--text-light);">${link.url}</p>
+                <h4><i class="fab fa-${key}"></i> ${key.charAt(0).toUpperCase() + key.slice(1)}</h4>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">${value}</p>
             </div>
             <div class="item-actions">
-                <button onclick="editSocialLink('${link.platform}')" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteSocialLink('${link.platform}')" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editSocial(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteSocial('${key}')" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
-}
-
-function getSocialIcon(platform) {
-    const icons = {
-        github: 'fab fa-github',
-        linkedin: 'fab fa-linkedin-in',
-        twitter: 'fab fa-twitter',
-        whatsapp: 'fab fa-whatsapp',
-        email: 'fas fa-envelope',
-        phone: 'fas fa-phone'
-    };
-    return icons[platform.toLowerCase()] || 'fas fa-link';
 }
 
 function showAddSocial() {
     document.getElementById('addSocialForm').style.display = 'block';
     document.getElementById('socialFormTitle').textContent = 'Add Social Link';
     document.getElementById('socialSubmitBtn').textContent = 'Add Link';
-    document.getElementById('socialEditIndex').value = '-1';
-    document.getElementById('socialForm').reset();
+    document.getElementById('socialEditIndex').value = -1;
+    document.getElementById('socialPlatform').value = '';
+    document.getElementById('socialIcon').value = '';
+    document.getElementById('socialUrl').value = '';
+    document.getElementById('addSocialForm').scrollIntoView({ behavior: 'smooth' });
 }
 
 function hideAddSocial() {
     document.getElementById('addSocialForm').style.display = 'none';
-    document.getElementById('socialForm').reset();
 }
 
-function editSocialLink(platform) {
+function editSocial(index) {
     const social = portfolioData.social || {};
-    const url = social[platform];
-    if (!url) return;
-    
+    const keys = Object.keys(social);
+    const key = keys[index];
+    if (!key) return;
     document.getElementById('addSocialForm').style.display = 'block';
-    document.getElementById('socialFormTitle').textContent = 'Edit Social Link';
+    document.getElementById('socialFormTitle').textContent = '✏️ Edit Social Link';
     document.getElementById('socialSubmitBtn').textContent = 'Update Link';
-    document.getElementById('socialEditIndex').value = platform;
-    
-    document.getElementById('socialPlatform').value = platform.charAt(0).toUpperCase() + platform.slice(1);
-    document.getElementById('socialIcon').value = getSocialIcon(platform);
-    document.getElementById('socialUrl').value = url;
+    document.getElementById('socialEditIndex').value = index;
+    document.getElementById('socialPlatform').value = key;
+    document.getElementById('socialIcon').value = `fab fa-${key}`;
+    document.getElementById('socialUrl').value = social[key];
+    document.getElementById('addSocialForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteSocial(key) {
+    if (!confirm('Delete this social link?')) return;
+    delete portfolioData.social[key];
+    saveData();
+    renderSocialList();
+    updateDashboard();
 }
 
 document.getElementById('socialForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    const editPlatform = document.getElementById('socialEditIndex').value;
-    let platform = document.getElementById('socialPlatform').value.toLowerCase().trim();
+    const editIndex = parseInt(document.getElementById('socialEditIndex').value);
+    const platform = document.getElementById('socialPlatform').value.trim();
+    const icon = document.getElementById('socialIcon').value.trim();
     const url = document.getElementById('socialUrl').value.trim();
-    
-    if (!platform) {
-        alert('Please enter a platform name.');
+    if (!platform || !url) {
+        alert('Please fill all fields.');
         return;
     }
-    
-    if (!portfolioData.social) portfolioData.social = {};
-    
-    if (editPlatform && editPlatform !== '-1' && editPlatform !== platform) {
-        delete portfolioData.social[editPlatform];
+    if (editIndex >= 0) {
+        const oldKey = Object.keys(portfolioData.social)[editIndex];
+        if (oldKey && oldKey !== platform) {
+            delete portfolioData.social[oldKey];
+        }
     }
-    
     portfolioData.social[platform] = url;
     saveData();
-    renderSocialLinks();
     hideAddSocial();
-    renderStats();
+    renderSocialList();
+    updateDashboard();
     alert('✅ Social link saved!');
 });
-
-function deleteSocialLink(platform) {
-    if (confirm('Delete this social link?')) {
-        delete portfolioData.social[platform.toLowerCase()];
-        saveData();
-        renderSocialLinks();
-        renderStats();
-    }
-}
 
 // ============================================
 // RESUME
 // ============================================
 
-function renderResumeInfo() {
+function renderResumePreview() {
     const resume = portfolioData.personal?.resume;
+    const preview = document.getElementById('resumePreview');
     if (resume) {
-        document.getElementById('resumePreview').innerHTML = `
-            <a href="${resume}" target="_blank" style="color:var(--accent-primary);">
-                <i class="fas fa-file-pdf"></i> View Resume
-            </a>
-        `;
+        preview.innerHTML = `<a href="${resume}" target="_blank" style="color:var(--accent-primary);">📄 View Resume</a>`;
+    } else {
+        preview.innerHTML = '';
     }
 }
 
 document.getElementById('resumeForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const file = document.getElementById('resumeFile').files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            portfolioData.personal.resume = e.target.result;
-            saveData();
-            renderResumeInfo();
-            alert('✅ Resume uploaded!');
-        };
-        reader.readAsDataURL(file);
+    const fileInput = document.getElementById('resumeFile');
+    if (fileInput.files.length === 0) {
+        alert('Please select a PDF file.');
+        return;
     }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        portfolioData.personal.resume = ev.target.result;
+        saveData();
+        renderResumePreview();
+        alert('✅ Resume uploaded!');
+    };
+    reader.readAsDataURL(fileInput.files[0]);
 });
 
 // ============================================
-// VIDEOS
+// WELCOME VIDEO
 // ============================================
 
-function renderVideoInfo() {
-    const welcomeVideo = portfolioData.videos?.welcome;
-    if (welcomeVideo) {
-        document.getElementById('welcomeVideoPreview').innerHTML = `
-            <video controls style="max-width:300px;max-height:200px;border-radius:8px;">
-                <source src="${welcomeVideo}">
-            </video>
-        `;
+function renderWelcomeVideoPreview() {
+    const video = portfolioData.videos?.welcome;
+    const preview = document.getElementById('welcomeVideoPreview');
+    if (video) {
+        preview.innerHTML = `<video controls style="max-width:300px;max-height:200px;border-radius:12px;border:2px solid var(--border-color);"><source src="${video}"></video>`;
+    } else {
+        preview.innerHTML = '';
     }
 }
 
 document.getElementById('welcomeVideoForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const file = document.getElementById('welcomeVideo').files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            portfolioData.videos.welcome = e.target.result;
-            saveData();
-            renderVideoInfo();
-            alert('✅ Welcome video uploaded!');
-        };
-        reader.readAsDataURL(file);
+    const fileInput = document.getElementById('welcomeVideo');
+    if (fileInput.files.length === 0) {
+        alert('Please select a video.');
+        return;
     }
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        portfolioData.videos.welcome = ev.target.result;
+        saveData();
+        renderWelcomeVideoPreview();
+        alert('✅ Welcome video uploaded!');
+    };
+    reader.readAsDataURL(fileInput.files[0]);
 });
 
 // ============================================
@@ -1156,50 +1201,34 @@ document.getElementById('welcomeVideoForm').addEventListener('submit', function(
 // ============================================
 
 function renderMessages() {
-    const list = document.getElementById('messagesList');
-    const msgs = messages || [];
-    
-    if (msgs.length === 0) {
-        list.innerHTML = '<p style="color:var(--text-secondary);">No messages yet.</p>';
+    const container = document.getElementById('messagesList');
+    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    if (messages.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No messages yet.</p>`;
         return;
     }
-    
-    list.innerHTML = msgs.map((msg, index) => `
+    container.innerHTML = messages.map((msg, i) => `
         <div class="message-item">
             <div class="message-header">
-                <span class="sender"><i class="fas fa-user"></i> ${msg.name}</span>
-                <span class="date"><i class="fas fa-clock"></i> ${msg.date || 'Just now'}</span>
+                <span class="sender"><strong>${msg.name}</strong> (${msg.email})</span>
+                <span class="date">${msg.date}</span>
             </div>
             <div class="message-body">
-                <p><strong>Email:</strong> ${msg.email}</p>
-                <p><strong>Subject:</strong> ${msg.subject || 'No subject'}</p>
+                <p><strong>Subject:</strong> ${msg.subject}</p>
                 <p>${msg.message}</p>
             </div>
-            <button onclick="deleteMessage(${index})" class="btn-delete"><i class="fas fa-trash"></i> Delete</button>
+            <button onclick="deleteMessage(${i})" class="btn-delete" style="margin-top:0.5rem;">Delete</button>
         </div>
     `).join('');
 }
 
 function deleteMessage(index) {
-    if (confirm('Delete this message?')) {
-        messages.splice(index, 1);
-        saveMessages();
-        renderMessages();
-        renderStats();
-    }
-}
-
-// ============================================
-// SAVE FUNCTIONS
-// ============================================
-
-function saveData() {
-    localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
-    console.log('✅ Data saved');
-}
-
-function saveMessages() {
+    if (!confirm('Delete this message?')) return;
+    let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    messages.splice(index, 1);
     localStorage.setItem('messages', JSON.stringify(messages));
+    renderMessages();
+    updateDashboard();
 }
 
 // ============================================
@@ -1207,40 +1236,13 @@ function saveMessages() {
 // ============================================
 
 function logout() {
-    if (confirm('Logout?')) {
-        localStorage.removeItem('isLoggedIn');
-        window.location.href = 'login.html';
-    }
+    localStorage.removeItem('isLoggedIn');
+    window.location.href = 'login.html';
 }
 
 // ============================================
-// TAB SWITCHING
+// INIT
 // ============================================
 
-document.querySelectorAll('.sidebar-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        const tab = this.dataset.tab;
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-    });
-});
-
-function switchTab(tab) {
-    document.querySelectorAll('.sidebar-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.tab === tab);
-    });
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-}
-
-// ============================================
-// INITIALIZE
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadData();
-});
-
+document.addEventListener('DOMContentLoaded', initAdmin);
 console.log('✅ admin.js loaded and ready!');
