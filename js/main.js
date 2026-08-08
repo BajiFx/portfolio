@@ -1,40 +1,40 @@
 // ============================================
-// MAIN.JS - Public View with Multiple Image/Video Display
+// MAIN.JS - Public View (Backend API Version)
 // ============================================
 
-console.log('✅ main.js loaded');
+console.log('✅ main.js loaded (API version)');
+
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const API_BASE = 'https://portfolio-cms-gqrm.onrender.com';
 
 let portfolioData = {};
 let currentGroup = null;
 let currentProject = null;
 
 // ============================================
-// LOAD DATA
+// LOAD DATA FROM BACKEND
 // ============================================
 
-function loadPublicData() {
-    const savedData = localStorage.getItem('portfolioData');
-    if (savedData) {
-        try {
-            portfolioData = JSON.parse(savedData);
-            console.log('✅ Data loaded from localStorage');
-            renderPublicPortfolio();
-            return;
-        } catch (e) {
-            console.error('Error:', e);
-        }
+async function loadPublicData() {
+    try {
+        const response = await fetch(`${API_BASE}/api/data`);
+        if (!response.ok) throw new Error('Failed to fetch data');
+        portfolioData = await response.json();
+        console.log('✅ Data loaded from backend');
+        renderPublicPortfolio();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Show a fallback/error message
+        document.getElementById('hero-title').innerHTML = `Hi, I'm <span>Loading...</span>`;
+        document.getElementById('projects-grid').innerHTML = `
+            <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">
+                ⚠️ Unable to load portfolio data. Please try again later.
+            </p>
+        `;
     }
-    
-    fetch('js/data.json?_=' + Date.now())
-        .then(response => response.json())
-        .then(data => {
-            portfolioData = data;
-            renderPublicPortfolio();
-        })
-        .catch(error => {
-            console.error('Error loading data:', error);
-            renderDefaultContent();
-        });
 }
 
 // ============================================
@@ -88,7 +88,7 @@ function renderPublicPortfolio() {
         });
     }
     
-    // Skills - placeholders for now (Step 2)
+    // Skills
     if (data.skills && data.skills.length > 0) {
         const grid = document.getElementById('skills-grid');
         grid.innerHTML = '';
@@ -214,8 +214,11 @@ function renderProjectGroups(data) {
         return;
     }
     
-    container.innerHTML = groups.map((group, index) => `
-        <div class="project-card group-card" onclick="showGroup(${index})" style="cursor:pointer;">
+    container.innerHTML = groups.map((group, index) => {
+        // Use the group's id if available, otherwise use index
+        const groupId = group.id || index;
+        return `
+        <div class="project-card group-card" onclick="showGroup('${groupId}')" style="cursor:pointer;">
             <div class="project-image" style="display:flex;align-items:center;justify-content:center;background:var(--accent-gradient);min-height:200px;">
                 <i class="${group.icon || 'fas fa-folder'}" style="font-size:4rem;color:white;opacity:0.9;"></i>
             </div>
@@ -228,18 +231,18 @@ function renderProjectGroups(data) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // ============================================
-// SHOW GROUP
+// SHOW GROUP (by ID)
 // ============================================
 
-function showGroup(index) {
-    const group = portfolioData.projectGroups[index];
+function showGroup(groupId) {
+    const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
     
-    currentGroup = index;
+    currentGroup = groupId;
     const container = document.getElementById('projects-grid');
     const projects = group.projects || [];
     
@@ -266,8 +269,10 @@ function showGroup(index) {
             </h2>
             <p style="color:var(--text-secondary);">${group.description || ''}</p>
         </div>
-        ${projects.map((project, pIndex) => `
-            <div class="project-card" onclick="showProjectDetail(${index}, ${pIndex})" style="cursor:pointer;">
+        ${projects.map((project, pIndex) => {
+            const projectId = project.id || pIndex;
+            return `
+            <div class="project-card" onclick="showProjectDetail('${groupId}', '${projectId}')" style="cursor:pointer;">
                 <div class="project-image">
                     ${project.images && project.images.length > 0 ? 
                         `<img src="${project.images[0]}" alt="${project.title}">` :
@@ -290,27 +295,27 @@ function showGroup(index) {
                     </div>
                 </div>
             </div>
-        `).join('')}
+        `}).join('')}
     `;
     
     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
-// SHOW PROJECT DETAIL - WITH MULTIPLE IMAGES & VIDEOS
+// SHOW PROJECT DETAIL
 // ============================================
 
-function showProjectDetail(groupIndex, projectIndex) {
-    const group = portfolioData.projectGroups[groupIndex];
+function showProjectDetail(groupId, projectId) {
+    const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
     
-    const project = group.projects[projectIndex];
+    const project = group.projects.find(p => p.id == projectId);
     if (!project) return;
     
-    currentProject = projectIndex;
+    currentProject = projectId;
     const container = document.getElementById('projects-grid');
     
-    // ===== MULTIPLE IMAGES GALLERY =====
+    // Images gallery
     let imagesHtml = '';
     if (project.images && project.images.length > 0) {
         imagesHtml = `
@@ -325,7 +330,7 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // ===== MULTIPLE VIDEOS =====
+    // Videos
     let videoHtml = '';
     const videos = project.videos || [];
     if (videos.length > 0) {
@@ -343,20 +348,8 @@ function showProjectDetail(groupIndex, projectIndex) {
             </div>
         `;
     }
-    // Fallback for backward compatibility (single video property)
-    if (!videos.length && project.video) {
-        videoHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-video"></i> Project Video</h3>
-                <video controls style="width:100%;max-width:800px;border-radius:16px;box-shadow:var(--shadow-md);background:#000;">
-                    <source src="${project.video}">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-        `;
-    }
     
-    // ===== README (Markdown) =====
+    // README
     let readmeHtml = '';
     if (project.readme) {
         const readmeHTML = marked.parse(project.readme);
@@ -370,14 +363,14 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // ===== ATTACHED FILES =====
+    // Attached files
     let filesHtml = '';
     if (project.files && project.files.length > 0) {
         filesHtml = `
             <div style="grid-column:1/-1;">
                 <h3 style="margin-bottom:1rem;"><i class="fas fa-paperclip"></i> Attached Files (${project.files.length})</h3>
                 <div style="display:flex;flex-wrap:wrap;gap:1rem;">
-                    ${project.files.map((file, i) => `
+                    ${project.files.map(file => `
                         <a href="${file.data}" download="${file.name}" style="display:flex;align-items:center;gap:0.5rem;padding:0.8rem 1.2rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
                             <i class="fas fa-${file.type?.includes('pdf') ? 'file-pdf' : file.type?.includes('zip') ? 'file-archive' : 'file'}" style="color:var(--accent-primary);"></i>
                             ${file.name}
@@ -389,7 +382,7 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // ===== GITHUB & DEMO LINKS =====
+    // GitHub & Demo links
     let linksHtml = '';
     if (project.github || project.demo) {
         linksHtml = `
@@ -410,7 +403,7 @@ function showProjectDetail(groupIndex, projectIndex) {
     
     container.innerHTML = `
         <div style="grid-column:1/-1;">
-            <button onclick="showGroup(${groupIndex})" class="btn secondary" style="margin-bottom:2rem;">
+            <button onclick="showGroup('${groupId}')" class="btn secondary" style="margin-bottom:2rem;">
                 <i class="fas fa-arrow-left"></i> Back to ${group.name}
             </button>
         </div>
@@ -530,21 +523,10 @@ function renderSocialLinks(data) {
 }
 
 // ============================================
-// DEFAULT CONTENT
-// ============================================
-
-function renderDefaultContent() {
-    document.getElementById('about-text').innerHTML = `
-        <p>Welcome to my portfolio! I'm a web developer passionate about creating beautiful, functional digital experiences.</p>
-        <p>Please log in to the admin panel to add your content.</p>
-    `;
-}
-
-// ============================================
 // CONTACT FORM
 // ============================================
 
-document.getElementById('contact-form').addEventListener('submit', function(e) {
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const name = document.getElementById('form-name').value;
@@ -552,20 +534,39 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     const subject = document.getElementById('form-subject')?.value || 'No subject';
     const message = document.getElementById('form-message').value;
     
-    const msgData = { name, email, subject, message, date: new Date().toLocaleString() };
-    
-    let messages = JSON.parse(localStorage.getItem('messages') || '[]');
-    messages.push(msgData);
-    localStorage.setItem('messages', JSON.stringify(messages));
+    const msgData = { name, email, subject, message };
     
     const btn = this.querySelector('button');
-    btn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
-    btn.style.background = '#22c55e';
-    setTimeout(() => {
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
-        btn.style.background = '';
-        this.reset();
-    }, 3000);
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(msgData)
+        });
+        
+        if (!response.ok) throw new Error('Failed to send message');
+        
+        btn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
+        btn.style.background = '#22c55e';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+            btn.style.background = '';
+            btn.disabled = false;
+            this.reset();
+        }, 3000);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Failed to send';
+        btn.style.background = '#ef4444';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+            btn.style.background = '';
+            btn.disabled = false;
+        }, 3000);
+    }
 });
 
 // ============================================
