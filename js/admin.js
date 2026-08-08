@@ -14,13 +14,10 @@ let imageCounter = 0;
 let videoCounter = 0;
 
 // ============================================
-// SERVER URL - SET THIS FOR YOUR ENVIRONMENT
+// SERVER URL - POINTS TO RENDER BACKEND
 // ============================================
 
-// For local development (server running on port 3000):
-const SERVER_URL = 'http://localhost:3000';
-// For production (Render):
-// const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
+const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
 
 // ============================================
 // INITIALIZE
@@ -622,7 +619,7 @@ async function uploadFile(fileInput, previewDiv, type) {
         }
     } catch (error) {
         console.error('Upload error:', error);
-        alert('❌ Error connecting to server. Make sure server is running on port 3000!');
+        alert('❌ Error connecting to server. Make sure server is running on Render!');
         if (btn) {
             btn.innerHTML = originalText;
             btn.disabled = false;
