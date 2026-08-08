@@ -2,6 +2,7 @@ const express = require('express');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const cors = require('cors');
+const { Pool } = require('pg');          // <-- NEW: PostgreSQL driver
 require('dotenv').config();
 
 const app = express();
@@ -21,18 +22,36 @@ console.log('✅ Cloudinary configured successfully!');
 console.log(`   Cloud Name: ${process.env.CLOUD_NAME}`);
 
 // ============================================
-// CORS CONFIGURATION - FIXED FOR EXPRESS v5
+// DATABASE CONNECTION (PostgreSQL)
 // ============================================
 
-// Use CORS middleware – it automatically handles preflight (OPTIONS) requests
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false   // Required for Neon
+    }
+});
+
+// Test the database connection on startup
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ Database connection failed:', err.stack);
+    } else {
+        console.log('✅ Connected to PostgreSQL database!');
+        release();
+    }
+});
+
+// ============================================
+// CORS CONFIGURATION
+// ============================================
+
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     optionsSuccessStatus: 200
 }));
-
-// REMOVED: app.options('*', cors()); // This line causes the error!
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -61,12 +80,13 @@ app.get('/', (req, res) => {
         endpoints: {
             test: '/api/test',
             upload: '/api/upload',
-            uploadMultiple: '/api/upload-multiple'
+            uploadMultiple: '/api/upload-multiple',
+            dbTest: '/api/db-test'   // <-- NEW: database test endpoint
         }
     });
 });
 
-// Test endpoint
+// Test endpoint (server health)
 app.get('/api/test', (req, res) => {
     res.json({
         status: '✅ Server is running!',
@@ -74,6 +94,31 @@ app.get('/api/test', (req, res) => {
         message: 'Portfolio API is ready'
     });
 });
+
+// ============================================
+// DATABASE TEST ENDPOINT (NEW)
+// ============================================
+
+app.get('/api/db-test', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW() as current_time');
+        res.json({
+            success: true,
+            message: 'Database connected!',
+            server_time: result.rows[0].current_time
+        });
+    } catch (error) {
+        console.error('Database test error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ============================================
+// FILE UPLOAD ENDPOINTS (existing)
+// ============================================
 
 // Single file upload
 app.post('/api/upload', upload.single('image'), async (req, res) => {
@@ -166,5 +211,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`   Test: http://0.0.0.0:${PORT}/api/test`);
     console.log(`   Upload: http://0.0.0.0:${PORT}/api/upload`);
     console.log(`   Multiple Upload: http://0.0.0.0:${PORT}/api/upload-multiple`);
+    console.log(`   DB Test: http://0.0.0.0:${PORT}/api/db-test`);
     console.log('\n📌 Make sure your admin panel points to this server!\n');
 });
