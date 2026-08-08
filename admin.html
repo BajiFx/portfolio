@@ -49,10 +49,6 @@
             <button class="sidebar-btn" data-tab="certifications">
                 <i class="fas fa-certificate"></i> <span>Certifications</span>
             </button>
-            <!-- ===== SKILLS TAB ===== -->
-            <button class="sidebar-btn" data-tab="skills">
-                <i class="fas fa-code"></i> <span>Skills</span>
-            </button>
             <button class="sidebar-btn" data-tab="social">
                 <i class="fas fa-share-alt"></i> <span>Social Links</span>
             </button>
@@ -94,10 +90,6 @@
                         <div class="stat-label">Certifications</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="statSkills">0</div>
-                        <div class="stat-label">Skill Categories</div>
-                    </div>
-                    <div class="stat-card">
                         <div class="stat-number" id="statMessages">0</div>
                         <div class="stat-label">Messages</div>
                     </div>
@@ -108,7 +100,6 @@
                         <button onclick="switchTab('projects')" class="btn primary">Create Group</button>
                         <button onclick="showAddProject()" class="btn secondary">Add Project</button>
                         <button onclick="switchTab('profile')" class="btn secondary">Update Profile</button>
-                        <button onclick="switchTab('skills')" class="btn secondary">Manage Skills</button>
                     </div>
                 </div>
             </div>
@@ -236,7 +227,9 @@
                         <!-- ===== DYNAMIC IMAGES SECTION ===== -->
                         <div class="form-group">
                             <label>Project Images</label>
-                            <div id="imageUploadContainer"></div>
+                            <div id="imageUploadContainer">
+                                <!-- Existing images will be rendered here by JS -->
+                            </div>
                             <button type="button" id="addImageBtn" class="btn secondary" style="margin-top:0.5rem;background:#22c55e;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
                                 <i class="fas fa-plus"></i> Add Image
                             </button>
@@ -246,7 +239,9 @@
                         <!-- ===== DYNAMIC VIDEOS SECTION ===== -->
                         <div class="form-group">
                             <label>Project Videos</label>
-                            <div id="videoUploadContainer"></div>
+                            <div id="videoUploadContainer">
+                                <!-- Existing videos will be rendered here by JS -->
+                            </div>
                             <button type="button" id="addVideoBtn" class="btn secondary" style="margin-top:0.5rem;background:#8b5cf6;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
                                 <i class="fas fa-plus"></i> Add Video
                             </button>
@@ -399,37 +394,6 @@
                     </form>
                 </div>
                 <div id="certificationsList" class="admin-grid"></div>
-            </div>
-
-            <!-- ===== SKILLS TAB ===== -->
-            <div id="tab-skills" class="tab-content">
-                <h2>Skills</h2>
-                <button onclick="showAddSkill()" class="btn primary" style="margin-bottom:2rem;">
-                    <i class="fas fa-plus"></i> Add Skill Category
-                </button>
-                <div id="addSkillForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
-                    <h3 id="skillFormTitle" style="margin-bottom:1.5rem;">Add Skill Category</h3>
-                    <form id="skillForm" class="admin-form">
-                        <input type="hidden" id="skillEditIndex" value="-1">
-                        <div class="form-group">
-                            <label>Category Name</label>
-                            <input type="text" id="skillCategory" placeholder="e.g., Frontend Development" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Icon (Font Awesome class)</label>
-                            <input type="text" id="skillIcon" placeholder="fas fa-code" value="fas fa-code">
-                            <small>Choose from <a href="https://fontawesome.com/icons" target="_blank">FontAwesome</a></small>
-                        </div>
-                        <div class="form-group">
-                            <label>Skills (comma separated)</label>
-                            <input type="text" id="skillItems" placeholder="React, Vue.js, Next.js, TypeScript" required>
-                            <small>Enter skills separated by commas</small>
-                        </div>
-                        <button type="submit" class="btn primary" id="skillSubmitBtn">Add Skill Category</button>
-                        <button type="button" onclick="hideAddSkill()" class="btn secondary">Cancel</button>
-                    </form>
-                </div>
-                <div id="skillsList" class="admin-grid"></div>
             </div>
 
             <!-- ===== SOCIAL LINKS TAB ===== -->
