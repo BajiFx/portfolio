@@ -1,30 +1,34 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (Step 1 - Fixed)
+// ADMIN.JS - Complete Admin Panel (Backend API Version)
 // ============================================
 
-console.log('✅ admin.js loaded');
+console.log('✅ admin.js loaded (API version)');
 
-// Check login
-if (!localStorage.getItem('isLoggedIn')) {
-    window.location.href = 'login.html';
-}
+// ============================================
+// CONFIGURATION
+// ============================================
+
+const API_BASE = 'https://portfolio-cms-gqrm.onrender.com';
+// For local development, use: const API_BASE = 'http://localhost:3000';
 
 let portfolioData = {};
 let imageCounter = 0;
 let videoCounter = 0;
 
 // ============================================
-// SERVER URL - POINTS TO RENDER BACKEND
+// CHECK LOGIN
 // ============================================
 
-const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
+if (!localStorage.getItem('isLoggedIn')) {
+    window.location.href = 'login.html';
+}
 
 // ============================================
 // INITIALIZE
 // ============================================
 
-function initAdmin() {
-    loadData();
+async function initAdmin() {
+    await loadData();
     setupTabs();
     setupSidebarButtons();
     updateDashboard();
@@ -33,31 +37,34 @@ function initAdmin() {
 }
 
 // ============================================
-// LOAD DATA
+// LOAD DATA FROM BACKEND
 // ============================================
 
-function loadData() {
-    const saved = localStorage.getItem('portfolioData');
-    if (saved) {
-        try {
-            portfolioData = JSON.parse(saved);
-            if (!portfolioData.projectGroups) portfolioData.projectGroups = [];
-            if (!portfolioData.experience) portfolioData.experience = [];
-            if (!portfolioData.education) portfolioData.education = [];
-            if (!portfolioData.certifications) portfolioData.certifications = [];
-            if (!portfolioData.skills) portfolioData.skills = [];
-            if (!portfolioData.social) portfolioData.social = {};
-            if (!portfolioData.videos) portfolioData.videos = {};
-            if (!portfolioData.personal) portfolioData.personal = {};
-            if (!portfolioData.about) portfolioData.about = { paragraphs: [] };
-        } catch (e) {
-            console.error('Error parsing data:', e);
-            resetDefaultData();
-        }
-    } else {
+async function loadData() {
+    try {
+        const response = await fetch(`${API_BASE}/api/data`);
+        if (!response.ok) throw new Error('Failed to fetch data');
+        portfolioData = await response.json();
+        
+        // Ensure all arrays exist
+        if (!portfolioData.projectGroups) portfolioData.projectGroups = [];
+        if (!portfolioData.experience) portfolioData.experience = [];
+        if (!portfolioData.education) portfolioData.education = [];
+        if (!portfolioData.certifications) portfolioData.certifications = [];
+        if (!portfolioData.skills) portfolioData.skills = [];
+        if (!portfolioData.social) portfolioData.social = {};
+        if (!portfolioData.videos) portfolioData.videos = {};
+        if (!portfolioData.personal) portfolioData.personal = {};
+        if (!portfolioData.about) portfolioData.about = { paragraphs: [] };
+        
+        console.log('✅ Data loaded from backend');
+        renderAll();
+        updateDashboard();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        alert('Failed to load portfolio data. Please check your internet connection.');
         resetDefaultData();
     }
-    renderAll();
 }
 
 function resetDefaultData() {
@@ -83,9 +90,60 @@ function resetDefaultData() {
     saveData();
 }
 
-function saveData() {
-    localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
-    updateDashboard();
+// ============================================
+// SAVE DATA TO BACKEND
+// ============================================
+
+async function saveData() {
+    try {
+        // Save profile
+        const profileResponse = await fetch(`${API_BASE}/api/profile`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: portfolioData.personal?.name || '',
+                title: portfolioData.personal?.title || '',
+                badge: portfolioData.personal?.badge || '',
+                heroSubtitle: portfolioData.personal?.heroSubtitle || '',
+                welcomeMessage: portfolioData.personal?.welcomeMessage || '',
+                email: portfolioData.personal?.email || '',
+                profileImage: portfolioData.personal?.profileImage || '',
+                aboutImage: portfolioData.personal?.aboutImage || '',
+                resume: portfolioData.personal?.resume || '',
+                footer: portfolioData.footer || ''
+            })
+        });
+        
+        // Save about paragraphs
+        await fetch(`${API_BASE}/api/about`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paragraphs: portfolioData.about?.paragraphs || [] })
+        });
+        
+        // Save skills
+        await fetch(`${API_BASE}/api/skills`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skills: portfolioData.skills || [] })
+        });
+        
+        // Save welcome video
+        await fetch(`${API_BASE}/api/welcome-video`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: portfolioData.videos?.welcome || '' })
+        });
+        
+        // Note: Groups, Projects, Experience, Education, Certifications, Social
+        // are saved individually through their own endpoints
+        
+        updateDashboard();
+        console.log('✅ Data saved to backend');
+    } catch (error) {
+        console.error('Error saving data:', error);
+        alert('Failed to save data. Please check your internet connection.');
+    }
 }
 
 // ============================================
@@ -118,8 +176,7 @@ function updateDashboard() {
     document.getElementById('statExperience').textContent = portfolioData.experience?.length || 0;
     document.getElementById('statEducation').textContent = portfolioData.education?.length || 0;
     document.getElementById('statCertifications').textContent = portfolioData.certifications?.length || 0;
-    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
-    document.getElementById('statMessages').textContent = messages.length;
+    loadMessages(); // Load messages from backend
 }
 
 // ============================================
@@ -175,7 +232,7 @@ function renderProfileForm() {
     }
 }
 
-document.getElementById('profileForm').addEventListener('submit', function(e) {
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const p = portfolioData.personal || {};
     p.name = document.getElementById('profileName').value.trim();
@@ -189,7 +246,7 @@ document.getElementById('profileForm').addEventListener('submit', function(e) {
     portfolioData.about = {
         paragraphs: bioText ? bioText.split('\n\n').filter(p => p.trim()) : []
     };
-    saveData();
+    await saveData();
     alert('✅ Profile saved!');
     renderProfileForm();
     updateDashboard();
@@ -240,7 +297,9 @@ function renderGroupsList() {
         container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No groups created yet.</p>`;
         return;
     }
-    container.innerHTML = groups.map((group, gIndex) => `
+    container.innerHTML = groups.map((group, gIndex) => {
+        const groupId = group.id || group._id || gIndex;
+        return `
         <div style="background:var(--bg-card);padding:1.5rem;border-radius:16px;border:1px solid var(--border-color);margin-bottom:1.5rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
                 <div>
@@ -248,14 +307,16 @@ function renderGroupsList() {
                     <p style="color:var(--text-secondary);font-size:0.9rem;">${group.description || ''}</p>
                 </div>
                 <div style="display:flex;gap:0.5rem;">
-                    <button onclick="editGroup(${gIndex})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteGroup(${gIndex})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                    <button onclick="editGroup('${groupId}')" class="btn-edit"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteGroup('${groupId}')" class="btn-delete"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
             <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);">
                 <h4 style="margin-bottom:0.5rem;">Projects (${group.projects?.length || 0})</h4>
                 <div style="display:grid;gap:0.8rem;">
-                    ${(group.projects || []).map((project, pIndex) => `
+                    ${(group.projects || []).map((project, pIndex) => {
+                        const projectId = project.id || project._id || pIndex;
+                        return `
                         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-primary);padding:0.8rem 1rem;border-radius:8px;border:1px solid var(--border-color);">
                             <div>
                                 <strong>${project.title}</strong>
@@ -264,18 +325,18 @@ function renderGroupsList() {
                                 </span>
                             </div>
                             <div style="display:flex;gap:0.5rem;">
-                                <button onclick="editProject(${gIndex}, ${pIndex})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteProject(${gIndex}, ${pIndex})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                                <button onclick="editProject('${groupId}', '${projectId}')" class="btn-edit"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteProject('${groupId}', '${projectId}')" class="btn-delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
-                <button onclick="showAddProject(${gIndex})" class="btn secondary" style="margin-top:1rem;padding:0.4rem 1rem;font-size:0.85rem;">
+                <button onclick="showAddProject('${groupId}')" class="btn secondary" style="margin-top:1rem;padding:0.4rem 1rem;font-size:0.85rem;">
                     <i class="fas fa-plus"></i> Add Project
                 </button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // ===== GROUP CRUD =====
@@ -284,7 +345,7 @@ function showAddGroup() {
     document.getElementById('addGroupForm').style.display = 'block';
     document.getElementById('groupFormTitle').textContent = '📂 Create New Project Group';
     document.getElementById('groupSubmitBtn').textContent = 'Create Group';
-    document.getElementById('groupEditIndex').value = -1;
+    document.getElementById('groupEditId').value = '';
     document.getElementById('groupName').value = '';
     document.getElementById('groupIcon').value = 'fas fa-folder';
     document.getElementById('groupDescription').value = '';
@@ -295,59 +356,74 @@ function hideAddGroup() {
     document.getElementById('addGroupForm').style.display = 'none';
 }
 
-function editGroup(index) {
-    const group = portfolioData.projectGroups[index];
+async function editGroup(groupId) {
+    const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
     document.getElementById('addGroupForm').style.display = 'block';
     document.getElementById('groupFormTitle').textContent = '✏️ Edit Project Group';
     document.getElementById('groupSubmitBtn').textContent = 'Update Group';
-    document.getElementById('groupEditIndex').value = index;
+    document.getElementById('groupEditId').value = groupId;
     document.getElementById('groupName').value = group.name;
     document.getElementById('groupIcon').value = group.icon || 'fas fa-folder';
     document.getElementById('groupDescription').value = group.description || '';
     document.getElementById('addGroupForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-function deleteGroup(index) {
+async function deleteGroup(groupId) {
     if (!confirm('Delete this group and all its projects?')) return;
-    portfolioData.projectGroups.splice(index, 1);
-    saveData();
-    renderGroupsList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/groups/${groupId}`, { method: 'DELETE' });
+        await loadData();
+        renderGroupsList();
+        updateDashboard();
+        alert('✅ Group deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete group: ' + error.message);
+    }
 }
 
-document.getElementById('groupForm').addEventListener('submit', function(e) {
+document.getElementById('groupForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const editIndex = parseInt(document.getElementById('groupEditIndex').value);
+    const editId = document.getElementById('groupEditId').value;
     const name = document.getElementById('groupName').value.trim();
     const icon = document.getElementById('groupIcon').value.trim() || 'fas fa-folder';
     const description = document.getElementById('groupDescription').value.trim();
-    const groupData = { name, icon, description, projects: [] };
-    if (editIndex >= 0) {
-        const existing = portfolioData.projectGroups[editIndex];
-        groupData.projects = existing.projects || [];
-        portfolioData.projectGroups[editIndex] = groupData;
-    } else {
-        portfolioData.projectGroups.push(groupData);
+    
+    try {
+        if (editId) {
+            await fetch(`${API_BASE}/api/groups/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, icon, description })
+            });
+        } else {
+            await fetch(`${API_BASE}/api/groups`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, icon, description })
+            });
+        }
+        await loadData();
+        hideAddGroup();
+        renderGroupsList();
+        updateDashboard();
+        alert('✅ Group saved!');
+    } catch (error) {
+        alert('❌ Failed to save group: ' + error.message);
     }
-    saveData();
-    hideAddGroup();
-    renderGroupsList();
-    updateDashboard();
-    alert('✅ Group saved!');
 });
 
 // ============================================
 // PROJECT CRUD WITH DYNAMIC UPLOADS
 // ============================================
 
-function showAddProject(groupIndex) {
-    if (groupIndex !== undefined) {
-        document.getElementById('projectGroupSelect').value = groupIndex;
+function showAddProject(groupId) {
+    if (groupId) {
+        document.getElementById('projectGroupSelect').value = groupId;
         document.getElementById('selectedGroupDisplay').style.display = 'flex';
-        const group = portfolioData.projectGroups[groupIndex];
+        const group = portfolioData.projectGroups.find(g => g.id == groupId);
         document.getElementById('selectedGroupName').textContent = group ? group.name : '';
-        document.getElementById('projectGroupId').value = groupIndex;
+        document.getElementById('projectGroupId').value = groupId;
     } else {
         document.getElementById('selectedGroupDisplay').style.display = 'none';
         document.getElementById('projectGroupId').value = '';
@@ -355,18 +431,16 @@ function showAddProject(groupIndex) {
     document.getElementById('addProjectForm').style.display = 'block';
     document.getElementById('projectFormTitle').textContent = '📄 Add New Project';
     document.getElementById('projectSubmitBtn').textContent = 'Save Project';
-    document.getElementById('projectEditIndex').value = -1;
+    document.getElementById('projectEditId').value = '';
     document.getElementById('projectTitle').value = '';
     document.getElementById('projectDescription').value = '';
     document.getElementById('projectTech').value = '';
     document.getElementById('projectGithub').value = '';
     document.getElementById('projectDemo').value = '';
     document.getElementById('projectReadme').value = '';
-    // Clear dynamic upload containers
     document.getElementById('imageUploadContainer').innerHTML = '';
     document.getElementById('videoUploadContainer').innerHTML = '';
     document.getElementById('projectFilesPreview').innerHTML = '';
-    // Reset counters
     imageCounter = 0;
     videoCounter = 0;
     document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
@@ -377,18 +451,18 @@ function hideAddProject() {
     document.getElementById('addProjectForm').style.display = 'none';
 }
 
-function editProject(gIndex, pIndex) {
-    const group = portfolioData.projectGroups[gIndex];
+async function editProject(groupId, projectId) {
+    const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
-    const project = group.projects[pIndex];
+    const project = group.projects.find(p => p.id == projectId);
     if (!project) return;
     
     document.getElementById('addProjectForm').style.display = 'block';
     document.getElementById('projectFormTitle').textContent = '✏️ Edit Project';
     document.getElementById('projectSubmitBtn').textContent = 'Update Project';
-    document.getElementById('projectEditIndex').value = pIndex;
-    document.getElementById('projectGroupId').value = gIndex;
-    document.getElementById('projectGroupSelect').value = gIndex;
+    document.getElementById('projectEditId').value = projectId;
+    document.getElementById('projectGroupId').value = groupId;
+    document.getElementById('projectGroupSelect').value = groupId;
     document.getElementById('selectedGroupDisplay').style.display = 'flex';
     document.getElementById('selectedGroupName').textContent = group.name;
     document.getElementById('projectTitle').value = project.title || '';
@@ -398,25 +472,17 @@ function editProject(gIndex, pIndex) {
     document.getElementById('projectDemo').value = project.demo || '';
     document.getElementById('projectReadme').value = project.readme || '';
     
-    // Reset dynamic containers
     document.getElementById('imageUploadContainer').innerHTML = '';
     document.getElementById('videoUploadContainer').innerHTML = '';
     imageCounter = 0;
     videoCounter = 0;
     
-    // Render existing images
     const images = project.images || [];
-    images.forEach(url => {
-        addImagePreview(url);
-    });
+    images.forEach(url => addImagePreview(url));
     
-    // Render existing videos
     const videos = project.videos || [];
-    videos.forEach(url => {
-        addVideoPreview(url);
-    });
+    videos.forEach(url => addVideoPreview(url));
     
-    // Files preview
     const filesPreview = document.getElementById('projectFilesPreview');
     filesPreview.innerHTML = '';
     (project.files || []).forEach(f => {
@@ -427,14 +493,17 @@ function editProject(gIndex, pIndex) {
     updateGroupSelect();
 }
 
-function deleteProject(gIndex, pIndex) {
+async function deleteProject(groupId, projectId) {
     if (!confirm('Delete this project?')) return;
-    const group = portfolioData.projectGroups[gIndex];
-    if (!group) return;
-    group.projects.splice(pIndex, 1);
-    saveData();
-    renderGroupsList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/projects/${projectId}`, { method: 'DELETE' });
+        await loadData();
+        renderGroupsList();
+        updateDashboard();
+        alert('✅ Project deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete project: ' + error.message);
+    }
 }
 
 function updateGroupSelect() {
@@ -442,9 +511,9 @@ function updateGroupSelect() {
     const groups = portfolioData.projectGroups || [];
     const currentVal = select.value;
     select.innerHTML = '<option value="">-- Select a group --</option>';
-    groups.forEach((g, idx) => {
+    groups.forEach(g => {
         const opt = document.createElement('option');
-        opt.value = idx;
+        opt.value = g.id;
         opt.textContent = g.name;
         select.appendChild(opt);
     });
@@ -452,11 +521,11 @@ function updateGroupSelect() {
 }
 
 document.getElementById('projectGroupSelect').addEventListener('change', function() {
-    const idx = parseInt(this.value);
-    if (!isNaN(idx)) {
-        document.getElementById('projectGroupId').value = idx;
+    const groupId = this.value;
+    if (groupId) {
+        document.getElementById('projectGroupId').value = groupId;
         document.getElementById('selectedGroupDisplay').style.display = 'flex';
-        const group = portfolioData.projectGroups[idx];
+        const group = portfolioData.projectGroups.find(g => g.id == groupId);
         document.getElementById('selectedGroupName').textContent = group ? group.name : '';
     } else {
         document.getElementById('projectGroupId').value = '';
@@ -469,12 +538,9 @@ document.getElementById('projectGroupSelect').addEventListener('change', functio
 // ============================================
 
 function setupDynamicUploads() {
-    // Add Image button
     document.getElementById('addImageBtn').addEventListener('click', function() {
         addImageUploadRow();
     });
-    
-    // Add Video button
     document.getElementById('addVideoBtn').addEventListener('click', function() {
         addVideoUploadRow();
     });
@@ -498,7 +564,6 @@ function addImageUploadRow() {
     `;
     container.appendChild(row);
     
-    // Upload button handler
     const uploadBtn = row.querySelector('.btn-upload-image');
     const fileInput = row.querySelector('input[type="file"]');
     const previewDiv = row.querySelector('.upload-preview');
@@ -507,17 +572,13 @@ function addImageUploadRow() {
         await uploadFile(fileInput, previewDiv, 'image');
     });
     
-    // Remove button handler
     const removeBtn = row.querySelector('.btn-remove-row');
     removeBtn.addEventListener('click', function() {
         row.remove();
     });
     
-    // Auto-upload on file selection (optional convenience)
     fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            uploadBtn.click();
-        }
+        if (this.files.length > 0) uploadBtn.click();
     });
 }
 
@@ -553,9 +614,7 @@ function addVideoUploadRow() {
     });
     
     fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            uploadBtn.click();
-        }
+        if (this.files.length > 0) uploadBtn.click();
     });
 }
 
@@ -566,36 +625,25 @@ async function uploadFile(fileInput, previewDiv, type) {
         return;
     }
     
-    // Get the button that triggered the upload (find it from the row)
     const row = fileInput.closest('div');
     let btn = row ? row.querySelector('.btn-upload-image, .btn-upload-video') : null;
-    if (!btn) {
-        // Fallback: find any button in the row
-        btn = row ? row.querySelector('button') : null;
-    }
+    if (!btn) btn = row ? row.querySelector('button') : null;
     
     const originalText = btn ? btn.innerHTML : 'Upload';
-    if (btn) {
-        btn.innerHTML = '⏳';
-        btn.disabled = true;
-    }
+    if (btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
     
     const formData = new FormData();
     formData.append('images', file);
     
     try {
-        const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
+        const response = await fetch(`${API_BASE}/api/upload-multiple`, {
             method: 'POST',
             body: formData
         });
         const result = await response.json();
         if (result.success && result.urls && result.urls.length > 0) {
             const url = result.urls[0];
-            // Store URL in row's dataset
-            if (row) {
-                row.dataset.uploadedUrl = url;
-            }
-            // Show preview
+            if (row) row.dataset.uploadedUrl = url;
             if (previewDiv) {
                 if (type === 'image') {
                     previewDiv.innerHTML = `<img src="${url}" style="max-width:80px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);">`;
@@ -603,27 +651,17 @@ async function uploadFile(fileInput, previewDiv, type) {
                     previewDiv.innerHTML = `<video src="${url}" style="max-width:100px;max-height:80px;border-radius:8px;border:2px solid var(--accent-primary);" controls></video>`;
                 }
             }
-            // Hide file input and disable button
             if (fileInput) fileInput.style.display = 'none';
-            if (btn) {
-                btn.innerHTML = '✅ Uploaded';
-                btn.disabled = true;
-            }
+            if (btn) { btn.innerHTML = '✅ Uploaded'; btn.disabled = true; }
             alert('✅ Upload successful!');
         } else {
             alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
-            if (btn) {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+            if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
         }
     } catch (error) {
         console.error('Upload error:', error);
-        alert('❌ Error connecting to server. Make sure server is running on Render!');
-        if (btn) {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
+        alert('❌ Error connecting to server.');
+        if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
     }
 }
 
@@ -666,20 +704,19 @@ function addVideoPreview(url) {
 }
 
 // ============================================
-// SAVE PROJECT (with dynamic upload URLs)
+// SAVE PROJECT
 // ============================================
 
-document.getElementById('projectForm').addEventListener('submit', function(e) {
+document.getElementById('projectForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const gIndex = parseInt(document.getElementById('projectGroupId').value);
-    if (isNaN(gIndex) || gIndex < 0 || gIndex >= portfolioData.projectGroups.length) {
-        alert('Please select a valid group.');
+    const groupId = document.getElementById('projectGroupId').value;
+    if (!groupId) {
+        alert('Please select a group.');
         return;
     }
-    const group = portfolioData.projectGroups[gIndex];
-    const editIndex = parseInt(document.getElementById('projectEditIndex').value);
     
+    const projectId = document.getElementById('projectEditId').value;
     const title = document.getElementById('projectTitle').value.trim();
     const description = document.getElementById('projectDescription').value.trim();
     const tech = document.getElementById('projectTech').value.split(',').map(s => s.trim()).filter(Boolean);
@@ -687,7 +724,7 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
     const demo = document.getElementById('projectDemo').value.trim();
     const readme = document.getElementById('projectReadme').value.trim();
     
-    // Collect image URLs from existing previews (hidden inputs) and new uploads (dataset)
+    // Collect image URLs
     const imageUrls = [];
     document.querySelectorAll('#imageUploadContainer .existing-image-url').forEach(el => {
         imageUrls.push(el.value);
@@ -696,7 +733,7 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
         imageUrls.push(row.dataset.uploadedUrl);
     });
     
-    // Collect video URLs similarly
+    // Collect video URLs
     const videoUrls = [];
     document.querySelectorAll('#videoUploadContainer .existing-video-url').forEach(el => {
         videoUrls.push(el.value);
@@ -709,57 +746,66 @@ document.getElementById('projectForm').addEventListener('submit', function(e) {
     const fileInput = document.getElementById('projectFiles');
     const files = [];
     if (fileInput.files.length > 0) {
-        const readFiles = () => {
-            return new Promise((resolve) => {
-                const promises = [];
-                for (let f of fileInput.files) {
-                    const p = new Promise((res) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            res({ name: f.name, data: e.target.result, size: f.size, type: f.type });
-                        };
-                        reader.readAsDataURL(f);
-                    });
-                    promises.push(p);
-                }
-                Promise.all(promises).then(results => resolve(results));
+        for (let f of fileInput.files) {
+            const reader = new FileReader();
+            const data = await new Promise((resolve) => {
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(f);
             });
-        };
-        readFiles().then((fileData) => {
-            const existingFiles = (editIndex >= 0 && group.projects[editIndex]?.files) || [];
-            const allFiles = [...existingFiles, ...fileData];
-            saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, imageUrls, videoUrls, allFiles);
-        });
-    } else {
-        const existingFiles = (editIndex >= 0 && group.projects[editIndex]?.files) || [];
-        saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, imageUrls, videoUrls, existingFiles);
+            files.push({ name: f.name, data, size: f.size, type: f.type });
+        }
     }
-});
-
-function saveProjectData(gIndex, editIndex, title, description, tech, github, demo, readme, images, videos, files) {
-    const group = portfolioData.projectGroups[gIndex];
-    const project = {
+    
+    // Check if we're editing and need to keep existing files
+    if (projectId) {
+        const group = portfolioData.projectGroups.find(g => g.id == groupId);
+        const existingProject = group?.projects?.find(p => p.id == projectId);
+        if (existingProject && existingProject.files) {
+            // If no new files were added, keep existing
+            if (files.length === 0 && existingProject.files.length > 0) {
+                files.push(...existingProject.files);
+            }
+        }
+    }
+    
+    const projectData = {
         title,
         description,
-        technologies: tech,
         github,
         demo,
         readme,
-        images,
-        videos,
+        images: imageUrls,
+        videos: videoUrls,
+        technologies: tech,
         files
     };
-    if (editIndex >= 0) {
-        group.projects[editIndex] = project;
-    } else {
-        group.projects.push(project);
+    
+    try {
+        let url;
+        if (projectId) {
+            url = `${API_BASE}/api/projects/${projectId}`;
+            await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(projectData)
+            });
+        } else {
+            url = `${API_BASE}/api/groups/${groupId}/projects`;
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(projectData)
+            });
+        }
+        await loadData();
+        hideAddProject();
+        renderGroupsList();
+        updateDashboard();
+        alert('✅ Project saved!');
+    } catch (error) {
+        alert('❌ Failed to save project: ' + error.message);
     }
-    saveData();
-    hideAddProject();
-    renderGroupsList();
-    updateDashboard();
-    alert('✅ Project saved!');
-}
+});
 
 // ============================================
 // EXPERIENCE CRUD
@@ -780,8 +826,8 @@ function renderExperienceList() {
                 <p style="color:var(--text-secondary);font-size:0.9rem;">${exp.description}</p>
             </div>
             <div class="item-actions">
-                <button onclick="editExperience(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteExperience(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editExperience('${exp.id}')" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteExperience('${exp.id}')" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -791,7 +837,7 @@ function showAddExperience() {
     document.getElementById('addExperienceForm').style.display = 'block';
     document.getElementById('experienceFormTitle').textContent = 'Add Experience';
     document.getElementById('expSubmitBtn').textContent = 'Add Experience';
-    document.getElementById('expEditIndex').value = -1;
+    document.getElementById('expEditId').value = '';
     document.getElementById('expCompany').value = '';
     document.getElementById('expRole').value = '';
     document.getElementById('expPeriod').value = '';
@@ -803,13 +849,13 @@ function hideAddExperience() {
     document.getElementById('addExperienceForm').style.display = 'none';
 }
 
-function editExperience(index) {
-    const exp = portfolioData.experience[index];
+async function editExperience(expId) {
+    const exp = portfolioData.experience.find(e => e.id == expId);
     if (!exp) return;
     document.getElementById('addExperienceForm').style.display = 'block';
     document.getElementById('experienceFormTitle').textContent = '✏️ Edit Experience';
     document.getElementById('expSubmitBtn').textContent = 'Update Experience';
-    document.getElementById('expEditIndex').value = index;
+    document.getElementById('expEditId').value = expId;
     document.getElementById('expCompany').value = exp.company;
     document.getElementById('expRole').value = exp.role;
     document.getElementById('expPeriod').value = exp.period;
@@ -817,32 +863,49 @@ function editExperience(index) {
     document.getElementById('addExperienceForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-function deleteExperience(index) {
+async function deleteExperience(expId) {
     if (!confirm('Delete this experience?')) return;
-    portfolioData.experience.splice(index, 1);
-    saveData();
-    renderExperienceList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/experience/${expId}`, { method: 'DELETE' });
+        await loadData();
+        renderExperienceList();
+        updateDashboard();
+        alert('✅ Experience deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete: ' + error.message);
+    }
 }
 
-document.getElementById('experienceForm').addEventListener('submit', function(e) {
+document.getElementById('experienceForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const editIndex = parseInt(document.getElementById('expEditIndex').value);
+    const editId = document.getElementById('expEditId').value;
     const company = document.getElementById('expCompany').value.trim();
     const role = document.getElementById('expRole').value.trim();
     const period = document.getElementById('expPeriod').value.trim();
     const description = document.getElementById('expDescription').value.trim();
-    const expData = { company, role, period, description };
-    if (editIndex >= 0) {
-        portfolioData.experience[editIndex] = expData;
-    } else {
-        portfolioData.experience.push(expData);
+    
+    try {
+        if (editId) {
+            await fetch(`${API_BASE}/api/experience/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ company, role, period, description })
+            });
+        } else {
+            await fetch(`${API_BASE}/api/experience`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ company, role, period, description })
+            });
+        }
+        await loadData();
+        hideAddExperience();
+        renderExperienceList();
+        updateDashboard();
+        alert('✅ Experience saved!');
+    } catch (error) {
+        alert('❌ Failed to save: ' + error.message);
     }
-    saveData();
-    hideAddExperience();
-    renderExperienceList();
-    updateDashboard();
-    alert('✅ Experience saved!');
 });
 
 // ============================================
@@ -865,8 +928,8 @@ function renderEducationList() {
                 ${item.description ? `<p style="color:var(--text-secondary);font-size:0.9rem;">${item.description}</p>` : ''}
             </div>
             <div class="item-actions">
-                <button onclick="editEducation(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteEducation(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editEducation('${item.id}')" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteEducation('${item.id}')" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -876,7 +939,7 @@ function showAddEducation() {
     document.getElementById('addEducationForm').style.display = 'block';
     document.getElementById('educationFormTitle').textContent = 'Add Education';
     document.getElementById('eduSubmitBtn').textContent = 'Add Education';
-    document.getElementById('eduEditIndex').value = -1;
+    document.getElementById('eduEditId').value = '';
     document.getElementById('eduInstitution').value = '';
     document.getElementById('eduDegree').value = '';
     document.getElementById('eduField').value = '';
@@ -889,13 +952,13 @@ function hideAddEducation() {
     document.getElementById('addEducationForm').style.display = 'none';
 }
 
-function editEducation(index) {
-    const item = portfolioData.education[index];
+async function editEducation(eduId) {
+    const item = portfolioData.education.find(e => e.id == eduId);
     if (!item) return;
     document.getElementById('addEducationForm').style.display = 'block';
     document.getElementById('educationFormTitle').textContent = '✏️ Edit Education';
     document.getElementById('eduSubmitBtn').textContent = 'Update Education';
-    document.getElementById('eduEditIndex').value = index;
+    document.getElementById('eduEditId').value = eduId;
     document.getElementById('eduInstitution').value = item.institution;
     document.getElementById('eduDegree').value = item.degree;
     document.getElementById('eduField').value = item.field || '';
@@ -904,33 +967,50 @@ function editEducation(index) {
     document.getElementById('addEducationForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-function deleteEducation(index) {
+async function deleteEducation(eduId) {
     if (!confirm('Delete this education?')) return;
-    portfolioData.education.splice(index, 1);
-    saveData();
-    renderEducationList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/education/${eduId}`, { method: 'DELETE' });
+        await loadData();
+        renderEducationList();
+        updateDashboard();
+        alert('✅ Education deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete: ' + error.message);
+    }
 }
 
-document.getElementById('educationForm').addEventListener('submit', function(e) {
+document.getElementById('educationForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const editIndex = parseInt(document.getElementById('eduEditIndex').value);
+    const editId = document.getElementById('eduEditId').value;
     const institution = document.getElementById('eduInstitution').value.trim();
     const degree = document.getElementById('eduDegree').value.trim();
     const field = document.getElementById('eduField').value.trim();
     const period = document.getElementById('eduPeriod').value.trim();
     const description = document.getElementById('eduDescription').value.trim();
-    const eduData = { institution, degree, field, period, description };
-    if (editIndex >= 0) {
-        portfolioData.education[editIndex] = eduData;
-    } else {
-        portfolioData.education.push(eduData);
+    
+    try {
+        if (editId) {
+            await fetch(`${API_BASE}/api/education/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ institution, degree, field, period, description })
+            });
+        } else {
+            await fetch(`${API_BASE}/api/education`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ institution, degree, field, period, description })
+            });
+        }
+        await loadData();
+        hideAddEducation();
+        renderEducationList();
+        updateDashboard();
+        alert('✅ Education saved!');
+    } catch (error) {
+        alert('❌ Failed to save: ' + error.message);
     }
-    saveData();
-    hideAddEducation();
-    renderEducationList();
-    updateDashboard();
-    alert('✅ Education saved!');
 });
 
 // ============================================
@@ -954,8 +1034,8 @@ function renderCertificationsList() {
                 ${cert.link ? `<p><a href="${cert.link}" target="_blank" style="color:var(--accent-primary);">🔗 Verify</a></p>` : ''}
             </div>
             <div class="item-actions">
-                <button onclick="editCertification(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteCertification(${i})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                <button onclick="editCertification('${cert.id}')" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteCertification('${cert.id}')" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
     `).join('');
@@ -965,7 +1045,7 @@ function showAddCertification() {
     document.getElementById('addCertificationForm').style.display = 'block';
     document.getElementById('certFormTitle').textContent = 'Add Certification';
     document.getElementById('certSubmitBtn').textContent = 'Add Certification';
-    document.getElementById('certEditIndex').value = -1;
+    document.getElementById('certEditId').value = '';
     document.getElementById('certName').value = '';
     document.getElementById('certIssuer').value = '';
     document.getElementById('certDate').value = '';
@@ -979,13 +1059,13 @@ function hideAddCertification() {
     document.getElementById('addCertificationForm').style.display = 'none';
 }
 
-function editCertification(index) {
-    const cert = portfolioData.certifications[index];
+async function editCertification(certId) {
+    const cert = portfolioData.certifications.find(c => c.id == certId);
     if (!cert) return;
     document.getElementById('addCertificationForm').style.display = 'block';
     document.getElementById('certFormTitle').textContent = '✏️ Edit Certification';
     document.getElementById('certSubmitBtn').textContent = 'Update Certification';
-    document.getElementById('certEditIndex').value = index;
+    document.getElementById('certEditId').value = certId;
     document.getElementById('certName').value = cert.name;
     document.getElementById('certIssuer').value = cert.issuer;
     document.getElementById('certDate').value = cert.date || '';
@@ -997,17 +1077,22 @@ function editCertification(index) {
     document.getElementById('addCertificationForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-function deleteCertification(index) {
+async function deleteCertification(certId) {
     if (!confirm('Delete this certification?')) return;
-    portfolioData.certifications.splice(index, 1);
-    saveData();
-    renderCertificationsList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/certifications/${certId}`, { method: 'DELETE' });
+        await loadData();
+        renderCertificationsList();
+        updateDashboard();
+        alert('✅ Certification deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete: ' + error.message);
+    }
 }
 
-document.getElementById('certificationForm').addEventListener('submit', function(e) {
+document.getElementById('certificationForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const editIndex = parseInt(document.getElementById('certEditIndex').value);
+    const editId = document.getElementById('certEditId').value;
     const name = document.getElementById('certName').value.trim();
     const issuer = document.getElementById('certIssuer').value.trim();
     const date = document.getElementById('certDate').value.trim();
@@ -1015,33 +1100,41 @@ document.getElementById('certificationForm').addEventListener('submit', function
     const link = document.getElementById('certLink').value.trim();
     const fileInput = document.getElementById('certFile');
     let fileData = null;
+    
     if (fileInput.files.length > 0) {
         const reader = new FileReader();
-        reader.onload = function(ev) {
-            fileData = ev.target.result;
-            saveCertData(editIndex, name, issuer, date, description, link, fileData);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-    } else {
-        const existing = (editIndex >= 0) ? portfolioData.certifications[editIndex] : null;
+        fileData = await new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(fileInput.files[0]);
+        });
+    } else if (editId) {
+        const existing = portfolioData.certifications.find(c => c.id == editId);
         fileData = existing ? existing.file : null;
-        saveCertData(editIndex, name, issuer, date, description, link, fileData);
+    }
+    
+    try {
+        if (editId) {
+            await fetch(`${API_BASE}/api/certifications/${editId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, issuer, date, description, link, file: fileData })
+            });
+        } else {
+            await fetch(`${API_BASE}/api/certifications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, issuer, date, description, link, file: fileData })
+            });
+        }
+        await loadData();
+        hideAddCertification();
+        renderCertificationsList();
+        updateDashboard();
+        alert('✅ Certification saved!');
+    } catch (error) {
+        alert('❌ Failed to save: ' + error.message);
     }
 });
-
-function saveCertData(editIndex, name, issuer, date, description, link, fileData) {
-    const certData = { name, issuer, date, description, link, file: fileData };
-    if (editIndex >= 0) {
-        portfolioData.certifications[editIndex] = certData;
-    } else {
-        portfolioData.certifications.push(certData);
-    }
-    saveData();
-    hideAddCertification();
-    renderCertificationsList();
-    updateDashboard();
-    alert('✅ Certification saved!');
-}
 
 // ============================================
 // SOCIAL LINKS CRUD
@@ -1062,7 +1155,7 @@ function renderSocialList() {
                 <p style="color:var(--text-secondary);font-size:0.9rem;">${value}</p>
             </div>
             <div class="item-actions">
-                <button onclick="editSocial(${i})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                <button onclick="editSocial('${key}')" class="btn-edit"><i class="fas fa-edit"></i></button>
                 <button onclick="deleteSocial('${key}')" class="btn-delete"><i class="fas fa-trash"></i></button>
             </div>
         </div>
@@ -1073,7 +1166,7 @@ function showAddSocial() {
     document.getElementById('addSocialForm').style.display = 'block';
     document.getElementById('socialFormTitle').textContent = 'Add Social Link';
     document.getElementById('socialSubmitBtn').textContent = 'Add Link';
-    document.getElementById('socialEditIndex').value = -1;
+    document.getElementById('socialEditPlatform').value = '';
     document.getElementById('socialPlatform').value = '';
     document.getElementById('socialIcon').value = '';
     document.getElementById('socialUrl').value = '';
@@ -1084,32 +1177,35 @@ function hideAddSocial() {
     document.getElementById('addSocialForm').style.display = 'none';
 }
 
-function editSocial(index) {
-    const social = portfolioData.social || {};
-    const keys = Object.keys(social);
-    const key = keys[index];
-    if (!key) return;
+async function editSocial(platform) {
+    const url = portfolioData.social[platform];
+    if (!url) return;
     document.getElementById('addSocialForm').style.display = 'block';
     document.getElementById('socialFormTitle').textContent = '✏️ Edit Social Link';
     document.getElementById('socialSubmitBtn').textContent = 'Update Link';
-    document.getElementById('socialEditIndex').value = index;
-    document.getElementById('socialPlatform').value = key;
-    document.getElementById('socialIcon').value = `fab fa-${key}`;
-    document.getElementById('socialUrl').value = social[key];
+    document.getElementById('socialEditPlatform').value = platform;
+    document.getElementById('socialPlatform').value = platform;
+    document.getElementById('socialIcon').value = `fab fa-${platform}`;
+    document.getElementById('socialUrl').value = url;
     document.getElementById('addSocialForm').scrollIntoView({ behavior: 'smooth' });
 }
 
-function deleteSocial(key) {
+async function deleteSocial(platform) {
     if (!confirm('Delete this social link?')) return;
-    delete portfolioData.social[key];
-    saveData();
-    renderSocialList();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/social/${platform}`, { method: 'DELETE' });
+        await loadData();
+        renderSocialList();
+        updateDashboard();
+        alert('✅ Social link deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete: ' + error.message);
+    }
 }
 
-document.getElementById('socialForm').addEventListener('submit', function(e) {
+document.getElementById('socialForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const editIndex = parseInt(document.getElementById('socialEditIndex').value);
+    const editPlatform = document.getElementById('socialEditPlatform').value;
     const platform = document.getElementById('socialPlatform').value.trim();
     const icon = document.getElementById('socialIcon').value.trim();
     const url = document.getElementById('socialUrl').value.trim();
@@ -1117,18 +1213,26 @@ document.getElementById('socialForm').addEventListener('submit', function(e) {
         alert('Please fill all fields.');
         return;
     }
-    if (editIndex >= 0) {
-        const oldKey = Object.keys(portfolioData.social)[editIndex];
-        if (oldKey && oldKey !== platform) {
-            delete portfolioData.social[oldKey];
+    
+    try {
+        // Delete old platform if editing
+        if (editPlatform && editPlatform !== platform) {
+            await fetch(`${API_BASE}/api/social/${editPlatform}`, { method: 'DELETE' });
         }
+        // Add/Update new platform
+        await fetch(`${API_BASE}/api/social`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ platform, icon, url })
+        });
+        await loadData();
+        hideAddSocial();
+        renderSocialList();
+        updateDashboard();
+        alert('✅ Social link saved!');
+    } catch (error) {
+        alert('❌ Failed to save: ' + error.message);
     }
-    portfolioData.social[platform] = url;
-    saveData();
-    hideAddSocial();
-    renderSocialList();
-    updateDashboard();
-    alert('✅ Social link saved!');
 });
 
 // ============================================
@@ -1145,7 +1249,7 @@ function renderResumePreview() {
     }
 }
 
-document.getElementById('resumeForm').addEventListener('submit', function(e) {
+document.getElementById('resumeForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const fileInput = document.getElementById('resumeFile');
     if (fileInput.files.length === 0) {
@@ -1153,13 +1257,14 @@ document.getElementById('resumeForm').addEventListener('submit', function(e) {
         return;
     }
     const reader = new FileReader();
-    reader.onload = function(ev) {
-        portfolioData.personal.resume = ev.target.result;
-        saveData();
-        renderResumePreview();
-        alert('✅ Resume uploaded!');
-    };
-    reader.readAsDataURL(fileInput.files[0]);
+    const fileData = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+    });
+    portfolioData.personal.resume = fileData;
+    await saveData();
+    renderResumePreview();
+    alert('✅ Resume uploaded!');
 });
 
 // ============================================
@@ -1176,7 +1281,7 @@ function renderWelcomeVideoPreview() {
     }
 }
 
-document.getElementById('welcomeVideoForm').addEventListener('submit', function(e) {
+document.getElementById('welcomeVideoForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const fileInput = document.getElementById('welcomeVideo');
     if (fileInput.files.length === 0) {
@@ -1184,48 +1289,67 @@ document.getElementById('welcomeVideoForm').addEventListener('submit', function(
         return;
     }
     const reader = new FileReader();
-    reader.onload = function(ev) {
-        portfolioData.videos.welcome = ev.target.result;
-        saveData();
-        renderWelcomeVideoPreview();
-        alert('✅ Welcome video uploaded!');
-    };
-    reader.readAsDataURL(fileInput.files[0]);
+    const videoData = await new Promise((resolve) => {
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(fileInput.files[0]);
+    });
+    portfolioData.videos.welcome = videoData;
+    await saveData();
+    renderWelcomeVideoPreview();
+    alert('✅ Welcome video uploaded!');
 });
 
 // ============================================
-// MESSAGES
+// MESSAGES (from backend)
 // ============================================
 
-function renderMessages() {
+async function loadMessages() {
+    try {
+        const response = await fetch(`${API_BASE}/api/messages`);
+        if (!response.ok) throw new Error('Failed to fetch messages');
+        const messages = await response.json();
+        document.getElementById('statMessages').textContent = messages.length;
+        return messages;
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        return [];
+    }
+}
+
+async function renderMessages() {
     const container = document.getElementById('messagesList');
-    const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    const messages = await loadMessages();
+    
     if (messages.length === 0) {
         container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No messages yet.</p>`;
         return;
     }
+    
     container.innerHTML = messages.map((msg, i) => `
         <div class="message-item">
             <div class="message-header">
                 <span class="sender"><strong>${msg.name}</strong> (${msg.email})</span>
-                <span class="date">${msg.date}</span>
+                <span class="date">${new Date(msg.date).toLocaleString()}</span>
             </div>
             <div class="message-body">
-                <p><strong>Subject:</strong> ${msg.subject}</p>
+                <p><strong>Subject:</strong> ${msg.subject || 'No subject'}</p>
                 <p>${msg.message}</p>
             </div>
-            <button onclick="deleteMessage(${i})" class="btn-delete" style="margin-top:0.5rem;">Delete</button>
+            <button onclick="deleteMessage(${msg.id})" class="btn-delete" style="margin-top:0.5rem;">Delete</button>
         </div>
     `).join('');
 }
 
-function deleteMessage(index) {
+async function deleteMessage(messageId) {
     if (!confirm('Delete this message?')) return;
-    let messages = JSON.parse(localStorage.getItem('messages') || '[]');
-    messages.splice(index, 1);
-    localStorage.setItem('messages', JSON.stringify(messages));
-    renderMessages();
-    updateDashboard();
+    try {
+        await fetch(`${API_BASE}/api/messages/${messageId}`, { method: 'DELETE' });
+        renderMessages();
+        updateDashboard();
+        alert('✅ Message deleted!');
+    } catch (error) {
+        alert('❌ Failed to delete: ' + error.message);
+    }
 }
 
 // ============================================
