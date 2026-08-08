@@ -167,7 +167,7 @@
                 <div id="addGroupForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="groupFormTitle" style="margin-bottom:1.5rem;">📂 Create New Project Group</h3>
                     <form id="groupForm" class="admin-form">
-                        <input type="hidden" id="groupEditIndex" value="-1">
+                        <input type="hidden" id="groupEditId" value="">
                         <div class="form-group">
                             <label>Group Name</label>
                             <input type="text" id="groupName" placeholder="e.g., Web Development, Data Science" required>
@@ -186,17 +186,15 @@
                     </form>
                 </div>
                 
-                <!-- ===== ADD PROJECT FORM WITH DYNAMIC UPLOADS ===== -->
+                <!-- ===== ADD PROJECT FORM ===== -->
                 <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
                     
-                    <!-- Selected Group Display -->
                     <div id="selectedGroupDisplay" style="display:none;padding:0.8rem 1.2rem;background:var(--accent-gradient);color:white;border-radius:12px;margin-bottom:1.5rem;font-weight:600;display:flex;align-items:center;gap:0.8rem;">
                         <i class="fas fa-folder"></i>
                         Adding project to: <span id="selectedGroupName">Web Development</span>
                     </div>
                     
-                    <!-- Group Selection Dropdown -->
                     <div id="groupSelectWrapper" style="margin-bottom:1.5rem;padding:1rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);">
                         <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Select Which Group This Project Belongs To:</label>
                         <select id="projectGroupSelect" style="width:100%;padding:0.8rem 1rem;border:2px solid var(--border-color);border-radius:12px;background:var(--bg-primary);color:var(--text-primary);font-size:1rem;">
@@ -206,7 +204,7 @@
                     </div>
                     
                     <form id="projectForm" class="admin-form" enctype="multipart/form-data">
-                        <input type="hidden" id="projectEditIndex" value="-1">
+                        <input type="hidden" id="projectEditId" value="">
                         <input type="hidden" id="projectGroupId" value="">
                         
                         <div class="form-group">
@@ -224,35 +222,27 @@
                             <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
                         </div>
                         
-                        <!-- ===== DYNAMIC IMAGES SECTION ===== -->
                         <div class="form-group">
                             <label>Project Images</label>
-                            <div id="imageUploadContainer">
-                                <!-- Existing images will be rendered here by JS -->
-                            </div>
+                            <div id="imageUploadContainer"></div>
                             <button type="button" id="addImageBtn" class="btn secondary" style="margin-top:0.5rem;background:#22c55e;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
                                 <i class="fas fa-plus"></i> Add Image
                             </button>
                             <small>Click "Add Image" to upload images one by one.</small>
                         </div>
                         
-                        <!-- ===== DYNAMIC VIDEOS SECTION ===== -->
                         <div class="form-group">
                             <label>Project Videos</label>
-                            <div id="videoUploadContainer">
-                                <!-- Existing videos will be rendered here by JS -->
-                            </div>
+                            <div id="videoUploadContainer"></div>
                             <button type="button" id="addVideoBtn" class="btn secondary" style="margin-top:0.5rem;background:#8b5cf6;color:white;border:none;padding:0.5rem 1rem;border-radius:50px;cursor:pointer;">
                                 <i class="fas fa-plus"></i> Add Video
                             </button>
                             <small>Click "Add Video" to upload videos one by one.</small>
                         </div>
                         
-                        <!-- ===== GITHUB & DEMO LINKS ===== -->
                         <div class="form-group">
                             <label>GitHub Repository URL</label>
                             <input type="url" id="projectGithub" placeholder="https://github.com/username/repository-name">
-                            <small>Visitors will see a GitHub icon that links directly to your repository</small>
                         </div>
                         
                         <div class="form-group">
@@ -260,14 +250,12 @@
                             <input type="url" id="projectDemo" placeholder="https://demo.com">
                         </div>
                         
-                        <!-- ===== README ===== -->
                         <div class="form-group">
                             <label>README / Documentation (supports Markdown)</label>
                             <textarea id="projectReadme" rows="5" placeholder="Write detailed documentation, installation steps, features, etc..."></textarea>
                             <small>You can use Markdown formatting: headings, lists, code blocks, tables, etc.</small>
                         </div>
                         
-                        <!-- ===== ATTACH FILES ===== -->
                         <div class="form-group">
                             <label>Attach Files (PDF, Documents, ZIP)</label>
                             <input type="file" id="projectFiles" accept=".pdf,.doc,.docx,.txt,.zip,.pptx" multiple>
@@ -280,7 +268,6 @@
                     </form>
                 </div>
 
-                <!-- ===== GROUPS & PROJECTS LIST ===== -->
                 <div id="groupsList" class="admin-grid"></div>
             </div>
 
@@ -293,7 +280,7 @@
                 <div id="addExperienceForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="experienceFormTitle" style="margin-bottom:1.5rem;">Add Experience</h3>
                     <form id="experienceForm" class="admin-form">
-                        <input type="hidden" id="expEditIndex" value="-1">
+                        <input type="hidden" id="expEditId" value="">
                         <div class="form-group">
                             <label>Company</label>
                             <input type="text" id="expCompany" required>
@@ -326,7 +313,7 @@
                 <div id="addEducationForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="educationFormTitle" style="margin-bottom:1.5rem;">Add Education</h3>
                     <form id="educationForm" class="admin-form">
-                        <input type="hidden" id="eduEditIndex" value="-1">
+                        <input type="hidden" id="eduEditId" value="">
                         <div class="form-group">
                             <label>Institution</label>
                             <input type="text" id="eduInstitution" required>
@@ -363,7 +350,7 @@
                 <div id="addCertificationForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="certFormTitle" style="margin-bottom:1.5rem;">Add Certification</h3>
                     <form id="certificationForm" class="admin-form" enctype="multipart/form-data">
-                        <input type="hidden" id="certEditIndex" value="-1">
+                        <input type="hidden" id="certEditId" value="">
                         <div class="form-group">
                             <label>Certification Name</label>
                             <input type="text" id="certName" required>
@@ -405,7 +392,7 @@
                 <div id="addSocialForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="socialFormTitle" style="margin-bottom:1.5rem;">Add Social Link</h3>
                     <form id="socialForm" class="admin-form">
-                        <input type="hidden" id="socialEditIndex" value="-1">
+                        <input type="hidden" id="socialEditPlatform" value="">
                         <div class="form-group">
                             <label>Platform Name</label>
                             <input type="text" id="socialPlatform" required>
