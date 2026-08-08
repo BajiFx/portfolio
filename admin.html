@@ -186,7 +186,7 @@
                     </form>
                 </div>
                 
-                <!-- ===== ADD PROJECT FORM WITH CLOUDINARY ===== -->
+                <!-- ===== ADD PROJECT FORM WITH DYNAMIC UPLOADS ===== -->
                 <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
                     
@@ -224,28 +224,38 @@
                             <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
                         </div>
                         
-                        <!-- ===== CLOUDINARY IMAGE UPLOAD ===== -->
+                        <!-- ===== DYNAMIC IMAGE UPLOADS ===== -->
                         <div class="form-group">
                             <label>Project Images</label>
-                            <input type="file" id="projectImageUpload" accept="image/*" multiple>
-                            <button type="button" id="uploadToCloudinaryBtn" class="btn secondary" style="margin-top:0.5rem;background:#22c55e;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
-                                <i class="fas fa-cloud-upload-alt"></i> Upload to Cloudinary
-                            </button>
-                            <div id="uploadedImagesPreview" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+                            <div id="imageUploadsContainer">
+                                <!-- Existing images will be shown here -->
+                            </div>
+                            <div id="imageUploadRow" style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;align-items:center;">
+                                <input type="file" id="newImageInput" accept="image/*" style="flex:1;min-width:150px;">
+                                <button type="button" id="addImageBtn" class="btn secondary" style="background:#22c55e;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
+                                    <i class="fas fa-plus"></i> Add Image
+                                </button>
+                            </div>
+                            <div id="imagePreviewsContainer" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
                             <input type="hidden" id="projectImagesUrls" value="[]">
-                            <small>Select images, then click "Upload to Cloudinary"</small>
+                            <small>Upload images one by one using "Add Image" button.</small>
                         </div>
                         
-                        <!-- ===== PROJECT VIDEO ===== -->
+                        <!-- ===== DYNAMIC VIDEO UPLOADS ===== -->
                         <div class="form-group">
-                            <label>Project Video (Upload to Cloudinary)</label>
-                            <input type="file" id="projectVideoUpload" accept="video/*">
-                            <button type="button" id="uploadVideoToCloudinaryBtn" class="btn secondary" style="margin-top:0.5rem;background:#8b5cf6;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
-                                <i class="fas fa-cloud-upload-alt"></i> Upload Video to Cloudinary
-                            </button>
-                            <div id="uploadedVideoPreview" style="margin-top:0.5rem;"></div>
-                            <input type="hidden" id="projectVideoUrl" value="">
-                            <small>Select a video, then click "Upload Video to Cloudinary"</small>
+                            <label>Project Videos</label>
+                            <div id="videoUploadsContainer">
+                                <!-- Existing videos will be shown here -->
+                            </div>
+                            <div id="videoUploadRow" style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;align-items:center;">
+                                <input type="file" id="newVideoInput" accept="video/*" style="flex:1;min-width:150px;">
+                                <button type="button" id="addVideoBtn" class="btn secondary" style="background:#8b5cf6;color:white;border:none;padding:0.6rem 1.2rem;border-radius:50px;cursor:pointer;">
+                                    <i class="fas fa-plus"></i> Add Video
+                                </button>
+                            </div>
+                            <div id="videoPreviewsContainer" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;"></div>
+                            <input type="hidden" id="projectVideosUrls" value="[]">
+                            <small>Upload videos one by one using "Add Video" button.</small>
                         </div>
                         
                         <!-- ===== GITHUB & DEMO LINKS ===== -->
@@ -262,8 +272,9 @@
                         
                         <!-- ===== README ===== -->
                         <div class="form-group">
-                            <label>README / Documentation</label>
+                            <label>README / Documentation (supports Markdown)</label>
                             <textarea id="projectReadme" rows="5" placeholder="Write detailed documentation, installation steps, features, etc..."></textarea>
+                            <small>You can use Markdown formatting: headings, lists, code blocks, tables, etc.</small>
                         </div>
                         
                         <!-- ===== ATTACH FILES ===== -->
@@ -477,51 +488,47 @@
         const SERVER_URL = 'https://portfolio-cms-gqrm.onrender.com';
 
         // ============================================
-        // CLOUDINARY UPLOAD (IMAGES)
+        // DYNAMIC IMAGE UPLOAD HANDLER
         // ============================================
 
-        document.getElementById('uploadToCloudinaryBtn').addEventListener('click', async function() {
-            const fileInput = document.getElementById('projectImageUpload');
-            const files = fileInput.files;
-            
-            if (files.length === 0) {
-                alert('⚠️ Please select images first!');
+        document.getElementById('addImageBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('newImageInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('⚠️ Please select an image first!');
                 return;
             }
-            
+
             const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('images', files[i]);
-            }
-            
+            formData.append('images', file);
+
             this.textContent = '⏳ Uploading...';
             this.disabled = true;
-            
+
             try {
                 const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const result = await response.json();
-                
-                if (result.success) {
+
+                if (result.success && result.urls && result.urls.length > 0) {
+                    const url = result.urls[0];
                     const urlsInput = document.getElementById('projectImagesUrls');
                     let urls = JSON.parse(urlsInput.value || '[]');
-                    
-                    result.urls.forEach(url => urls.push(url));
+                    urls.push(url);
                     urlsInput.value = JSON.stringify(urls);
-                    
-                    const preview = document.getElementById('uploadedImagesPreview');
-                    result.urls.forEach(url => {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);';
-                        preview.appendChild(img);
-                    });
-                    
+
+                    // Add preview
+                    const previewContainer = document.getElementById('imagePreviewsContainer');
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--accent-primary);';
+                    previewContainer.appendChild(img);
+
                     fileInput.value = '';
-                    alert(`✅ ${result.count} images uploaded successfully!`);
+                    alert('✅ Image uploaded successfully!');
                 } else {
                     alert('❌ Upload failed: ' + (result.error || 'Unknown error'));
                 }
@@ -529,49 +536,52 @@
                 console.error('Upload error:', error);
                 alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
             } finally {
-                this.textContent = '📤 Upload to Cloudinary';
+                this.textContent = '<i class="fas fa-plus"></i> Add Image';
                 this.disabled = false;
             }
         });
 
         // ============================================
-        // CLOUDINARY UPLOAD (VIDEOS)
+        // DYNAMIC VIDEO UPLOAD HANDLER
         // ============================================
 
-        document.getElementById('uploadVideoToCloudinaryBtn').addEventListener('click', async function() {
-            const fileInput = document.getElementById('projectVideoUpload');
+        document.getElementById('addVideoBtn').addEventListener('click', async function() {
+            const fileInput = document.getElementById('newVideoInput');
             const file = fileInput.files[0];
-            
             if (!file) {
                 alert('⚠️ Please select a video first!');
                 return;
             }
-            
+
             const formData = new FormData();
-            formData.append('image', file);
-            
-            this.textContent = '⏳ Uploading video...';
+            formData.append('images', file); // same endpoint, resource_type auto
+
+            this.textContent = '⏳ Uploading...';
             this.disabled = true;
-            
+
             try {
-                const response = await fetch(`${SERVER_URL}/api/upload`, {
+                const response = await fetch(`${SERVER_URL}/api/upload-multiple`, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('projectVideoUrl').value = result.url;
-                    
-                    const preview = document.getElementById('uploadedVideoPreview');
-                    preview.innerHTML = `
-                        <video controls style="max-width:200px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);">
-                            <source src="${result.url}">
-                        </video>
-                        <p style="font-size:0.8rem;color:var(--text-light);">Video uploaded successfully!</p>
-                    `;
-                    
+
+                if (result.success && result.urls && result.urls.length > 0) {
+                    const url = result.urls[0];
+                    const urlsInput = document.getElementById('projectVideosUrls');
+                    let urls = JSON.parse(urlsInput.value || '[]');
+                    urls.push(url);
+                    urlsInput.value = JSON.stringify(urls);
+
+                    // Add preview
+                    const previewContainer = document.getElementById('videoPreviewsContainer');
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.controls = true;
+                    video.style.cssText = 'max-width:150px;max-height:150px;border-radius:8px;border:2px solid var(--accent-primary);';
+                    previewContainer.appendChild(video);
+
                     fileInput.value = '';
                     alert('✅ Video uploaded successfully!');
                 } else {
@@ -581,7 +591,7 @@
                 console.error('Upload error:', error);
                 alert('❌ Error connecting to server. Make sure server is running!\n\nRun: node server.js');
             } finally {
-                this.textContent = '📤 Upload Video to Cloudinary';
+                this.textContent = '<i class="fas fa-plus"></i> Add Video';
                 this.disabled = false;
             }
         });

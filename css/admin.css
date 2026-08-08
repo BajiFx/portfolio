@@ -437,3 +437,18 @@
 .cert-file-preview a:hover {
     text-decoration: underline;
 }
+/* Preview containers */
+#imagePreviewsContainer img,
+#videoPreviewsContainer video {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--accent-primary);
+}
+
+#videoPreviewsContainer video {
+    height: auto;
+    max-width: 150px;
+    max-height: 150px;
+}

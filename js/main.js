@@ -1,5 +1,5 @@
 // ============================================
-// MAIN.JS - Public View with GitHub Icon
+// MAIN.JS - Public View with Multiple Image/Video Display
 // ============================================
 
 console.log('✅ main.js loaded');
@@ -88,8 +88,8 @@ function renderPublicPortfolio() {
         });
     }
     
-    // Skills
-    if (data.skills) {
+    // Skills - placeholders for now (Step 2)
+    if (data.skills && data.skills.length > 0) {
         const grid = document.getElementById('skills-grid');
         grid.innerHTML = '';
         data.skills.forEach(skill => {
@@ -104,6 +104,29 @@ function renderPublicPortfolio() {
             `;
             grid.appendChild(div);
         });
+    } else {
+        // Fallback default skills
+        const grid = document.getElementById('skills-grid');
+        grid.innerHTML = `
+            <div class="skill-card">
+                <div class="skill-icon"><i class="fas fa-code"></i></div>
+                <h3>Frontend Development</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">HTML</span>
+                    <span class="skill-tag">CSS</span>
+                    <span class="skill-tag">JavaScript</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon"><i class="fas fa-server"></i></div>
+                <h3>Backend Development</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">SQL</span>
+                </div>
+            </div>
+        `;
     }
     
     // Project Groups
@@ -274,7 +297,7 @@ function showGroup(index) {
 }
 
 // ============================================
-// SHOW PROJECT DETAIL - WITH GITHUB ICON
+// SHOW PROJECT DETAIL - WITH MULTIPLE IMAGES & VIDEOS
 // ============================================
 
 function showProjectDetail(groupIndex, projectIndex) {
@@ -287,12 +310,12 @@ function showProjectDetail(groupIndex, projectIndex) {
     currentProject = projectIndex;
     const container = document.getElementById('projects-grid');
     
-    // Images Gallery
+    // ===== MULTIPLE IMAGES GALLERY =====
     let imagesHtml = '';
     if (project.images && project.images.length > 0) {
         imagesHtml = `
             <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-images"></i> Project Gallery</h3>
+                <h3 style="margin-bottom:1rem;"><i class="fas fa-images"></i> Project Gallery (${project.images.length})</h3>
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                     ${project.images.map(img => `
                         <img src="${img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openLightbox('${img}')">
@@ -302,23 +325,40 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // Video
+    // ===== MULTIPLE VIDEOS =====
     let videoHtml = '';
-    if (project.video) {
+    const videos = project.videos || [];
+    if (videos.length > 0) {
+        videoHtml = `
+            <div style="grid-column:1/-1;">
+                <h3 style="margin-bottom:1rem;"><i class="fas fa-video"></i> Project Videos (${videos.length})</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;">
+                    ${videos.map(vid => `
+                        <video controls style="width:100%;border-radius:16px;box-shadow:var(--shadow-md);background:#000;">
+                            <source src="${vid}">
+                            Your browser does not support the video tag.
+                        </video>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    // Fallback for backward compatibility (single video property)
+    if (!videos.length && project.video) {
         videoHtml = `
             <div style="grid-column:1/-1;">
                 <h3 style="margin-bottom:1rem;"><i class="fas fa-video"></i> Project Video</h3>
-                <video controls style="width:100%;max-width:800px;border-radius:16px;box-shadow:var(--shadow-md);">
+                <video controls style="width:100%;max-width:800px;border-radius:16px;box-shadow:var(--shadow-md);background:#000;">
                     <source src="${project.video}">
+                    Your browser does not support the video tag.
                 </video>
             </div>
         `;
     }
     
-    // ===== README WITH MARKDOWN RENDERING =====
+    // ===== README (Markdown) =====
     let readmeHtml = '';
     if (project.readme) {
-        // Parse markdown to HTML using marked
         const readmeHTML = marked.parse(project.readme);
         readmeHtml = `
             <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
@@ -330,12 +370,12 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // Attached Files
+    // ===== ATTACHED FILES =====
     let filesHtml = '';
     if (project.files && project.files.length > 0) {
         filesHtml = `
             <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-paperclip"></i> Attached Files</h3>
+                <h3 style="margin-bottom:1rem;"><i class="fas fa-paperclip"></i> Attached Files (${project.files.length})</h3>
                 <div style="display:flex;flex-wrap:wrap;gap:1rem;">
                     ${project.files.map((file, i) => `
                         <a href="${file.data}" download="${file.name}" style="display:flex;align-items:center;gap:0.5rem;padding:0.8rem 1.2rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
@@ -349,7 +389,7 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // ===== GITHUB & DEMO LINKS - WITH ICONS =====
+    // ===== GITHUB & DEMO LINKS =====
     let linksHtml = '';
     if (project.github || project.demo) {
         linksHtml = `
