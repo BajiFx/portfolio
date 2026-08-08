@@ -315,13 +315,17 @@ function showProjectDetail(groupIndex, projectIndex) {
         `;
     }
     
-    // README
+    // ===== README WITH MARKDOWN RENDERING =====
     let readmeHtml = '';
     if (project.readme) {
+        // Parse markdown to HTML using marked
+        const readmeHTML = marked.parse(project.readme);
         readmeHtml = `
             <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
                 <h3 style="margin-bottom:1rem;"><i class="fas fa-book"></i> Documentation / README</h3>
-                <div style="white-space:pre-line;color:var(--text-secondary);line-height:1.8;">${project.readme}</div>
+                <div class="markdown-body" style="color:var(--text-secondary);line-height:1.8;background:transparent;padding:0;">
+                    ${readmeHTML}
+                </div>
             </div>
         `;
     }
