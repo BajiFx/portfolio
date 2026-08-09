@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (Cloudinary for Profile/About Images)
+// ADMIN.JS - Complete Admin Panel (Backend API Version)
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
@@ -8,7 +8,7 @@ console.log('✅ admin.js loaded (API version)');
 // CONFIGURATION
 // ============================================
 
-const API_BASE = 'https://portfolio-cms-gqrm.onrender.com';
+const API_BASE = 'https://portfolio-oqqu.onrender.com';
 // For local development, use: const API_BASE = 'http://localhost:3000';
 
 let portfolioData = {};
@@ -45,7 +45,7 @@ async function loadData() {
         const response = await fetch(`${API_BASE}/api/data`);
         if (!response.ok) throw new Error('Failed to fetch data');
         portfolioData = await response.json();
-        
+
         // Ensure all arrays exist
         if (!portfolioData.projectGroups) portfolioData.projectGroups = [];
         if (!portfolioData.experience) portfolioData.experience = [];
@@ -56,7 +56,7 @@ async function loadData() {
         if (!portfolioData.videos) portfolioData.videos = {};
         if (!portfolioData.personal) portfolioData.personal = {};
         if (!portfolioData.about) portfolioData.about = { paragraphs: [] };
-        
+
         console.log('✅ Data loaded from backend');
         renderAll();
         updateDashboard();
@@ -113,28 +113,28 @@ async function saveData() {
                 footer: portfolioData.footer || ''
             })
         });
-        
+
         // Save about paragraphs
         await fetch(`${API_BASE}/api/about`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paragraphs: portfolioData.about?.paragraphs || [] })
         });
-        
+
         // Save skills
         await fetch(`${API_BASE}/api/skills`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ skills: portfolioData.skills || [] })
         });
-        
+
         // Save welcome video
         await fetch(`${API_BASE}/api/welcome-video`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: portfolioData.videos?.welcome || '' })
         });
-        
+
         updateDashboard();
         console.log('✅ Data saved to backend');
     } catch (error) {
@@ -419,7 +419,7 @@ document.getElementById('groupForm').addEventListener('submit', async function(e
     const name = document.getElementById('groupName').value.trim();
     const icon = document.getElementById('groupIcon').value.trim() || 'fas fa-folder';
     const description = document.getElementById('groupDescription').value.trim();
-    
+
     try {
         if (editId) {
             await fetch(`${API_BASE}/api/groups/${editId}`, {
@@ -487,7 +487,7 @@ async function editProject(groupId, projectId) {
     if (!group) return;
     const project = group.projects.find(p => p.id == projectId);
     if (!project) return;
-    
+
     document.getElementById('addProjectForm').style.display = 'block';
     document.getElementById('projectFormTitle').textContent = '✏️ Edit Project';
     document.getElementById('projectSubmitBtn').textContent = 'Update Project';
@@ -502,24 +502,24 @@ async function editProject(groupId, projectId) {
     document.getElementById('projectGithub').value = project.github || '';
     document.getElementById('projectDemo').value = project.demo || '';
     document.getElementById('projectReadme').value = project.readme || '';
-    
+
     document.getElementById('imageUploadContainer').innerHTML = '';
     document.getElementById('videoUploadContainer').innerHTML = '';
     imageCounter = 0;
     videoCounter = 0;
-    
+
     const images = project.images || [];
     images.forEach(url => addImagePreview(url));
-    
+
     const videos = project.videos || [];
     videos.forEach(url => addVideoPreview(url));
-    
+
     const filesPreview = document.getElementById('projectFilesPreview');
     filesPreview.innerHTML = '';
     (project.files || []).forEach(f => {
         filesPreview.innerHTML += `<span style="display:inline-block;background:var(--bg-primary);padding:0.3rem 0.8rem;border-radius:50px;font-size:0.8rem;border:1px solid var(--border-color);">📎 ${f.name}</span>`;
     });
-    
+
     document.getElementById('addProjectForm').scrollIntoView({ behavior: 'smooth' });
     updateGroupSelect();
 }
@@ -594,20 +594,20 @@ function addImageUploadRow() {
         <div class="upload-preview" style="display:inline-block;margin-left:0.3rem;"></div>
     `;
     container.appendChild(row);
-    
+
     const uploadBtn = row.querySelector('.btn-upload-image');
     const fileInput = row.querySelector('input[type="file"]');
     const previewDiv = row.querySelector('.upload-preview');
-    
+
     uploadBtn.addEventListener('click', async function() {
         await uploadFile(fileInput, previewDiv, 'image');
     });
-    
+
     const removeBtn = row.querySelector('.btn-remove-row');
     removeBtn.addEventListener('click', function() {
         row.remove();
     });
-    
+
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) uploadBtn.click();
     });
@@ -630,20 +630,20 @@ function addVideoUploadRow() {
         <div class="upload-preview" style="display:inline-block;margin-left:0.3rem;"></div>
     `;
     container.appendChild(row);
-    
+
     const uploadBtn = row.querySelector('.btn-upload-video');
     const fileInput = row.querySelector('input[type="file"]');
     const previewDiv = row.querySelector('.upload-preview');
-    
+
     uploadBtn.addEventListener('click', async function() {
         await uploadFile(fileInput, previewDiv, 'video');
     });
-    
+
     const removeBtn = row.querySelector('.btn-remove-row');
     removeBtn.addEventListener('click', function() {
         row.remove();
     });
-    
+
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) uploadBtn.click();
     });
@@ -655,17 +655,17 @@ async function uploadFile(fileInput, previewDiv, type) {
         alert('Please select a file.');
         return;
     }
-    
+
     const row = fileInput.closest('div');
     let btn = row ? row.querySelector('.btn-upload-image, .btn-upload-video') : null;
     if (!btn) btn = row ? row.querySelector('button') : null;
-    
+
     const originalText = btn ? btn.innerHTML : 'Upload';
     if (btn) { btn.innerHTML = '⏳'; btn.disabled = true; }
-    
+
     const formData = new FormData();
     formData.append('images', file);
-    
+
     try {
         const response = await fetch(`${API_BASE}/api/upload-multiple`, {
             method: 'POST',
@@ -740,13 +740,13 @@ function addVideoPreview(url) {
 
 document.getElementById('projectForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const groupId = document.getElementById('projectGroupId').value;
     if (!groupId) {
         alert('Please select a group.');
         return;
     }
-    
+
     const projectId = document.getElementById('projectEditId').value;
     const title = document.getElementById('projectTitle').value.trim();
     const description = document.getElementById('projectDescription').value.trim();
@@ -754,7 +754,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     const github = document.getElementById('projectGithub').value.trim();
     const demo = document.getElementById('projectDemo').value.trim();
     const readme = document.getElementById('projectReadme').value.trim();
-    
+
     // Collect image URLs
     const imageUrls = [];
     document.querySelectorAll('#imageUploadContainer .existing-image-url').forEach(el => {
@@ -763,7 +763,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     document.querySelectorAll('#imageUploadContainer [data-uploaded-url]').forEach(row => {
         imageUrls.push(row.dataset.uploadedUrl);
     });
-    
+
     // Collect video URLs
     const videoUrls = [];
     document.querySelectorAll('#videoUploadContainer .existing-video-url').forEach(el => {
@@ -772,7 +772,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
     document.querySelectorAll('#videoUploadContainer [data-uploaded-url]').forEach(row => {
         videoUrls.push(row.dataset.uploadedUrl);
     });
-    
+
     // Handle attached files
     const fileInput = document.getElementById('projectFiles');
     const files = [];
@@ -786,7 +786,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
             files.push({ name: f.name, data, size: f.size, type: f.type });
         }
     }
-    
+
     // Check if we're editing and need to keep existing files
     if (projectId) {
         const group = portfolioData.projectGroups.find(g => g.id == groupId);
@@ -797,7 +797,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
             }
         }
     }
-    
+
     const projectData = {
         title,
         description,
@@ -809,7 +809,7 @@ document.getElementById('projectForm').addEventListener('submit', async function
         technologies: tech,
         files
     };
-    
+
     try {
         let url;
         if (projectId) {
@@ -913,7 +913,7 @@ document.getElementById('experienceForm').addEventListener('submit', async funct
     const role = document.getElementById('expRole').value.trim();
     const period = document.getElementById('expPeriod').value.trim();
     const description = document.getElementById('expDescription').value.trim();
-    
+
     try {
         if (editId) {
             await fetch(`${API_BASE}/api/experience/${editId}`, {
@@ -1018,7 +1018,7 @@ document.getElementById('educationForm').addEventListener('submit', async functi
     const field = document.getElementById('eduField').value.trim();
     const period = document.getElementById('eduPeriod').value.trim();
     const description = document.getElementById('eduDescription').value.trim();
-    
+
     try {
         if (editId) {
             await fetch(`${API_BASE}/api/education/${editId}`, {
@@ -1130,7 +1130,7 @@ document.getElementById('certificationForm').addEventListener('submit', async fu
     const link = document.getElementById('certLink').value.trim();
     const fileInput = document.getElementById('certFile');
     let fileData = null;
-    
+
     if (fileInput.files.length > 0) {
         const reader = new FileReader();
         fileData = await new Promise((resolve) => {
@@ -1141,7 +1141,7 @@ document.getElementById('certificationForm').addEventListener('submit', async fu
         const existing = portfolioData.certifications.find(c => c.id == editId);
         fileData = existing ? existing.file : null;
     }
-    
+
     try {
         if (editId) {
             await fetch(`${API_BASE}/api/certifications/${editId}`, {
@@ -1243,7 +1243,7 @@ document.getElementById('socialForm').addEventListener('submit', async function(
         alert('Please fill all fields.');
         return;
     }
-    
+
     try {
         if (editPlatform && editPlatform !== platform) {
             await fetch(`${API_BASE}/api/social/${editPlatform}`, { method: 'DELETE' });
@@ -1347,12 +1347,12 @@ async function loadMessages() {
 async function renderMessages() {
     const container = document.getElementById('messagesList');
     const messages = await loadMessages();
-    
+
     if (messages.length === 0) {
         container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No messages yet.</p>`;
         return;
     }
-    
+
     container.innerHTML = messages.map((msg, i) => `
         <div class="message-item">
             <div class="message-header">

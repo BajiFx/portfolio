@@ -8,7 +8,7 @@ console.log('✅ main.js loaded (API version)');
 // CONFIGURATION
 // ============================================
 
-const API_BASE = 'https://portfolio-cms-gqrm.onrender.com';
+const API_BASE = 'https://portfolio-oqqu.onrender.com';
 
 let portfolioData = {};
 let currentGroup = null;
@@ -42,18 +42,18 @@ async function loadPublicData() {
 
 function renderPublicPortfolio() {
     const data = portfolioData;
-    
+
     // Hero Section
     if (data.personal) {
         document.getElementById('hero-title').innerHTML = `Hi, I'm <span>${data.personal.name || 'Your Name'}</span>`;
         document.getElementById('hero-subtitle').textContent = data.personal.heroSubtitle || 'Web Developer';
         document.getElementById('hero-badge').textContent = data.personal.badge || '👋 Welcome';
         document.getElementById('logo').innerHTML = (data.personal.name || 'Dev').split(' ')[0] + '<span>.</span>';
-        
-        // PROFILE IMAGE - with proper error handling
+
+        // PROFILE IMAGE
         const profileImg = document.getElementById('profile-img');
         if (profileImg) {
-            if (data.personal.profileImage && data.personal.profileImage.startsWith('data:image')) {
+            if (data.personal.profileImage && data.personal.profileImage.startsWith('http')) {
                 try {
                     profileImg.src = data.personal.profileImage;
                     profileImg.style.display = 'block';
@@ -63,17 +63,14 @@ function renderPublicPortfolio() {
                     profileImg.style.display = 'none';
                 }
             } else {
-                console.log('No profile image found in data');
                 profileImg.style.display = 'none';
             }
-        } else {
-            console.warn('⚠️ #profile-img element not found in DOM');
         }
-        
+
         // ABOUT IMAGE
         const aboutImg = document.getElementById('about-img');
         if (aboutImg) {
-            if (data.personal.aboutImage && data.personal.aboutImage.startsWith('data:image')) {
+            if (data.personal.aboutImage && data.personal.aboutImage.startsWith('http')) {
                 try {
                     aboutImg.src = data.personal.aboutImage;
                     aboutImg.style.display = 'block';
@@ -85,10 +82,8 @@ function renderPublicPortfolio() {
             } else {
                 aboutImg.style.display = 'none';
             }
-        } else {
-            console.warn('⚠️ #about-img element not found in DOM');
         }
-        
+
         if (data.personal.resume) {
             document.querySelectorAll('#resume-link, #resume-btn').forEach(link => {
                 link.href = data.personal.resume;
@@ -100,13 +95,13 @@ function renderPublicPortfolio() {
             document.getElementById('contact-email').href = `mailto:${data.personal.email}`;
         }
     }
-    
+
     // Stats
     const totalProjects = data.projectGroups?.reduce((sum, g) => sum + (g.projects?.length || 0), 0) || 0;
     document.getElementById('projects-count').textContent = totalProjects;
     document.getElementById('clients-count').textContent = data.projectGroups?.length || 0;
     document.getElementById('experience-count').textContent = data.experience?.length || 0;
-    
+
     // About
     if (data.about && data.about.paragraphs) {
         const container = document.getElementById('about-text');
@@ -119,7 +114,7 @@ function renderPublicPortfolio() {
             }
         });
     }
-    
+
     // Skills
     if (data.skills && data.skills.length > 0) {
         const grid = document.getElementById('skills-grid');
@@ -159,10 +154,10 @@ function renderPublicPortfolio() {
             </div>
         `;
     }
-    
+
     // Project Groups
     renderProjectGroups(data);
-    
+
     // Experience
     if (data.experience) {
         const timeline = document.getElementById('timeline');
@@ -179,7 +174,7 @@ function renderPublicPortfolio() {
             timeline.appendChild(div);
         });
     }
-    
+
     // Education
     if (data.education) {
         const grid = document.getElementById('education-list');
@@ -198,7 +193,7 @@ function renderPublicPortfolio() {
             grid.appendChild(div);
         });
     }
-    
+
     // Certifications
     if (data.certifications) {
         const grid = document.getElementById('certifications-list');
@@ -217,10 +212,10 @@ function renderPublicPortfolio() {
             grid.appendChild(div);
         });
     }
-    
+
     // Social Links
     renderSocialLinks(data);
-    
+
     // Footer
     if (data.footer) {
         document.getElementById('footer-text').innerHTML = data.footer;
@@ -234,7 +229,7 @@ function renderPublicPortfolio() {
 function renderProjectGroups(data) {
     const container = document.getElementById('projects-grid');
     const groups = data.projectGroups || [];
-    
+
     if (groups.length === 0) {
         container.innerHTML = `
             <div style="text-align:center;padding:3rem;width:100%;">
@@ -244,7 +239,7 @@ function renderProjectGroups(data) {
         `;
         return;
     }
-    
+
     container.innerHTML = groups.map((group, index) => {
         const groupId = group.id || index;
         return `
@@ -271,11 +266,11 @@ function renderProjectGroups(data) {
 function showGroup(groupId) {
     const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
-    
+
     currentGroup = groupId;
     const container = document.getElementById('projects-grid');
     const projects = group.projects || [];
-    
+
     if (projects.length === 0) {
         container.innerHTML = `
             <div style="text-align:center;padding:3rem;width:100%;grid-column:1/-1;">
@@ -287,7 +282,7 @@ function showGroup(groupId) {
         `;
         return;
     }
-    
+
     container.innerHTML = `
         <div style="grid-column:1/-1;text-align:center;margin-bottom:2rem;">
             <button onclick="showGroups()" class="btn secondary" style="margin-bottom:1rem;">
@@ -327,7 +322,7 @@ function showGroup(groupId) {
             </div>
         `}).join('')}
     `;
-    
+
     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -338,13 +333,13 @@ function showGroup(groupId) {
 function showProjectDetail(groupId, projectId) {
     const group = portfolioData.projectGroups.find(g => g.id == groupId);
     if (!group) return;
-    
+
     const project = group.projects.find(p => p.id == projectId);
     if (!project) return;
-    
+
     currentProject = projectId;
     const container = document.getElementById('projects-grid');
-    
+
     // Images gallery
     let imagesHtml = '';
     if (project.images && project.images.length > 0) {
@@ -359,7 +354,7 @@ function showProjectDetail(groupId, projectId) {
             </div>
         `;
     }
-    
+
     // Videos
     let videoHtml = '';
     const videos = project.videos || [];
@@ -378,7 +373,7 @@ function showProjectDetail(groupId, projectId) {
             </div>
         `;
     }
-    
+
     // README
     let readmeHtml = '';
     if (project.readme) {
@@ -392,7 +387,7 @@ function showProjectDetail(groupId, projectId) {
             </div>
         `;
     }
-    
+
     // Attached files
     let filesHtml = '';
     if (project.files && project.files.length > 0) {
@@ -411,7 +406,7 @@ function showProjectDetail(groupId, projectId) {
             </div>
         `;
     }
-    
+
     // GitHub & Demo links
     let linksHtml = '';
     if (project.github || project.demo) {
@@ -430,14 +425,14 @@ function showProjectDetail(groupId, projectId) {
             </div>
         `;
     }
-    
+
     container.innerHTML = `
         <div style="grid-column:1/-1;">
             <button onclick="showGroup('${groupId}')" class="btn secondary" style="margin-bottom:2rem;">
                 <i class="fas fa-arrow-left"></i> Back to ${group.name}
             </button>
         </div>
-        
+
         <div style="grid-column:1/-1;background:var(--bg-card);padding:2.5rem;border-radius:16px;border:1px solid var(--border-color);">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
                 <div>
@@ -454,7 +449,7 @@ function showProjectDetail(groupId, projectId) {
                     </span>
                     <h1 style="font-size:2.5rem;font-weight:800;margin:1rem 0 0.5rem;">${project.title}</h1>
                     <p style="color:var(--text-secondary);font-size:1.1rem;line-height:1.8;">${project.description}</p>
-                    
+
                     ${project.technologies ? `
                         <div style="margin-top:1.5rem;">
                             <h4 style="margin-bottom:0.5rem;">Technologies</h4>
@@ -465,18 +460,18 @@ function showProjectDetail(groupId, projectId) {
                             </div>
                         </div>
                     ` : ''}
-                    
+
                     ${linksHtml}
                 </div>
             </div>
         </div>
-        
+
         ${imagesHtml}
         ${videoHtml}
         ${readmeHtml}
         ${filesHtml}
     `;
-    
+
     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -525,11 +520,11 @@ function openLightbox(imageSrc) {
 function renderSocialLinks(data) {
     const container = document.getElementById('social-links');
     if (!container) return;
-    
+
     container.innerHTML = '';
     const social = data.social || {};
     const personal = data.personal || {};
-    
+
     const links = [
         { key: 'whatsapp', icon: 'fab fa-whatsapp', label: 'WhatsApp', url: social.whatsapp ? `https://wa.me/${social.whatsapp.replace(/\D/g, '')}` : null },
         { key: 'linkedin', icon: 'fab fa-linkedin-in', label: 'LinkedIn', url: social.linkedin },
@@ -538,7 +533,7 @@ function renderSocialLinks(data) {
         { key: 'phone', icon: 'fas fa-phone', label: 'Phone', url: social.phone ? `tel:${social.phone.replace(/\s/g, '')}` : personal.phone ? `tel:${personal.phone.replace(/\s/g, '')}` : null },
         { key: 'email', icon: 'fas fa-envelope', label: 'Email', url: personal.email ? `mailto:${personal.email}` : null }
     ];
-    
+
     links.forEach(link => {
         if (link.url) {
             const a = document.createElement('a');
@@ -558,27 +553,27 @@ function renderSocialLinks(data) {
 
 document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const name = document.getElementById('form-name').value;
     const email = document.getElementById('form-email').value;
     const subject = document.getElementById('form-subject')?.value || 'No subject';
     const message = document.getElementById('form-message').value;
-    
+
     const msgData = { name, email, subject, message };
-    
+
     const btn = this.querySelector('button');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
     btn.disabled = true;
-    
+
     try {
         const response = await fetch(`${API_BASE}/api/messages`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(msgData)
         });
-        
+
         if (!response.ok) throw new Error('Failed to send message');
-        
+
         btn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
         btn.style.background = '#22c55e';
         setTimeout(() => {
