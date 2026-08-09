@@ -88,17 +88,26 @@ app.get('/api/db-test', async (req, res) => {
     }
 });
 
-// Register
+// Register – only allow if no users exist yet
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
             return res.status(400).json({ error: 'Username and password required.' });
         }
+
+        // 🔒 Prevent multiple registrations
+        const existingUsers = await query('SELECT id FROM users LIMIT 1');
+        if (existingUsers.rows.length > 0) {
+            return res.status(403).json({ error: 'Registration is closed. Only one admin account is allowed.' });
+        }
+
+        // Check if username already taken (redundant but safe)
         const existing = await query('SELECT id FROM users WHERE username = $1', [username]);
         if (existing.rows.length > 0) {
             return res.status(409).json({ error: 'Username already taken.' });
         }
+
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const result = await query(
