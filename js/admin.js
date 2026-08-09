@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (Backend API Version)
+// ADMIN.JS - Complete Admin Panel (with Skills Management)
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
@@ -9,18 +9,36 @@ console.log('✅ admin.js loaded (API version)');
 // ============================================
 
 const API_BASE = 'https://portfolio-oqqu.onrender.com';
-// For local development, use: const API_BASE = 'http://localhost:3000';
-
 let portfolioData = {};
 let imageCounter = 0;
 let videoCounter = 0;
 
 // ============================================
-// CHECK LOGIN
+// CHECK LOGIN & TOKEN
 // ============================================
 
-if (!localStorage.getItem('isLoggedIn')) {
+const token = localStorage.getItem('token');
+if (!token) {
     window.location.href = 'login.html';
+}
+
+// ============================================
+// HELPER: Get auth headers
+// ============================================
+
+function getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
+
+function getFileUploadHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Authorization': `Bearer ${token}`
+    };
 }
 
 // ============================================
@@ -91,15 +109,17 @@ function resetDefaultData() {
 }
 
 // ============================================
-// SAVE DATA TO BACKEND
+// SAVE DATA TO BACKEND (all protected)
 // ============================================
 
 async function saveData() {
     try {
-        // Save profile
+        const headers = getAuthHeaders();
+
+        // Profile
         await fetch(`${API_BASE}/api/profile`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({
                 name: portfolioData.personal?.name || '',
                 title: portfolioData.personal?.title || '',
@@ -114,24 +134,24 @@ async function saveData() {
             })
         });
 
-        // Save about paragraphs
+        // About
         await fetch(`${API_BASE}/api/about`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ paragraphs: portfolioData.about?.paragraphs || [] })
         });
 
-        // Save skills
+        // Skills
         await fetch(`${API_BASE}/api/skills`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ skills: portfolioData.skills || [] })
         });
 
-        // Save welcome video
+        // Welcome video
         await fetch(`${API_BASE}/api/welcome-video`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ url: portfolioData.videos?.welcome || '' })
         });
 
@@ -149,6 +169,7 @@ async function saveData() {
 
 function renderAll() {
     renderProfileForm();
+    renderSkillsList();
     renderGroupsList();
     renderExperienceList();
     renderEducationList();
@@ -196,6 +217,7 @@ function switchTab(tabId) {
     if (target) target.classList.add('active');
     const btn = document.querySelector(`.sidebar-btn[data-tab="${tabId}"]`);
     if (btn) btn.classList.add('active');
+    if (tabId === 'skills') renderSkillsList();
     if (tabId === 'projects') renderGroupsList();
     if (tabId === 'experience') renderExperienceList();
     if (tabId === 'education') renderEducationList();
@@ -249,9 +271,7 @@ document.getElementById('profileForm').addEventListener('submit', async function
     updateDashboard();
 });
 
-// ============================================
-// PROFILE PICTURE UPLOAD (Cloudinary)
-// ============================================
+// ===== PROFILE PICTURE UPLOAD (Cloudinary) =====
 document.getElementById('profilePicture').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -262,6 +282,7 @@ document.getElementById('profilePicture').addEventListener('change', async funct
     try {
         const response = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
+            headers: getFileUploadHeaders(),
             body: formData
         });
         const result = await response.json();
@@ -283,9 +304,7 @@ document.getElementById('profilePicture').addEventListener('change', async funct
     }
 });
 
-// ============================================
-// ABOUT IMAGE UPLOAD (Cloudinary)
-// ============================================
+// ===== ABOUT IMAGE UPLOAD (Cloudinary) =====
 document.getElementById('aboutImage').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -296,6 +315,7 @@ document.getElementById('aboutImage').addEventListener('change', async function(
     try {
         const response = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
+            headers: getFileUploadHeaders(),
             body: formData
         });
         const result = await response.json();
@@ -316,6 +336,141 @@ document.getElementById('aboutImage').addEventListener('change', async function(
         alert('Error uploading to Cloudinary.');
     }
 });
+
+// ============================================
+// SKILLS MANAGEMENT
+// ============================================
+
+function renderSkillsList() {
+    const container = document.getElementById('skillsList');
+    const skills = portfolioData.skills || [];
+
+    if (skills.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No skill categories added yet. Click "Add Category" to start.</p>`;
+        return;
+    }
+
+    container.innerHTML = skills.map((skill, index) => `
+        <div style="background:var(--bg-card);padding:1.5rem;border-radius:16px;border:1px solid var(--border-color);margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+                <div>
+                    <h3><i class="${skill.icon || 'fas fa-code'}"></i> ${skill.category}</h3>
+                </div>
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="editSkillCategory(${index})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteSkillCategory(${index})" class="btn-delete"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+                ${(skill.items || []).map((item, itemIndex) => `
+                    <span style="background:var(--bg-primary);padding:0.3rem 0.8rem;border-radius:50px;border:1px solid var(--border-color);display:inline-flex;align-items:center;gap:0.4rem;">
+                        ${item}
+                        <button onclick="deleteSkillItem(${index}, ${itemIndex})" style="background:none;border:none;color:var(--text-light);cursor:pointer;font-size:0.8rem;">&times;</button>
+                    </span>
+                `).join('')}
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                <input type="text" id="newSkill_${index}" placeholder="Add a new skill..." style="flex:1;padding:0.4rem 0.8rem;border:2px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);">
+                <button onclick="addSkillItem(${index})" class="btn secondary" style="padding:0.3rem 1rem;font-size:0.85rem;">Add</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddSkillCategory() {
+    document.getElementById('addSkillCategoryForm').style.display = 'block';
+    document.getElementById('skillCategoryFormTitle').textContent = '➕ Add Skill Category';
+    document.getElementById('skillCategorySubmitBtn').textContent = 'Add Category';
+    document.getElementById('skillCategoryEditIndex').value = -1;
+    document.getElementById('skillCategoryName').value = '';
+    document.getElementById('skillCategoryIcon').value = 'fas fa-code';
+    document.getElementById('addSkillCategoryForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideAddSkillCategory() {
+    document.getElementById('addSkillCategoryForm').style.display = 'none';
+}
+
+function editSkillCategory(index) {
+    const skill = portfolioData.skills[index];
+    if (!skill) return;
+    document.getElementById('addSkillCategoryForm').style.display = 'block';
+    document.getElementById('skillCategoryFormTitle').textContent = '✏️ Edit Skill Category';
+    document.getElementById('skillCategorySubmitBtn').textContent = 'Update Category';
+    document.getElementById('skillCategoryEditIndex').value = index;
+    document.getElementById('skillCategoryName').value = skill.category;
+    document.getElementById('skillCategoryIcon').value = skill.icon || 'fas fa-code';
+    document.getElementById('addSkillCategoryForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteSkillCategory(index) {
+    if (!confirm('Delete this skill category and all its skills?')) return;
+    portfolioData.skills.splice(index, 1);
+    renderSkillsList();
+    saveData().then(() => {
+        alert('✅ Category deleted and changes saved.');
+    });
+}
+
+document.getElementById('skillCategoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const editIndex = parseInt(document.getElementById('skillCategoryEditIndex').value);
+    const category = document.getElementById('skillCategoryName').value.trim();
+    const icon = document.getElementById('skillCategoryIcon').value.trim() || 'fas fa-code';
+
+    if (!category) {
+        alert('Category name is required.');
+        return;
+    }
+
+    if (editIndex >= 0) {
+        if (portfolioData.skills[editIndex]) {
+            portfolioData.skills[editIndex].category = category;
+            portfolioData.skills[editIndex].icon = icon;
+        }
+    } else {
+        portfolioData.skills.push({ category, icon, items: [] });
+    }
+
+    hideAddSkillCategory();
+    renderSkillsList();
+    saveData().then(() => {
+        alert('✅ Category saved successfully!');
+    });
+});
+
+function addSkillItem(index) {
+    const input = document.getElementById(`newSkill_${index}`);
+    const skillName = input.value.trim();
+    if (!skillName) {
+        alert('Please enter a skill name.');
+        return;
+    }
+    if (!portfolioData.skills[index]) return;
+    if (!portfolioData.skills[index].items) portfolioData.skills[index].items = [];
+    portfolioData.skills[index].items.push(skillName);
+    input.value = '';
+    renderSkillsList();
+    saveData().then(() => {
+        console.log('✅ Skill added and saved.');
+    });
+}
+
+function deleteSkillItem(categoryIndex, itemIndex) {
+    if (!confirm('Remove this skill?')) return;
+    if (portfolioData.skills[categoryIndex] && portfolioData.skills[categoryIndex].items) {
+        portfolioData.skills[categoryIndex].items.splice(itemIndex, 1);
+        renderSkillsList();
+        saveData().then(() => {
+            console.log('✅ Skill removed and saved.');
+        });
+    }
+}
+
+async function saveSkills() {
+    await saveData();
+    alert('✅ All skills saved successfully!');
+}
 
 // ============================================
 // PROJECT GROUPS & PROJECTS
@@ -403,7 +558,10 @@ async function editGroup(groupId) {
 async function deleteGroup(groupId) {
     if (!confirm('Delete this group and all its projects?')) return;
     try {
-        await fetch(`${API_BASE}/api/groups/${groupId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/groups/${groupId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderGroupsList();
         updateDashboard();
@@ -424,13 +582,13 @@ document.getElementById('groupForm').addEventListener('submit', async function(e
         if (editId) {
             await fetch(`${API_BASE}/api/groups/${editId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ name, icon, description })
             });
         } else {
             await fetch(`${API_BASE}/api/groups`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ name, icon, description })
             });
         }
@@ -527,7 +685,10 @@ async function editProject(groupId, projectId) {
 async function deleteProject(groupId, projectId) {
     if (!confirm('Delete this project?')) return;
     try {
-        await fetch(`${API_BASE}/api/projects/${projectId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/projects/${projectId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderGroupsList();
         updateDashboard();
@@ -669,6 +830,7 @@ async function uploadFile(fileInput, previewDiv, type) {
     try {
         const response = await fetch(`${API_BASE}/api/upload-multiple`, {
             method: 'POST',
+            headers: getFileUploadHeaders(),
             body: formData
         });
         const result = await response.json();
@@ -755,7 +917,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
     const demo = document.getElementById('projectDemo').value.trim();
     const readme = document.getElementById('projectReadme').value.trim();
 
-    // Collect image URLs
     const imageUrls = [];
     document.querySelectorAll('#imageUploadContainer .existing-image-url').forEach(el => {
         imageUrls.push(el.value);
@@ -764,7 +925,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
         imageUrls.push(row.dataset.uploadedUrl);
     });
 
-    // Collect video URLs
     const videoUrls = [];
     document.querySelectorAll('#videoUploadContainer .existing-video-url').forEach(el => {
         videoUrls.push(el.value);
@@ -773,7 +933,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
         videoUrls.push(row.dataset.uploadedUrl);
     });
 
-    // Handle attached files
     const fileInput = document.getElementById('projectFiles');
     const files = [];
     if (fileInput.files.length > 0) {
@@ -787,7 +946,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
         }
     }
 
-    // Check if we're editing and need to keep existing files
     if (projectId) {
         const group = portfolioData.projectGroups.find(g => g.id == groupId);
         const existingProject = group?.projects?.find(p => p.id == projectId);
@@ -811,19 +969,16 @@ document.getElementById('projectForm').addEventListener('submit', async function
     };
 
     try {
-        let url;
         if (projectId) {
-            url = `${API_BASE}/api/projects/${projectId}`;
-            await fetch(url, {
+            await fetch(`${API_BASE}/api/projects/${projectId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(projectData)
             });
         } else {
-            url = `${API_BASE}/api/groups/${groupId}/projects`;
-            await fetch(url, {
+            await fetch(`${API_BASE}/api/groups/${groupId}/projects`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(projectData)
             });
         }
@@ -896,7 +1051,10 @@ async function editExperience(expId) {
 async function deleteExperience(expId) {
     if (!confirm('Delete this experience?')) return;
     try {
-        await fetch(`${API_BASE}/api/experience/${expId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/experience/${expId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderExperienceList();
         updateDashboard();
@@ -918,13 +1076,13 @@ document.getElementById('experienceForm').addEventListener('submit', async funct
         if (editId) {
             await fetch(`${API_BASE}/api/experience/${editId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ company, role, period, description })
             });
         } else {
             await fetch(`${API_BASE}/api/experience`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ company, role, period, description })
             });
         }
@@ -1000,7 +1158,10 @@ async function editEducation(eduId) {
 async function deleteEducation(eduId) {
     if (!confirm('Delete this education?')) return;
     try {
-        await fetch(`${API_BASE}/api/education/${eduId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/education/${eduId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderEducationList();
         updateDashboard();
@@ -1023,13 +1184,13 @@ document.getElementById('educationForm').addEventListener('submit', async functi
         if (editId) {
             await fetch(`${API_BASE}/api/education/${editId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ institution, degree, field, period, description })
             });
         } else {
             await fetch(`${API_BASE}/api/education`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ institution, degree, field, period, description })
             });
         }
@@ -1110,7 +1271,10 @@ async function editCertification(certId) {
 async function deleteCertification(certId) {
     if (!confirm('Delete this certification?')) return;
     try {
-        await fetch(`${API_BASE}/api/certifications/${certId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/certifications/${certId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderCertificationsList();
         updateDashboard();
@@ -1146,13 +1310,13 @@ document.getElementById('certificationForm').addEventListener('submit', async fu
         if (editId) {
             await fetch(`${API_BASE}/api/certifications/${editId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ name, issuer, date, description, link, file: fileData })
             });
         } else {
             await fetch(`${API_BASE}/api/certifications`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({ name, issuer, date, description, link, file: fileData })
             });
         }
@@ -1223,7 +1387,10 @@ async function editSocial(platform) {
 async function deleteSocial(platform) {
     if (!confirm('Delete this social link?')) return;
     try {
-        await fetch(`${API_BASE}/api/social/${platform}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/social/${platform}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         await loadData();
         renderSocialList();
         updateDashboard();
@@ -1246,11 +1413,14 @@ document.getElementById('socialForm').addEventListener('submit', async function(
 
     try {
         if (editPlatform && editPlatform !== platform) {
-            await fetch(`${API_BASE}/api/social/${editPlatform}`, { method: 'DELETE' });
+            await fetch(`${API_BASE}/api/social/${editPlatform}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
         }
         await fetch(`${API_BASE}/api/social`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ platform, icon, url })
         });
         await loadData();
@@ -1333,7 +1503,9 @@ document.getElementById('welcomeVideoForm').addEventListener('submit', async fun
 
 async function loadMessages() {
     try {
-        const response = await fetch(`${API_BASE}/api/messages`);
+        const response = await fetch(`${API_BASE}/api/messages`, {
+            headers: getAuthHeaders()
+        });
         if (!response.ok) throw new Error('Failed to fetch messages');
         const messages = await response.json();
         document.getElementById('statMessages').textContent = messages.length;
@@ -1371,7 +1543,10 @@ async function renderMessages() {
 async function deleteMessage(messageId) {
     if (!confirm('Delete this message?')) return;
     try {
-        await fetch(`${API_BASE}/api/messages/${messageId}`, { method: 'DELETE' });
+        await fetch(`${API_BASE}/api/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         renderMessages();
         updateDashboard();
         alert('✅ Message deleted!');
@@ -1385,7 +1560,8 @@ async function deleteMessage(messageId) {
 // ============================================
 
 function logout() {
-    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     window.location.href = 'login.html';
 }
 
