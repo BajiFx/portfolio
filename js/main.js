@@ -52,30 +52,41 @@ function renderPublicPortfolio() {
         
         // PROFILE IMAGE - with proper error handling
         const profileImg = document.getElementById('profile-img');
-        if (data.personal.profileImage && data.personal.profileImage.startsWith('data:image')) {
-            try {
-                profileImg.src = data.personal.profileImage;
-                profileImg.style.display = 'block';
-            } catch (e) {
-                console.warn('Failed to set profile image:', e);
+        if (profileImg) {
+            if (data.personal.profileImage && data.personal.profileImage.startsWith('data:image')) {
+                try {
+                    profileImg.src = data.personal.profileImage;
+                    profileImg.style.display = 'block';
+                    console.log('✅ Profile image set successfully');
+                } catch (e) {
+                    console.warn('Failed to set profile image:', e);
+                    profileImg.style.display = 'none';
+                }
+            } else {
+                console.log('No profile image found in data');
                 profileImg.style.display = 'none';
             }
         } else {
-            profileImg.style.display = 'none';
+            console.warn('⚠️ #profile-img element not found in DOM');
         }
         
         // ABOUT IMAGE
         const aboutImg = document.getElementById('about-img');
-        if (data.personal.aboutImage && data.personal.aboutImage.startsWith('data:image')) {
-            try {
-                aboutImg.src = data.personal.aboutImage;
-                aboutImg.style.display = 'block';
-            } catch (e) {
-                console.warn('Failed to set about image:', e);
+        if (aboutImg) {
+            if (data.personal.aboutImage && data.personal.aboutImage.startsWith('data:image')) {
+                try {
+                    aboutImg.src = data.personal.aboutImage;
+                    aboutImg.style.display = 'block';
+                    console.log('✅ About image set successfully');
+                } catch (e) {
+                    console.warn('Failed to set about image:', e);
+                    aboutImg.style.display = 'none';
+                }
+            } else {
                 aboutImg.style.display = 'none';
             }
         } else {
-            aboutImg.style.display = 'none';
+            console.warn('⚠️ #about-img element not found in DOM');
         }
         
         if (data.personal.resume) {
