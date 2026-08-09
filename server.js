@@ -35,19 +35,16 @@ pool.connect((err) => {
 // CORS CONFIGURATION - FIXED
 // ============================================
 
-// List of allowed origins
 const allowedOrigins = [
-    'https://ochiengsportfolio.netlify.app',  // Your Netlify site
-    'http://localhost:3000',                   // Local development
-    'http://localhost:5500',                   // VS Code Live Server
-    'https://portfolio-cms-gqrm.onrender.com'  // Your backend itself
+    'https://ochiengsportfolio.netlify.app',
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'https://portfolio-cms-gqrm.onrender.com'
 ];
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
@@ -61,7 +58,6 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// Handle preflight requests explicitly
 app.options('*', cors());
 
 app.use(express.json({ limit: '50mb' }));
@@ -165,10 +161,11 @@ app.get('/api/data', async (req, res) => {
             const projectsRes = await query('SELECT * FROM projects WHERE group_id = $1 ORDER BY display_order', [group.id]);
             const projects = [];
             for (const proj of projectsRes.rows) {
-                const imagesRes = await query('SELECT url FROM project_images WHERE project_id = $1 ORDER BY display_order', [proj.id]);
-                const videosRes = await query('SELECT url FROM project_videos WHERE project_id = $1 ORDER BY display_order', [proj.id]);
-                const techRes = await query('SELECT name FROM project_technologies WHERE project_id = $1 ORDER BY display_order', [proj.id]);
-                const filesRes = await query('SELECT name, data, size, type FROM project_files WHERE project_id = $1 ORDER BY display_order', [proj.id]);
+                // FIXED: Use ORDER BY id instead of display_order
+                const imagesRes = await query('SELECT url FROM project_images WHERE project_id = $1 ORDER BY id', [proj.id]);
+                const videosRes = await query('SELECT url FROM project_videos WHERE project_id = $1 ORDER BY id', [proj.id]);
+                const techRes = await query('SELECT name FROM project_technologies WHERE project_id = $1 ORDER BY id', [proj.id]);
+                const filesRes = await query('SELECT name, data, size, type FROM project_files WHERE project_id = $1 ORDER BY id', [proj.id]);
                 projects.push({
                     id: proj.id,
                     title: proj.title,
