@@ -27,7 +27,6 @@ async function loadPublicData() {
         renderPublicPortfolio();
     } catch (error) {
         console.error('Error loading data:', error);
-        // Show a fallback/error message
         document.getElementById('hero-title').innerHTML = `Hi, I'm <span>Loading...</span>`;
         document.getElementById('projects-grid').innerHTML = `
             <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">
@@ -51,12 +50,34 @@ function renderPublicPortfolio() {
         document.getElementById('hero-badge').textContent = data.personal.badge || '👋 Welcome';
         document.getElementById('logo').innerHTML = (data.personal.name || 'Dev').split(' ')[0] + '<span>.</span>';
         
-        if (data.personal.profileImage) {
-            document.getElementById('profile-img').src = data.personal.profileImage;
+        // PROFILE IMAGE - with proper error handling
+        const profileImg = document.getElementById('profile-img');
+        if (data.personal.profileImage && data.personal.profileImage.startsWith('data:image')) {
+            try {
+                profileImg.src = data.personal.profileImage;
+                profileImg.style.display = 'block';
+            } catch (e) {
+                console.warn('Failed to set profile image:', e);
+                profileImg.style.display = 'none';
+            }
+        } else {
+            profileImg.style.display = 'none';
         }
-        if (data.personal.aboutImage) {
-            document.getElementById('about-img').src = data.personal.aboutImage;
+        
+        // ABOUT IMAGE
+        const aboutImg = document.getElementById('about-img');
+        if (data.personal.aboutImage && data.personal.aboutImage.startsWith('data:image')) {
+            try {
+                aboutImg.src = data.personal.aboutImage;
+                aboutImg.style.display = 'block';
+            } catch (e) {
+                console.warn('Failed to set about image:', e);
+                aboutImg.style.display = 'none';
+            }
+        } else {
+            aboutImg.style.display = 'none';
         }
+        
         if (data.personal.resume) {
             document.querySelectorAll('#resume-link, #resume-btn').forEach(link => {
                 link.href = data.personal.resume;
@@ -105,7 +126,6 @@ function renderPublicPortfolio() {
             grid.appendChild(div);
         });
     } else {
-        // Fallback default skills
         const grid = document.getElementById('skills-grid');
         grid.innerHTML = `
             <div class="skill-card">
@@ -215,7 +235,6 @@ function renderProjectGroups(data) {
     }
     
     container.innerHTML = groups.map((group, index) => {
-        // Use the group's id if available, otherwise use index
         const groupId = group.id || index;
         return `
         <div class="project-card group-card" onclick="showGroup('${groupId}')" style="cursor:pointer;">
@@ -235,7 +254,7 @@ function renderProjectGroups(data) {
 }
 
 // ============================================
-// SHOW GROUP (by ID)
+// SHOW GROUP
 // ============================================
 
 function showGroup(groupId) {
