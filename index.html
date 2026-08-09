@@ -10,7 +10,6 @@
     <meta property="og:title" content="George Onyango Ochieng - Portfolio">
     <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://george-onyango-ochieng.netlify.app">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
     <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
@@ -45,9 +44,9 @@
         </div>
     </nav>
 
-    <!-- ===== HERO SECTION with Blobs ===== -->
+    <!-- ===== HERO SECTION with Blobs and Typing Effect ===== -->
     <section id="hero">
-        <!-- Floating decorative blobs -->
+        <!-- Decorative blobs -->
         <div class="hero-blob blob-1"></div>
         <div class="hero-blob blob-2"></div>
         <div class="hero-blob blob-3"></div>
@@ -56,7 +55,9 @@
         <div class="container hero-content">
             <div class="hero-text">
                 <span class="badge" id="hero-badge">👋 Welcome</span>
-                <h1 id="hero-title">Hi, I'm <span>Your Name</span></h1>
+                <h1 id="hero-title">
+                    <span class="typing-text">Hi, I'm <span>Your Name</span></span>
+                </h1>
                 <p id="hero-subtitle">Web Developer creating amazing experiences</p>
                 <div class="hero-buttons">
                     <a href="#projects" class="btn primary">View Projects <i class="fas fa-arrow-right"></i></a>
@@ -75,14 +76,14 @@
             </div>
         </div>
 
-        <!-- Scroll down indicator with blinking chevron -->
+        <!-- Scroll Indicator (blinking) -->
         <div class="scroll-indicator">
             <span>Scroll</span>
             <i class="fas fa-chevron-down"></i>
         </div>
     </section>
 
-    <!-- ===== OTHER SECTIONS (unchanged structure) ===== -->
+    <!-- ===== PROJECTS ===== -->
     <section id="projects">
         <div class="container">
             <div class="section-header">
@@ -90,23 +91,31 @@
                 <h2>Featured <span>Projects</span></h2>
                 <p>Each project is crafted with attention to detail and user experience</p>
             </div>
-            <div id="projects-grid" class="projects-grid"><p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading projects...</p></div>
+            <div id="projects-grid" class="projects-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading projects...</p>
+            </div>
         </div>
     </section>
 
+    <!-- ===== SKILLS ===== -->
     <section id="skills">
         <div class="container">
             <div class="section-header">
                 <span class="label">Skills</span>
                 <h2>Tech <span>Stack</span></h2>
             </div>
-            <div id="skills-grid" class="skills-grid"><p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading skills...</p></div>
+            <div id="skills-grid" class="skills-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading skills...</p>
+            </div>
         </div>
     </section>
 
+    <!-- ===== ABOUT ===== -->
     <section id="about">
         <div class="container about-content">
-            <div class="about-image"><img src="" alt="About" id="about-img" onerror="this.style.display='none'"></div>
+            <div class="about-image">
+                <img src="" alt="About" id="about-img" onerror="this.style.display='none'">
+            </div>
             <div class="about-text">
                 <span class="label">About Me</span>
                 <h2>Passionate about <span>building</span> great software</h2>
@@ -115,16 +124,20 @@
         </div>
     </section>
 
+    <!-- ===== EXPERIENCE ===== -->
     <section id="experience">
         <div class="container">
             <div class="section-header">
                 <span class="label">Experience</span>
                 <h2>Work <span>Experience</span></h2>
             </div>
-            <div id="timeline" class="timeline"><p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading experience...</p></div>
+            <div id="timeline" class="timeline">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading experience...</p>
+            </div>
         </div>
     </section>
 
+    <!-- ===== EDUCATION ===== -->
     <section id="education">
         <div class="container">
             <div class="section-header">
@@ -132,10 +145,13 @@
                 <h2>My <span>Education</span></h2>
                 <p>My academic background and qualifications</p>
             </div>
-            <div id="education-list" class="education-grid"><p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading education...</p></div>
+            <div id="education-list" class="education-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading education...</p>
+            </div>
         </div>
     </section>
 
+    <!-- ===== CERTIFICATIONS ===== -->
     <section id="certifications">
         <div class="container">
             <div class="section-header">
@@ -143,10 +159,13 @@
                 <h2>My <span>Certifications</span></h2>
                 <p>Professional certifications and credentials</p>
             </div>
-            <div id="certifications-list" class="certifications-grid"><p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading certifications...</p></div>
+            <div id="certifications-list" class="certifications-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading certifications...</p>
+            </div>
         </div>
     </section>
 
+    <!-- ===== CONTACT ===== -->
     <section id="contact">
         <div class="container">
             <div class="section-header">
