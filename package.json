@@ -2,9 +2,9 @@
   "name": "portfolio-cms",
   "version": "1.0.0",
   "description": "Portfolio CMS with Cloudinary integration",
-  "main": "server.js",
+  "main": "backend.js",
   "scripts": {
-    "start": "node server.js",
+    "start":"node backend.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {
