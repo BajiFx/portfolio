@@ -32,9 +32,38 @@ pool.connect((err) => {
 });
 
 // ============================================
-// MIDDLEWARE
+// CORS CONFIGURATION - FIXED
 // ============================================
-app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','OPTIONS'] }));
+
+// List of allowed origins
+const allowedOrigins = [
+    'https://ochiengsportfolio.netlify.app',  // Your Netlify site
+    'http://localhost:3000',                   // Local development
+    'http://localhost:5500',                   // VS Code Live Server
+    'https://portfolio-cms-gqrm.onrender.com'  // Your backend itself
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.warn('❌ CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -104,7 +133,7 @@ app.post('/api/upload-multiple', upload.array('images', 10), async (req, res) =>
 });
 
 // ============================================
-// GET ALL DATA (SIMPLIFIED - NO AMBIGUOUS COLUMNS)
+// GET ALL DATA
 // ============================================
 app.get('/api/data', async (req, res) => {
     try {
@@ -129,7 +158,7 @@ app.get('/api/data', async (req, res) => {
             });
         }
 
-        // 4. Groups and projects (simple, no joins that cause ambiguity)
+        // 4. Groups and projects
         const groupsRes = await query('SELECT * FROM project_groups ORDER BY display_order');
         const projectGroups = [];
         for (const group of groupsRes.rows) {
