@@ -252,37 +252,77 @@ document.getElementById('profileForm').addEventListener('submit', async function
     updateDashboard();
 });
 
-document.getElementById('profilePicture').addEventListener('change', function(e) {
+// **********************************************
+// UPDATED: Profile Picture upload to Cloudinary
+// **********************************************
+document.getElementById('profilePicture').addEventListener('change', async function(e) {
     const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file); // using 'image' key as expected by your /api/upload endpoint
+
+    try {
+        const response = await fetch(`${API_BASE}/api/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success && result.url) {
+            // Update preview
             const img = document.createElement('img');
-            img.src = ev.target.result;
+            img.src = result.url;
             img.style.cssText = 'width:150px;height:150px;border-radius:50%;object-fit:cover;';
-            document.getElementById('profilePicturePreview').innerHTML = '';
-            document.getElementById('profilePicturePreview').appendChild(img);
-            portfolioData.personal.profileImage = ev.target.result;
-            saveData();
-        };
-        reader.readAsDataURL(file);
+            const previewContainer = document.getElementById('profilePicturePreview');
+            previewContainer.innerHTML = '';
+            previewContainer.appendChild(img);
+
+            // Save URL to data and persist
+            portfolioData.personal.profileImage = result.url;
+            await saveData();
+            alert('✅ Profile picture uploaded to Cloudinary!');
+        } else {
+            alert('Upload failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Error uploading to Cloudinary.');
     }
 });
 
-document.getElementById('aboutImage').addEventListener('change', function(e) {
+// **********************************************
+// UPDATED: About Image upload to Cloudinary
+// **********************************************
+document.getElementById('aboutImage').addEventListener('change', async function(e) {
     const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(ev) {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const response = await fetch(`${API_BASE}/api/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success && result.url) {
             const img = document.createElement('img');
-            img.src = ev.target.result;
+            img.src = result.url;
             img.style.cssText = 'max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;';
-            document.getElementById('aboutImagePreview').innerHTML = '';
-            document.getElementById('aboutImagePreview').appendChild(img);
-            portfolioData.personal.aboutImage = ev.target.result;
-            saveData();
-        };
-        reader.readAsDataURL(file);
+            const previewContainer = document.getElementById('aboutImagePreview');
+            previewContainer.innerHTML = '';
+            previewContainer.appendChild(img);
+
+            portfolioData.personal.aboutImage = result.url;
+            await saveData();
+            alert('✅ About image uploaded to Cloudinary!');
+        } else {
+            alert('Upload failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Error uploading to Cloudinary.');
     }
 });
 
