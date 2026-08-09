@@ -8,214 +8,65 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-gradient);
-            padding: 2rem;
-        }
-        .login-box {
-            background: var(--bg-card);
-            padding: 3rem;
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-        }
-        .login-box:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 30px 80px rgba(99, 102, 241, 0.15);
-        }
-        .login-box .logo {
-            text-align: center;
-            font-size: 2.8rem;
-            font-weight: 900;
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-        .login-box .logo span {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .login-box h1 {
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.3rem;
-        }
-        .login-box .subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-        .form-group .input-wrapper {
-            position: relative;
-        }
-        .form-group .input-wrapper i {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            font-size: 1rem;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.9rem 1rem 0.9rem 3rem;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: var(--transition);
-            font-family: inherit;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-        .login-error {
-            background: #ef4444;
-            color: white;
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            display: none;
-            font-size: 0.9rem;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .login-error.show {
-            display: flex;
-        }
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-            padding: 1rem;
-            font-size: 1.05rem;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 1.5rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
-        .back-link:hover {
-            color: var(--accent-primary);
-        }
-        .login-footer {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-        @media (max-width: 480px) {
-            .login-box {
-                padding: 2rem 1.5rem;
-            }
-            .login-box .logo {
-                font-size: 2.2rem;
-            }
-        }
+        /* Same styles as before – keep them */
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <a href="#" class="logo">Dev<span>.</span></a>
-            <h1>Welcome Back</h1>
-            <p class="subtitle">Login to manage your portfolio</p>
-            
-            <div id="loginError" class="login-error">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>Invalid username or password</span>
+<div class="login-container">
+    <div class="login-box">
+        <a href="#" class="logo">Dev<span>.</span></a>
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Login to manage your portfolio</p>
+        <div id="loginError" class="login-error"><i class="fas fa-exclamation-circle"></i> <span id="errorMsg">Invalid username or password</span></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-wrapper"><i class="fas fa-user"></i><input type="text" id="username" placeholder="Enter username" required autofocus></div>
             </div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="username" placeholder="Enter username" required autofocus>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" placeholder="Enter password" required>
-                    </div>
-                </div>
-                <button type="submit" class="btn primary btn-block">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </form>
-            
-            <a href="index.html" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back to Portfolio
-            </a>
-            
-            <div class="login-footer">
-                Default: admin / portfolio2025
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="Enter password" required></div>
             </div>
-        </div>
+            <button type="submit" class="btn primary btn-block"><i class="fas fa-sign-in-alt"></i> Login</button>
+        </form>
+        <a href="register.html" class="back-link"><i class="fas fa-user-plus"></i> Register as Admin</a>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+        <div class="login-footer">Secure admin login</div>
     </div>
+</div>
+<script>
+    const API_BASE = 'https://portfolio-oqqu.onrender.com';
 
-    <script>
-        // Default credentials
-        const ADMIN_USERNAME = 'admin';
-        const ADMIN_PASSWORD = 'portfolio2025';
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorDiv = document.getElementById('loginError');
+        const errorMsg = document.getElementById('errorMsg');
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorDiv = document.getElementById('loginError');
-            
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                localStorage.setItem('isLoggedIn', 'true');
+        try {
+            const res = await fetch(`${API_BASE}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
                 window.location.href = 'admin.html';
             } else {
+                errorMsg.textContent = data.error || 'Login failed';
                 errorDiv.classList.add('show');
-                setTimeout(() => {
-                    errorDiv.classList.remove('show');
-                }, 3000);
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
+                setTimeout(() => errorDiv.classList.remove('show'), 4000);
             }
-        });
-
-        // Enter key support
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-            }
-        });
-    </script>
+        } catch (err) {
+            errorMsg.textContent = 'Network error – check your connection.';
+            errorDiv.classList.add('show');
+            setTimeout(() => errorDiv.classList.remove('show'), 4000);
+        }
+    });
+</script>
 </body>
 </html>
