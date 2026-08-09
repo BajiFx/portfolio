@@ -4,34 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- TITLE - Change this -->
+    <!-- TITLE – Change this to your name -->
     <title>George Onyango Ochieng - Data Scientist & Web Developer</title>
     
-    <!-- DESCRIPTION - Add this -->
+    <!-- SEO Meta -->
     <meta name="description" content="George Onyango Ochieng - Data Scientist and Web Developer. Building fast, responsive websites and helping businesses grow with data.">
-    
-    <!-- KEYWORDS - Add this -->
     <meta name="keywords" content="George Onyango Ochieng, Data Scientist, Web Developer, Portfolio, Kenya, Data Analysis">
-    
-    <!-- AUTHOR - Add this -->
     <meta name="author" content="George Onyango Ochieng">
     
-    <!-- OPEN GRAPH (For social media) - Add this -->
+    <!-- Open Graph -->
     <meta property="og:title" content="George Onyango Ochieng - Portfolio">
     <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://george-onyango-ochieng.netlify.app">
+    <meta property="og:image" content="https://george-onyango-ochieng.netlify.app/og-image.jpg">
     
-    <!-- TWITTER CARD - Add this -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
     <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
     
+    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
-    <!-- ===== MARKDOWN RENDERING ===== -->
+    <!-- Markdown Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
 </head>
@@ -66,6 +64,11 @@
 
     <!-- ===== HERO SECTION ===== -->
     <section id="hero">
+        <!-- Floating decorative blobs -->
+        <div class="hero-blob blob-1"></div>
+        <div class="hero-blob blob-2"></div>
+        <div class="hero-blob blob-3"></div>
+
         <div class="container hero-content">
             <div class="hero-text">
                 <span class="badge" id="hero-badge">👋 Welcome</span>
@@ -94,10 +97,15 @@
             </div>
             <div class="hero-image">
                 <div class="profile-wrapper">
-                    <!-- FIXED: Profile image with proper id -->
                     <img src="" alt="Profile" id="profile-img" onerror="this.style.display='none'">
                 </div>
             </div>
+        </div>
+
+        <!-- Scroll down indicator -->
+        <div class="scroll-indicator">
+            <span>Scroll</span>
+            <i class="fas fa-chevron-down"></i>
         </div>
     </section>
 
@@ -132,7 +140,6 @@
     <section id="about">
         <div class="container about-content">
             <div class="about-image">
-                <!-- FIXED: About image with proper id -->
                 <img src="" alt="About" id="about-img" onerror="this.style.display='none'">
             </div>
             <div class="about-text">
@@ -197,44 +204,42 @@
             
             <div class="contact-wrapper">
                 <!-- Contact Info -->
-                <div class="contact-info">
-                    <div class="contact-card">
-                        <h3>Get in Touch</h3>
-                        <p>Feel free to reach out through any of these channels</p>
-                        
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h4>Email</h4>
-                                <a href="#" id="contact-email">your.email@gmail.com</a>
-                            </div>
+                <div class="contact-card">
+                    <h3>Get in Touch</h3>
+                    <p>Feel free to reach out through any of these channels</p>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
                         </div>
-                        
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div>
-                                <h4>Phone</h4>
-                                <a href="#" id="contact-phone">+254 115 136 359</a>
-                            </div>
+                        <div>
+                            <h4>Email</h4>
+                            <a href="#" id="contact-email">your.email@gmail.com</a>
                         </div>
-                        
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fab fa-whatsapp"></i>
-                            </div>
-                            <div>
-                                <h4>WhatsApp</h4>
-                                <a href="#" id="contact-whatsapp" target="_blank">Chat on WhatsApp</a>
-                            </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
                         </div>
-                        
-                        <div class="social-links" id="social-links">
-                            <!-- Social links loaded here -->
+                        <div>
+                            <h4>Phone</h4>
+                            <a href="#" id="contact-phone">+254 115 136 359</a>
                         </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h4>WhatsApp</h4>
+                            <a href="#" id="contact-whatsapp" target="_blank">Chat on WhatsApp</a>
+                        </div>
+                    </div>
+                    
+                    <div class="social-links" id="social-links">
+                        <!-- Loaded by JavaScript -->
                     </div>
                 </div>
                 
@@ -290,6 +295,7 @@
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="js/main.js"></script>
 </body>
 </html>
