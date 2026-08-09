@@ -161,7 +161,7 @@ app.get('/api/data', async (req, res) => {
             const projectsRes = await query('SELECT * FROM projects WHERE group_id = $1 ORDER BY display_order', [group.id]);
             const projects = [];
             for (const proj of projectsRes.rows) {
-                // FIXED: Use ORDER BY id instead of display_order
+                // FIX: Use ORDER BY id for tables without display_order
                 const imagesRes = await query('SELECT url FROM project_images WHERE project_id = $1 ORDER BY id', [proj.id]);
                 const videosRes = await query('SELECT url FROM project_videos WHERE project_id = $1 ORDER BY id', [proj.id]);
                 const techRes = await query('SELECT name FROM project_technologies WHERE project_id = $1 ORDER BY id', [proj.id]);
