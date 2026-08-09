@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (Backend API Version)
+// ADMIN.JS - Complete Admin Panel (Cloudinary for Profile/About Images)
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
@@ -97,7 +97,7 @@ function resetDefaultData() {
 async function saveData() {
     try {
         // Save profile
-        const profileResponse = await fetch(`${API_BASE}/api/profile`, {
+        await fetch(`${API_BASE}/api/profile`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -134,9 +134,6 @@ async function saveData() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: portfolioData.videos?.welcome || '' })
         });
-        
-        // Note: Groups, Projects, Experience, Education, Certifications, Social
-        // are saved individually through their own endpoints
         
         updateDashboard();
         console.log('✅ Data saved to backend');
@@ -176,7 +173,7 @@ function updateDashboard() {
     document.getElementById('statExperience').textContent = portfolioData.experience?.length || 0;
     document.getElementById('statEducation').textContent = portfolioData.education?.length || 0;
     document.getElementById('statCertifications').textContent = portfolioData.certifications?.length || 0;
-    loadMessages(); // Load messages from backend
+    loadMessages();
 }
 
 // ============================================
@@ -252,15 +249,15 @@ document.getElementById('profileForm').addEventListener('submit', async function
     updateDashboard();
 });
 
-// **********************************************
-// UPDATED: Profile Picture upload to Cloudinary
-// **********************************************
+// ============================================
+// PROFILE PICTURE UPLOAD (Cloudinary)
+// ============================================
 document.getElementById('profilePicture').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
 
     const formData = new FormData();
-    formData.append('image', file); // using 'image' key as expected by your /api/upload endpoint
+    formData.append('image', file);
 
     try {
         const response = await fetch(`${API_BASE}/api/upload`, {
@@ -269,15 +266,11 @@ document.getElementById('profilePicture').addEventListener('change', async funct
         });
         const result = await response.json();
         if (result.success && result.url) {
-            // Update preview
             const img = document.createElement('img');
             img.src = result.url;
             img.style.cssText = 'width:150px;height:150px;border-radius:50%;object-fit:cover;';
-            const previewContainer = document.getElementById('profilePicturePreview');
-            previewContainer.innerHTML = '';
-            previewContainer.appendChild(img);
-
-            // Save URL to data and persist
+            document.getElementById('profilePicturePreview').innerHTML = '';
+            document.getElementById('profilePicturePreview').appendChild(img);
             portfolioData.personal.profileImage = result.url;
             await saveData();
             alert('✅ Profile picture uploaded to Cloudinary!');
@@ -290,9 +283,9 @@ document.getElementById('profilePicture').addEventListener('change', async funct
     }
 });
 
-// **********************************************
-// UPDATED: About Image upload to Cloudinary
-// **********************************************
+// ============================================
+// ABOUT IMAGE UPLOAD (Cloudinary)
+// ============================================
 document.getElementById('aboutImage').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -310,10 +303,8 @@ document.getElementById('aboutImage').addEventListener('change', async function(
             const img = document.createElement('img');
             img.src = result.url;
             img.style.cssText = 'max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;';
-            const previewContainer = document.getElementById('aboutImagePreview');
-            previewContainer.innerHTML = '';
-            previewContainer.appendChild(img);
-
+            document.getElementById('aboutImagePreview').innerHTML = '';
+            document.getElementById('aboutImagePreview').appendChild(img);
             portfolioData.personal.aboutImage = result.url;
             await saveData();
             alert('✅ About image uploaded to Cloudinary!');
@@ -801,7 +792,6 @@ document.getElementById('projectForm').addEventListener('submit', async function
         const group = portfolioData.projectGroups.find(g => g.id == groupId);
         const existingProject = group?.projects?.find(p => p.id == projectId);
         if (existingProject && existingProject.files) {
-            // If no new files were added, keep existing
             if (files.length === 0 && existingProject.files.length > 0) {
                 files.push(...existingProject.files);
             }
@@ -1255,11 +1245,9 @@ document.getElementById('socialForm').addEventListener('submit', async function(
     }
     
     try {
-        // Delete old platform if editing
         if (editPlatform && editPlatform !== platform) {
             await fetch(`${API_BASE}/api/social/${editPlatform}`, { method: 'DELETE' });
         }
-        // Add/Update new platform
         await fetch(`${API_BASE}/api/social`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
