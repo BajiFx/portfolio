@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy – George Onyango Ochieng</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Same styles as terms page */
+        .privacy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            margin-top: 6rem;
+            margin-bottom: 2rem;
+        }
+        .privacy-container h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .privacy-container .last-updated {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        .privacy-container h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+        .privacy-container p, .privacy-container li {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        .privacy-container ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .privacy-container li {
+            margin-bottom: 0.3rem;
+        }
+        .privacy-container .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .privacy-container .back-link:hover {
+            color: var(--accent-secondary);
+            transform: translateX(-4px);
+        }
+        @media (max-width: 768px) {
+            .privacy-container { margin-top: 5rem; padding: 1.5rem; }
+            .privacy-container h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (same as main) -->
+    <nav>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">Dev<span>.</span></a>
+            <div class="nav-links" id="navLinks">
+                <a href="index.html#projects">Projects</a>
+                <a href="index.html#skills">Skills</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#experience">Experience</a>
+                <a href="index.html#education">Education</a>
+                <a href="index.html#certifications">Certifications</a>
+                <a href="index.html#contact">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html" class="btn-login"><i class="fas fa-lock"></i> Admin</a>
+                <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+                <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="privacy-container">
+            <h1>🔒 Privacy Policy</h1>
+            <div class="last-updated">Last Updated: 10 August 2026</div>
+
+            <p>This Privacy Policy explains how I collect, use, and protect your personal information when you visit my portfolio website. I am committed to safeguarding your privacy and ensuring that your data is handled responsibly.</p>
+
+            <h2>1. Information I Collect</h2>
+            <p>I collect the following types of information:</p>
+            <ul>
+                <li><strong>Contact Form:</strong> When you fill out the contact form, I collect your name, email address, and any message you send. This is used solely to respond to your enquiry.</li>
+                <li><strong>Visitor Account (In Conversation):</strong> When you register for the chat feature, I collect your username and a hashed password. Your email address is not required for registration (a placeholder is used).</li>
+                <li><strong>Chat Messages:</strong> All messages sent via the "In Conversation" chat are stored in my database to allow for ongoing conversations.</li>
+                <li><strong>Usage Data:</strong> I do not use analytics trackers or third‑party cookies. However, I use <strong>localStorage</strong> in your browser to remember your theme preference (light/dark) and your visitor login token (so you stay logged in to the chat). This data never leaves your browser.</li>
+            </ul>
+
+            <h2>2. How I Use Your Information</h2>
+            <ul>
+                <li>To respond to your messages and enquiries.</li>
+                <li>To facilitate real‑time chat conversations between you and me.</li>
+                <li>To improve the overall experience of the website (e.g., remembering your theme preference).</li>
+            </ul>
+            <p>I do <strong>not</strong> sell, rent, or share your personal data with third parties, except when required by law.</p>
+
+            <h2>3. Data Storage and Security</h2>
+            <p>Your data (messages, usernames, hashed passwords) is stored securely in a PostgreSQL database hosted on Neon. I take reasonable measures to protect your information from unauthorized access, alteration, or destruction. However, no method of transmission over the internet is 100% secure, and I cannot guarantee absolute security.</p>
+            <p>Passwords are hashed using bcrypt, which is a strong, industry‑standard hashing algorithm.</p>
+
+            <h2>4. Cookies and Local Storage</h2>
+            <p>I do not use cookies for tracking purposes. I use <strong>localStorage</strong> (a browser‑based storage) for:</p>
+            <ul>
+                <li>Storing your theme preference (light/dark mode).</li>
+                <li>Storing your visitor authentication token (so you remain logged in to the chat).</li>
+            </ul>
+            <p>You can clear these at any time via your browser settings. No personal information is stored in cookies.</p>
+
+            <h2>5. Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access the personal data I hold about you.</li>
+                <li>Request correction or deletion of your data.</li>
+                <li>Object to the processing of your data.</li>
+                <li>Withdraw consent at any time (for chat accounts).</li>
+            </ul>
+            <p>To exercise any of these rights, please contact me via the <a href="index.html#contact" style="color:var(--accent-primary);">contact form</a>.</p>
+
+            <h2>6. Third‑Party Services</h2>
+            <p>I use the following third‑party services, which may process your data:</p>
+            <ul>
+                <li><strong>Neon (PostgreSQL):</strong> Hosts the database where messages and user accounts are stored.</li>
+                <li><strong>Cloudinary:</strong> Hosts images and videos uploaded via the admin panel.</li>
+                <li><strong>Render:</strong> Hosts the backend server.</li>
+                <li><strong>Netlify:</strong> Hosts the frontend website.</li>
+            </ul>
+            <p>Each of these services has its own privacy policies, which I encourage you to review.</p>
+
+            <h2>7. Data Retention</h2>
+            <p>I retain your data for as long as necessary to provide the service (e.g., chat conversations remain active until you request deletion). Contact form messages are stored indefinitely for reference, but you can request deletion at any time.</p>
+
+            <h2>8. Children's Privacy</h2>
+            <p>This website is not intended for children under the age of 13. I do not knowingly collect personal information from children.</p>
+
+            <h2>9. Changes to This Policy</h2>
+            <p>I may update this Privacy Policy occasionally. The latest version will always be available on this page, with the date of the last update. Continued use of the website constitutes acceptance of any changes.</p>
+
+            <h2>10. Contact Me</h2>
+            <p>If you have any questions or concerns about this Privacy Policy or your data, please reach out via the <a href="index.html#contact" style="color:var(--accent-primary);">contact form</a>.</p>
+
+            <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Portfolio</a>
+        </div>
+    </div>
+
+    <!-- Footer (same as terms) -->
+    <footer>
+        <div class="container footer-content">
+            <p>© 2025 Built with <i class="fas fa-heart"></i></p>
+            <div style="display:flex;gap:1.5rem;">
+                <a href="terms.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;">Terms</a>
+                <a href="privacy.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;">Privacy</a>
+                <a href="login.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;"><i class="fas fa-lock"></i> Admin</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDark = document.body.classList.contains('dark');
+                themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+        }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark');
+            if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
+        }
+        // Mobile menu
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+        }
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>
