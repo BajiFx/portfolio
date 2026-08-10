@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>George Onyango Ochieng - Data Scientist & Web Developer</title>
     <meta name="description" content="George Onyango Ochieng - Data Scientist and Web Developer. Building fast, responsive websites.">
+    <meta name="keywords" content="George Onyango Ochieng, Data Scientist, Web Developer, Portfolio, Kenya">
+    <meta name="author" content="George Onyango Ochieng">
+    <meta property="og:title" content="George Onyango Ochieng - Portfolio">
+    <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ochiengportfolio.netlify.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
+    <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
+
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -43,14 +53,8 @@
             background: none;
             border: none;
         }
-        .auth-modal-content h2 {
-            margin-bottom: 0.5rem;
-            font-weight: 800;
-        }
-        .auth-modal-content .sub {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-        }
+        .auth-modal-content h2 { margin-bottom: 0.5rem; font-weight: 800; }
+        .auth-modal-content .sub { color: var(--text-secondary); margin-bottom: 1.5rem; }
         .auth-modal-content .form-group { margin-bottom: 1rem; }
         .auth-modal-content .input-wrapper { position: relative; }
         .auth-modal-content .input-wrapper i {
@@ -381,10 +385,14 @@
         </div>
     </div>
 
+    <!-- ===== FOOTER ===== -->
     <footer>
         <div class="container footer-content">
             <p id="footer-text">© 2025 Built with <i class="fas fa-heart"></i></p>
-            <a href="login.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;"><i class="fas fa-lock"></i> Admin</a>
+            <div style="display:flex;gap:1.5rem;">
+                <a href="terms.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;">Terms</a>
+                <a href="login.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.8rem;"><i class="fas fa-lock"></i> Admin</a>
+            </div>
         </div>
     </footer>
 
