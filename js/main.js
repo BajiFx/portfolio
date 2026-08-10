@@ -1,5 +1,5 @@
 // ============================================
-// MAIN.JS - Public View (Full Project Details)
+// MAIN.JS - Public View (Full Chat & Project Details)
 // ============================================
 
 console.log('✅ main.js loaded (API version)');
@@ -27,7 +27,7 @@ async function loadPublicData() {
         console.log('✅ Data loaded from backend');
         renderPublicPortfolio();
         initContactModes();
-        initChat();
+        initChat(); // <-- This must run
         initAuthModal();
     } catch (error) {
         console.error('Error loading data:', error);
@@ -41,7 +41,7 @@ async function loadPublicData() {
 }
 
 // ============================================
-// RENDER PUBLIC PORTFOLIO (safe with null checks)
+// RENDER PUBLIC PORTFOLIO (with safe null checks)
 // ============================================
 
 function renderPublicPortfolio() {
@@ -95,13 +95,13 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Stats
+    // --- Stats ---
     const totalProjects = portfolioData.projectGroups?.reduce((sum, g) => sum + (g.projects?.length || 0), 0) || 0;
     setInnerHTML('projects-count', totalProjects);
     setInnerHTML('clients-count', portfolioData.projectGroups?.length || 0);
     setInnerHTML('experience-count', portfolioData.experience?.length || 0);
 
-    // About
+    // --- About ---
     if (data.about && data.about.paragraphs) {
         const container = document.getElementById('about-text');
         if (container) {
@@ -116,7 +116,7 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Skills
+    // --- Skills ---
     if (data.skills && data.skills.length > 0) {
         const grid = document.getElementById('skills-grid');
         if (grid) {
@@ -144,10 +144,10 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Project Groups
+    // --- Project Groups ---
     renderProjectGroups(data);
 
-    // Experience
+    // --- Experience ---
     if (data.experience) {
         const timeline = document.getElementById('timeline');
         if (timeline) {
@@ -166,7 +166,7 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Education
+    // --- Education ---
     if (data.education) {
         const grid = document.getElementById('education-list');
         if (grid) {
@@ -187,7 +187,7 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Certifications
+    // --- Certifications ---
     if (data.certifications) {
         const grid = document.getElementById('certifications-list');
         if (grid) {
@@ -220,10 +220,10 @@ function renderPublicPortfolio() {
         }
     }
 
-    // Social Links
+    // --- Social Links ---
     renderSocialLinks(data);
 
-    // Footer
+    // --- Footer ---
     if (data.footer) {
         setInnerHTML('footer-text', data.footer);
     }
@@ -233,386 +233,382 @@ function renderPublicPortfolio() {
 // PROJECT GROUPS & DETAILS
 // ============================================
 
-function renderProjectGroups(data) {
-    const container = document.getElementById('projects-grid');
-    const groups = data.projectGroups || [];
-    if (!container) return;
+function renderProjectGroups(data) { /* ... (keep your existing) */ }
+function showGroup(groupId) { /* ... */ }
+function showProjectDetail(groupId, projectId) { /* ... (keep the full one with images, videos, README) */ }
+function showGroups() { /* ... */ }
+function openLightbox(imageSrc) { /* ... */ }
+function renderSocialLinks(data) { /* ... */ }
 
-    if (groups.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center;padding:3rem;width:100%;">
-                <i class="fas fa-folder-open" style="font-size:4rem;color:var(--text-light);margin-bottom:1rem;"></i>
-                <p style="color:var(--text-secondary);">No projects added yet.</p>
-            </div>
-        `;
+// ============================================
+// CONTACT MODES
+// ============================================
+
+function initContactModes() {
+    console.log('🔧 initContactModes called');
+
+    const modeBtns = document.querySelectorAll('.contact-mode button');
+    const outDiv = document.getElementById('out-conversation');
+    const inDiv = document.getElementById('in-conversation');
+
+    if (!modeBtns.length) {
+        console.warn('No contact mode buttons found.');
         return;
     }
 
-    container.innerHTML = groups.map((group, index) => {
-        const groupId = group.id || index;
-        return `
-        <div class="project-card group-card" onclick="showGroup('${groupId}')" style="cursor:pointer;">
-            <div class="project-image" style="display:flex;align-items:center;justify-content:center;background:var(--accent-gradient);min-height:200px;">
-                <i class="${group.icon || 'fas fa-folder'}" style="font-size:4rem;color:white;opacity:0.9;"></i>
-            </div>
-            <div class="project-content">
-                <span class="project-tag">${group.projects?.length || 0} Projects</span>
-                <h3>${group.name}</h3>
-                <p>${group.description || 'Click to view projects in this category'}</p>
-                <div style="margin-top:1rem;color:var(--accent-primary);font-weight:600;">
-                    View Projects <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-        </div>
-    `}).join('');
-}
+    modeBtns.forEach(btn => {
+        btn.style.pointerEvents = 'auto';
+        btn.addEventListener('click', function(e) {
+            console.log(`🔘 Clicked mode: ${this.dataset.mode}`);
+            modeBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
 
-function showGroup(groupId) {
-    const group = portfolioData.projectGroups.find(g => g.id == groupId);
-    if (!group) return;
-
-    currentGroup = groupId;
-    const container = document.getElementById('projects-grid');
-    if (!container) return;
-    const projects = group.projects || [];
-
-    if (projects.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center;padding:3rem;width:100%;grid-column:1/-1;">
-                <p style="color:var(--text-secondary);">No projects in this group yet.</p>
-                <button onclick="showGroups()" class="btn secondary" style="margin-top:1rem;">
-                    <i class="fas fa-arrow-left"></i> Back to Groups
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;margin-bottom:2rem;">
-            <button onclick="showGroups()" class="btn secondary" style="margin-bottom:1rem;">
-                <i class="fas fa-arrow-left"></i> Back to Groups
-            </button>
-            <h2 style="font-size:2.5rem;font-weight:800;">
-                <i class="${group.icon || 'fas fa-folder'}" style="color:var(--accent-primary);"></i>
-                ${group.name}
-            </h2>
-            <p style="color:var(--text-secondary);">${group.description || ''}</p>
-        </div>
-        ${projects.map((project, pIndex) => {
-            const projectId = project.id || pIndex;
-            return `
-            <div class="project-card" onclick="showProjectDetail('${groupId}', '${projectId}')" style="cursor:pointer;">
-                <div class="project-image">
-                    ${project.images && project.images.length > 0 ? 
-                        `<img src="${project.images[0]}" alt="${project.title}">` :
-                        `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:var(--bg-gradient);">
-                            <i class="fas fa-code" style="font-size:3rem;color:var(--accent-primary);"></i>
-                        </div>`
-                    }
-                </div>
-                <div class="project-content">
-                    <span class="project-tag">${project.technologies?.length || 0} Technologies</span>
-                    <h3>${project.title}</h3>
-                    <p>${project.description}</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
-                        ${project.technologies ? project.technologies.map(tech => 
-                            `<span style="background:var(--bg-primary);padding:0.2rem 0.6rem;border-radius:50px;font-size:0.75rem;color:var(--text-secondary);">${tech}</span>`
-                        ).join('') : ''}
-                    </div>
-                    <div style="margin-top:1rem;color:var(--accent-primary);font-weight:600;font-size:0.9rem;">
-                        Click to view details <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
-            </div>
-        `}).join('')}
-    `;
-
-    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ============================================
-// SHOW PROJECT DETAIL – FULL (images, videos, README, files)
-// ============================================
-
-function showProjectDetail(groupId, projectId) {
-    const group = portfolioData.projectGroups.find(g => g.id == groupId);
-    if (!group) return;
-
-    const project = group.projects.find(p => p.id == projectId);
-    if (!project) return;
-
-    currentProject = projectId;
-    const container = document.getElementById('projects-grid');
-    if (!container) return;
-
-    // --- Images Gallery ---
-    let imagesHtml = '';
-    if (project.images && project.images.length > 0) {
-        imagesHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-images"></i> Project Gallery (${project.images.length})</h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
-                    ${project.images.map(img => `
-                        <img src="${img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openLightbox('${img}')">
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- Videos ---
-    let videoHtml = '';
-    const videos = project.videos || [];
-    if (videos.length > 0) {
-        videoHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-video"></i> Project Videos (${videos.length})</h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;">
-                    ${videos.map(vid => `
-                        <video controls style="width:100%;border-radius:16px;box-shadow:var(--shadow-md);background:#000;">
-                            <source src="${vid}">
-                            Your browser does not support the video tag.
-                        </video>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- README (Markdown) ---
-    let readmeHtml = '';
-    if (project.readme) {
-        try {
-            const readmeHTML = marked.parse(project.readme);
-            readmeHtml = `
-                <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
-                    <h3 style="margin-bottom:1rem;"><i class="fas fa-book"></i> Documentation / README</h3>
-                    <div class="markdown-body" style="color:var(--text-secondary);line-height:1.8;background:transparent;padding:0;">
-                        ${readmeHTML}
-                    </div>
-                </div>
-            `;
-        } catch (e) {
-            console.warn('Failed to parse README:', e);
-            readmeHtml = `
-                <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
-                    <h3 style="margin-bottom:1rem;"><i class="fas fa-book"></i> Documentation</h3>
-                    <pre style="white-space:pre-wrap;color:var(--text-secondary);">${project.readme}</pre>
-                </div>
-            `;
-        }
-    }
-
-    // --- Attached Files ---
-    let filesHtml = '';
-    if (project.files && project.files.length > 0) {
-        filesHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-paperclip"></i> Attached Files (${project.files.length})</h3>
-                <div style="display:flex;flex-wrap:wrap;gap:1rem;">
-                    ${project.files.map(file => `
-                        <a href="${file.data}" download="${file.name}" style="display:flex;align-items:center;gap:0.5rem;padding:0.8rem 1.2rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
-                            <i class="fas fa-${file.type?.includes('pdf') ? 'file-pdf' : file.type?.includes('zip') ? 'file-archive' : 'file'}" style="color:var(--accent-primary);"></i>
-                            ${file.name}
-                            <span style="font-size:0.8rem;color:var(--text-light);">(${(file.size / 1024).toFixed(1)} KB)</span>
-                        </a>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- GitHub & Demo Links ---
-    let linksHtml = '';
-    if (project.github || project.demo) {
-        linksHtml = `
-            <div style="grid-column:1/-1;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
-                ${project.github ? `
-                    <a href="${project.github}" target="_blank" class="btn-github" style="background:#24292e;color:white;display:inline-flex;align-items:center;gap:0.6rem;padding:0.9rem 2.2rem;border-radius:50px;text-decoration:none;font-weight:600;transition:all 0.3s;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(36,41,46,0.3);">
-                        <i class="fab fa-github" style="font-size:1.2rem;"></i> View on GitHub
-                    </a>
-                ` : ''}
-                ${project.demo ? `
-                    <a href="${project.demo}" target="_blank" class="btn primary" style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.9rem 2.2rem;border-radius:50px;text-decoration:none;font-weight:600;transition:all 0.3s;border:none;cursor:pointer;background:var(--accent-gradient);color:white;box-shadow:0 4px 20px rgba(99,102,241,0.3);">
-                        <i class="fas fa-external-link-alt"></i> Live Demo
-                    </a>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    // --- Main project detail card ---
-    container.innerHTML = `
-        <div style="grid-column:1/-1;">
-            <button onclick="showGroup('${groupId}')" class="btn secondary" style="margin-bottom:2rem;">
-                <i class="fas fa-arrow-left"></i> Back to ${group.name}
-            </button>
-        </div>
-
-        <div style="grid-column:1/-1;background:var(--bg-card);padding:2.5rem;border-radius:16px;border:1px solid var(--border-color);">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
-                <div>
-                    ${project.images && project.images.length > 0 ? 
-                        `<img src="${project.images[0]}" style="width:100%;border-radius:12px;box-shadow:var(--shadow-md);">` :
-                        `<div style="width:100%;height:300px;background:var(--bg-gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-code" style="font-size:4rem;color:var(--accent-primary);"></i>
-                        </div>`
-                    }
-                </div>
-                <div>
-                    <span class="project-tag" style="background:var(--accent-gradient);color:white;padding:0.3rem 1rem;border-radius:50px;font-size:0.8rem;">
-                        ${group.name}
-                    </span>
-                    <h1 style="font-size:2.5rem;font-weight:800;margin:1rem 0 0.5rem;">${project.title}</h1>
-                    <p style="color:var(--text-secondary);font-size:1.1rem;line-height:1.8;">${project.description}</p>
-
-                    ${project.technologies ? `
-                        <div style="margin-top:1.5rem;">
-                            <h4 style="margin-bottom:0.5rem;">Technologies</h4>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                ${project.technologies.map(tech => 
-                                    `<span style="background:var(--bg-primary);padding:0.3rem 1rem;border-radius:50px;font-size:0.9rem;border:1px solid var(--border-color);">${tech}</span>`
-                                ).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${linksHtml}
-                </div>
-            </div>
-        </div>
-
-        ${imagesHtml}
-        ${videoHtml}
-        ${readmeHtml}
-        ${filesHtml}
-    `;
-
-    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-}
-
-function showGroups() {
-    currentGroup = null;
-    currentProject = null;
-    renderProjectGroups(portfolioData);
-    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-}
-
-function openLightbox(imageSrc) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 2rem;
-        cursor: pointer;
-    `;
-    modal.innerHTML = `
-        <img src="${imageSrc}" style="max-width:90%;max-height:90%;border-radius:12px;object-fit:contain;">
-        <button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:30px;background:none;border:none;color:white;font-size:2.5rem;cursor:pointer;">&times;</button>
-    `;
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) this.remove();
+            if (this.dataset.mode === 'out') {
+                outDiv.style.display = 'block';
+                inDiv.style.display = 'none';
+            } else {
+                outDiv.style.display = 'none';
+                inDiv.style.display = 'block';
+                if (visitorToken) {
+                    loadConversation();
+                } else {
+                    document.getElementById('chat-messages').innerHTML = `<p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Please login or register to start chatting.</p>`;
+                }
+            }
+        });
     });
-    document.body.appendChild(modal);
-}
 
-function renderSocialLinks(data) {
-    const container = document.getElementById('social-links');
-    if (!container) return;
-    container.innerHTML = '';
-    const social = data.social || {};
-    const personal = data.personal || {};
+    // Channel selection
+    const channelBtns = document.querySelectorAll('.channel-select button');
+    channelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            channelBtns.forEach(b => b.classList.remove('active-channel'));
+            this.classList.add('active-channel');
+        });
+    });
 
-    const links = [
-        { key: 'whatsapp', icon: 'fab fa-whatsapp', label: 'WhatsApp', url: social.whatsapp ? `https://wa.me/${social.whatsapp.replace(/\D/g, '')}` : null },
-        { key: 'linkedin', icon: 'fab fa-linkedin-in', label: 'LinkedIn', url: social.linkedin },
-        { key: 'github', icon: 'fab fa-github', label: 'GitHub', url: social.github },
-        { key: 'twitter', icon: 'fab fa-twitter', label: 'Twitter', url: social.twitter },
-        { key: 'phone', icon: 'fas fa-phone', label: 'Phone', url: social.phone ? `tel:${social.phone.replace(/\s/g, '')}` : personal.phone ? `tel:${personal.phone.replace(/\s/g, '')}` : null },
-        { key: 'email', icon: 'fas fa-envelope', label: 'Email', url: personal.email ? `mailto:${personal.email}` : null }
-    ];
+    // Out form
+    document.getElementById('out-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('out-name').value.trim();
+        const email = document.getElementById('out-email').value.trim();
+        const message = document.getElementById('out-message').value.trim();
+        const channel = document.querySelector('.channel-select .active-channel').dataset.channel;
 
-    links.forEach(link => {
-        if (link.url) {
-            const a = document.createElement('a');
-            a.href = link.url;
-            a.target = '_blank';
-            a.className = `social-icon ${link.key}`;
-            a.title = link.label;
-            a.innerHTML = `<i class="${link.icon}"></i><span>${link.label}</span>`;
-            container.appendChild(a);
+        if (!name || !email || !message) {
+            alert('Please fill all fields.');
+            return;
         }
+
+        fetch(`${API_BASE}/api/contact-out`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, message, channel })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ Your message has been sent via ${channel}. We'll get back to you soon!`);
+                this.reset();
+            } else {
+                alert('❌ Failed to send. Please try again.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error. Please check your connection.');
+        });
     });
 }
 
 // ============================================
-// CONTACT MODES (unchanged)
+// AUTH MODAL
 // ============================================
 
-function initContactModes() { /* ... keep your existing implementation */ }
-function initAuthModal() { /* ... keep your existing implementation */ }
-function openAuthModal(mode) { /* ... */ }
+function initAuthModal() {
+    const modal = document.getElementById('authModal');
+    const closeBtn = document.getElementById('closeAuthModal');
+    const switchLink = document.getElementById('authSwitchLink');
+    const form = document.getElementById('authForm');
+    const errorDiv = document.getElementById('authError');
+
+    // Open modal from chat links
+    const loginLink = document.getElementById('chat-login-link');
+    const registerLink = document.getElementById('chat-register-link');
+    if (loginLink) {
+        loginLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            openAuthModal('login');
+        });
+    }
+    if (registerLink) {
+        registerLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            openAuthModal('register');
+        });
+    }
+
+    // Close modal
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+    }
+
+    // Switch between login/register
+    if (switchLink) {
+        switchLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (authMode === 'login') {
+                openAuthModal('register');
+            } else {
+                openAuthModal('login');
+            }
+        });
+    }
+
+    // Form submission
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const confirmPassword = document.getElementById('authConfirmPassword').value.trim();
+
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+            }
+
+            if (authMode === 'register') {
+                if (password !== confirmPassword) {
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Passwords do not match.';
+                        errorDiv.style.display = 'block';
+                    }
+                    return;
+                }
+                if (password.length < 6) {
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Password must be at least 6 characters.';
+                        errorDiv.style.display = 'block';
+                    }
+                    return;
+                }
+            }
+
+            const endpoint = authMode === 'login' ? '/api/visitor-login' : '/api/visitor-register';
+
+            try {
+                const res = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    visitorToken = data.token;
+                    localStorage.setItem('visitorToken', visitorToken);
+                    alert(`✅ ${authMode === 'login' ? 'Logged in' : 'Registered'} successfully!`);
+                    if (modal) modal.classList.remove('active');
+                    loadConversation();
+                    const statusSpan = document.getElementById('chat-auth-status');
+                    if (statusSpan) {
+                        statusSpan.innerHTML = `Logged in as <strong>${username}</strong> | <a href="#" id="chat-logout-link">Logout</a>`;
+                        const logoutLink = document.getElementById('chat-logout-link');
+                        if (logoutLink) {
+                            logoutLink.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                localStorage.removeItem('visitorToken');
+                                visitorToken = null;
+                                location.reload();
+                            });
+                        }
+                    }
+                } else {
+                    if (errorDiv) {
+                        errorDiv.textContent = data.error || 'Authentication failed.';
+                        errorDiv.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                console.error('Auth error:', err);
+                if (errorDiv) {
+                    errorDiv.textContent = 'Network error. Please check your internet connection and try again.';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        });
+    }
+}
+
+function openAuthModal(mode) { /* ... (keep your existing) */ }
 function togglePasswordVisibility(inputId, btn) { /* ... */ }
 
 // ============================================
-// CHAT (unchanged)
+// CHAT (IN CONVERSATION)
 // ============================================
 
-function initChat() { /* ... */ }
-function loadConversation() { /* ... */ }
-function renderChatMessages(messages) { /* ... */ }
-function fetchNewMessages() { /* ... */ }
-function sendChatMessage() { /* ... */ }
+function initChat() {
+    console.log('🔧 initChat called');
+    const sendBtn = document.getElementById('chat-send');
+    const input = document.getElementById('chat-input');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', sendChatMessage);
+    }
+    if (input) {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+    }
+
+    if (visitorToken) {
+        loadConversation();
+    } else {
+        // Show login/register prompt
+        const messagesDiv = document.getElementById('chat-messages');
+        if (messagesDiv) {
+            messagesDiv.innerHTML = `<p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Please login or register to start chatting.</p>`;
+        }
+        if (input) input.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+    }
+}
+
+function loadConversation() {
+    const messagesDiv = document.getElementById('chat-messages');
+    const input = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send');
+
+    if (!messagesDiv) return;
+
+    fetch(`${API_BASE}/api/chat`, {
+        headers: { 'Authorization': `Bearer ${visitorToken}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            currentConversationId = data.conversationId;
+            renderChatMessages(data.messages);
+            if (input) { input.disabled = false; input.focus(); }
+            if (sendBtn) sendBtn.disabled = false;
+            const statusSpan = document.getElementById('chat-auth-status');
+            if (statusSpan) {
+                statusSpan.innerHTML = `Logged in as <strong>${data.username}</strong> | <a href="#" id="chat-logout-link">Logout</a>`;
+                const logoutLink = document.getElementById('chat-logout-link');
+                if (logoutLink) {
+                    logoutLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        localStorage.removeItem('visitorToken');
+                        visitorToken = null;
+                        location.reload();
+                    });
+                }
+            }
+            if (chatPollInterval) clearInterval(chatPollInterval);
+            chatPollInterval = setInterval(fetchNewMessages, 3000);
+        } else {
+            messagesDiv.innerHTML = `<p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">${data.error || 'Unable to load chat.'}</p>`;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        messagesDiv.innerHTML = `<p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Network error loading chat.</p>`;
+    });
+}
+
+function renderChatMessages(messages) {
+    const messagesDiv = document.getElementById('chat-messages');
+    if (!messagesDiv) return;
+    if (!messages || messages.length === 0) {
+        messagesDiv.innerHTML = `<p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">No messages yet. Say hello!</p>`;
+        return;
+    }
+    messagesDiv.innerHTML = messages.map(msg => `
+        <div class="chat-message ${msg.sender_type === 'visitor' ? 'visitor' : 'admin'}">
+            ${msg.sender_type === 'admin' ? '👤 Admin: ' : ''}${msg.message}
+            <div style="font-size:0.7rem;opacity:0.6;margin-top:0.2rem;">${new Date(msg.sent_at).toLocaleTimeString()}</div>
+        </div>
+    `).join('');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function fetchNewMessages() {
+    if (!currentConversationId) return;
+    fetch(`${API_BASE}/api/chat/messages?since=${Date.now()}`, {
+        headers: { 'Authorization': `Bearer ${visitorToken}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.messages && data.messages.length > 0) {
+            const messagesDiv = document.getElementById('chat-messages');
+            if (!messagesDiv) return;
+            data.messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `chat-message ${msg.sender_type === 'visitor' ? 'visitor' : 'admin'}`;
+                div.innerHTML = `${msg.sender_type === 'admin' ? '👤 Admin: ' : ''}${msg.message} <div style="font-size:0.7rem;opacity:0.6;margin-top:0.2rem;">${new Date(msg.sent_at).toLocaleTimeString()}</div>`;
+                messagesDiv.appendChild(div);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+    })
+    .catch(err => console.error('Polling error:', err));
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    const message = input.value.trim();
+    if (!message) return;
+    if (!visitorToken) {
+        alert('Please login first.');
+        return;
+    }
+    input.disabled = true;
+    fetch(`${API_BASE}/api/chat/send`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${visitorToken}`
+        },
+        body: JSON.stringify({ message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        input.disabled = false;
+        if (data.success) {
+            input.value = '';
+            const messagesDiv = document.getElementById('chat-messages');
+            if (messagesDiv) {
+                const div = document.createElement('div');
+                div.className = 'chat-message visitor';
+                div.innerHTML = `${message} <div style="font-size:0.7rem;opacity:0.6;margin-top:0.2rem;">Just now</div>`;
+                messagesDiv.appendChild(div);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        } else {
+            alert('Failed to send: ' + data.error);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Network error while sending.');
+        input.disabled = false;
+    });
+}
 
 // ============================================
 // THEME, MOBILE, SMOOTH SCROLL (unchanged)
 // ============================================
 
-const themeToggle = document.getElementById('theme-toggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
-}
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark');
-    if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
-}
-
-const hamburger = document.getElementById('hamburger');
-const navLinks = document.getElementById('navLinks');
-if (hamburger) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        if (navLinks) navLinks.classList.toggle('active');
-    });
-}
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (hamburger) hamburger.classList.remove('active');
-        if (navLinks) navLinks.classList.remove('active');
-    });
-});
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (href && href !== '#') {
-            e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
+// ... (keep your existing theme toggle, hamburger, smooth scroll code)
 
 document.addEventListener('DOMContentLoaded', loadPublicData);
 console.log('✅ main.js loaded and ready!');
