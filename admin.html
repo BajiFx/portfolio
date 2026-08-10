@@ -64,9 +64,12 @@
             <button class="sidebar-btn" data-tab="messages">
                 <i class="fas fa-envelope"></i> <span>Messages</span>
             </button>
-            <!-- ===== CHAT TAB ===== -->
             <button class="sidebar-btn" data-tab="chat">
                 <i class="fas fa-comment-dots"></i> <span>Chat</span>
+            </button>
+            <!-- NEW: Out Messages -->
+            <button class="sidebar-btn" data-tab="out-messages">
+                <i class="fas fa-paper-plane"></i> <span>Out Messages</span>
             </button>
         </div>
 
@@ -203,7 +206,6 @@
                         <i class="fas fa-plus"></i> Add Project
                     </button>
                 </div>
-                <!-- ===== CREATE GROUP FORM ===== -->
                 <div id="addGroupForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="groupFormTitle" style="margin-bottom:1.5rem;">📂 Create New Project Group</h3>
                     <form id="groupForm" class="admin-form">
@@ -225,7 +227,6 @@
                         <button type="button" onclick="hideAddGroup()" class="btn secondary">Cancel</button>
                     </form>
                 </div>
-                <!-- ===== ADD PROJECT FORM ===== -->
                 <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
                     <div id="selectedGroupDisplay" style="display:none;padding:0.8rem 1.2rem;background:var(--accent-gradient);color:white;border-radius:12px;margin-bottom:1.5rem;font-weight:600;display:flex;align-items:center;gap:0.8rem;">
@@ -482,6 +483,16 @@
                     <!-- Conversations loaded here -->
                 </div>
             </div>
+
+            <!-- ===== OUT MESSAGES TAB ===== -->
+            <div id="tab-out-messages" class="tab-content">
+                <h2>📤 Out Conversation Messages</h2>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Messages sent via the "Out Conversation" channel (Email, WhatsApp, or Phone).</p>
+                <div id="outMessagesList" class="admin-grid">
+                    <p style="color:var(--text-secondary);text-align:center;padding:2rem;">Loading out messages...</p>
+                </div>
+            </div>
+
         </div>
     </div>
 

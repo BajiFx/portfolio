@@ -50,7 +50,6 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
@@ -516,6 +515,32 @@ app.post('/api/admin/chat/reply', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Admin reply error:', error);
         res.status(500).json({ error: 'Failed to send reply.' });
+    }
+});
+
+// ============================================
+// ADMIN – OUT MESSAGES (contact_out)
+// ============================================
+
+app.get('/api/admin/out-messages', authenticateToken, async (req, res) => {
+    try {
+        const result = await query('SELECT * FROM contact_out ORDER BY sent_at DESC');
+        res.json({ success: true, messages: result.rows });
+    } catch (error) {
+        console.error('Admin out messages error:', error);
+        res.status(500).json({ error: 'Failed to fetch out messages.' });
+    }
+});
+
+// Delete out message
+app.delete('/api/admin/out-messages/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await query('DELETE FROM contact_out WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete out message error:', error);
+        res.status(500).json({ error: 'Failed to delete message.' });
     }
 });
 

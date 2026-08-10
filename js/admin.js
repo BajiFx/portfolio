@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (with Skills & Chat)
+// ADMIN.JS - Complete Admin Panel (with Out Messages)
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
@@ -65,7 +65,6 @@ async function loadData() {
         if (!response.ok) throw new Error('Failed to fetch data');
         portfolioData = await response.json();
 
-        // Ensure all arrays exist
         if (!portfolioData.projectGroups) portfolioData.projectGroups = [];
         if (!portfolioData.experience) portfolioData.experience = [];
         if (!portfolioData.education) portfolioData.education = [];
@@ -117,7 +116,6 @@ async function saveData() {
     try {
         const headers = getAuthHeaders();
 
-        // Profile
         await fetch(`${API_BASE}/api/profile`, {
             method: 'PUT',
             headers: headers,
@@ -135,21 +133,18 @@ async function saveData() {
             })
         });
 
-        // About
         await fetch(`${API_BASE}/api/about`, {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({ paragraphs: portfolioData.about?.paragraphs || [] })
         });
 
-        // Skills
         await fetch(`${API_BASE}/api/skills`, {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({ skills: portfolioData.skills || [] })
         });
 
-        // Welcome video
         await fetch(`${API_BASE}/api/welcome-video`, {
             method: 'PUT',
             headers: headers,
@@ -227,6 +222,7 @@ function switchTab(tabId) {
     if (tabId === 'messages') renderMessages();
     if (tabId === 'profile') renderProfileForm();
     if (tabId === 'chat') loadAdminChat();
+    if (tabId === 'out-messages') loadOutMessages();
 }
 
 function setupSidebarButtons() {}
@@ -1616,6 +1612,60 @@ async function adminReply(convId) {
             loadAdminChat();
         } else {
             alert('❌ ' + data.error);
+        }
+    } catch (error) {
+        alert('Network error.');
+    }
+}
+
+// ============================================
+// OUT MESSAGES (contact_out)
+// ============================================
+
+async function loadOutMessages() {
+    const container = document.getElementById('outMessagesList');
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/out-messages`, {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        if (data.messages.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No out messages yet.</p>`;
+            return;
+        }
+        container.innerHTML = data.messages.map(msg => `
+            <div class="message-item">
+                <div class="message-header">
+                    <span class="sender"><strong>${msg.name}</strong> (${msg.email})</span>
+                    <span class="date">${new Date(msg.sent_at).toLocaleString()}</span>
+                </div>
+                <div class="message-body">
+                    <p><strong>Channel:</strong> <span style="text-transform:capitalize;">${msg.channel}</span></p>
+                    <p><strong>Message:</strong> ${msg.message}</p>
+                </div>
+                <button onclick="deleteOutMessage(${msg.id})" class="btn-delete" style="margin-top:0.5rem;">Delete</button>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading out messages:', error);
+        container.innerHTML = `<p style="color:var(--text-secondary);text-align:center;padding:2rem;">Error loading out messages.</p>`;
+    }
+}
+
+async function deleteOutMessage(id) {
+    if (!confirm('Delete this out message?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/out-messages/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('✅ Message deleted!');
+            loadOutMessages();
+        } else {
+            alert('❌ Failed to delete.');
         }
     } catch (error) {
         alert('Network error.');
