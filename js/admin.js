@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (with Skills Management)
+// ADMIN.JS - Complete Admin Panel (with Skills & Chat)
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
@@ -12,6 +12,7 @@ const API_BASE = 'https://portfolio-oqqu.onrender.com';
 let portfolioData = {};
 let imageCounter = 0;
 let videoCounter = 0;
+let skillsEditIndex = -1;
 
 // ============================================
 // CHECK LOGIN & TOKEN
@@ -225,6 +226,7 @@ function switchTab(tabId) {
     if (tabId === 'social') renderSocialList();
     if (tabId === 'messages') renderMessages();
     if (tabId === 'profile') renderProfileForm();
+    if (tabId === 'chat') loadAdminChat();
 }
 
 function setupSidebarButtons() {}
@@ -1552,6 +1554,71 @@ async function deleteMessage(messageId) {
         alert('✅ Message deleted!');
     } catch (error) {
         alert('❌ Failed to delete: ' + error.message);
+    }
+}
+
+// ============================================
+// ADMIN CHAT
+// ============================================
+
+async function loadAdminChat() {
+    const container = document.getElementById('admin-chat-list');
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/chat/conversations`, {
+            headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+        if (data.conversations.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:2rem;">No conversations yet.</p>';
+            return;
+        }
+        container.innerHTML = data.conversations.map(conv => `
+            <div style="background:var(--bg-card);padding:1rem;border-radius:12px;border:1px solid var(--border-color);margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;">
+                    <strong>Visitor: ${conv.username}</strong>
+                    <span>${new Date(conv.last_message_at).toLocaleString()}</span>
+                </div>
+                <div style="margin-top:0.5rem;display:flex;gap:0.5rem;">
+                    <input type="text" id="admin-reply-${conv.id}" placeholder="Type reply..." style="flex:1;padding:0.4rem;border:2px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);">
+                    <button onclick="adminReply(${conv.id})" class="btn primary" style="padding:0.3rem 1rem;font-size:0.85rem;">Reply</button>
+                </div>
+                <div style="margin-top:0.5rem;max-height:150px;overflow-y:auto;background:var(--bg-primary);border-radius:8px;padding:0.5rem;">
+                    ${conv.messages.map(msg => `
+                        <div style="display:flex;justify-content:space-between;font-size:0.9rem;padding:0.2rem 0;border-bottom:1px solid var(--border-color);">
+                            <span><strong>${msg.sender_type === 'admin' ? 'Admin' : 'Visitor'}:</strong> ${msg.message}</span>
+                            <span style="font-size:0.7rem;color:var(--text-light);">${new Date(msg.sent_at).toLocaleTimeString()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Admin chat error:', error);
+        container.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:2rem;">Error loading chats.</p>';
+    }
+}
+
+async function adminReply(convId) {
+    const input = document.getElementById(`admin-reply-${convId}`);
+    const message = input.value.trim();
+    if (!message) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/chat/reply`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ conversationId: convId, message })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('✅ Reply sent!');
+            input.value = '';
+            loadAdminChat();
+        } else {
+            alert('❌ ' + data.error);
+        }
+    } catch (error) {
+        alert('Network error.');
     }
 }
 

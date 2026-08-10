@@ -5,16 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>George Onyango Ochieng - Data Scientist & Web Developer</title>
     <meta name="description" content="George Onyango Ochieng - Data Scientist and Web Developer. Building fast, responsive websites.">
-    <meta name="keywords" content="George Onyango Ochieng, Data Scientist, Web Developer, Portfolio, Kenya">
-    <meta name="author" content="George Onyango Ochieng">
-    <meta property="og:title" content="George Onyango Ochieng - Portfolio">
-    <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
-    <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
-
-    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -22,6 +12,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
 </head>
 <body>
+    <!-- ===== HIDDEN ADMIN DOT ===== -->
+    <a href="login.html" class="admin-dot" title="Admin"></a>
+
     <!-- ===== NAVIGATION ===== -->
     <nav>
         <div class="container nav-container">
@@ -36,7 +29,6 @@
                 <a href="#contact">Contact</a>
             </div>
             <div class="nav-actions">
-                <a href="login.html" class="btn-login"><i class="fas fa-lock"></i> Admin</a>
                 <a href="#" id="resume-link" class="btn-resume" download style="display:none;"><i class="fas fa-file-pdf"></i> Resume</a>
                 <button id="theme-toggle"><i class="fas fa-moon"></i></button>
                 <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -44,20 +36,16 @@
         </div>
     </nav>
 
-    <!-- ===== HERO SECTION with Blobs and Typing Effect ===== -->
+    <!-- ===== HERO ===== -->
     <section id="hero">
-        <!-- Decorative blobs -->
         <div class="hero-blob blob-1"></div>
         <div class="hero-blob blob-2"></div>
         <div class="hero-blob blob-3"></div>
         <div class="hero-blob blob-4"></div>
-
         <div class="container hero-content">
             <div class="hero-text">
                 <span class="badge" id="hero-badge">👋 Welcome</span>
-                <h1 id="hero-title">
-                    <span class="typing-text">Hi, I'm <span>Your Name</span></span>
-                </h1>
+                <h1 id="hero-title">Hi, I'm <span>Your Name</span></h1>
                 <p id="hero-subtitle">Web Developer creating amazing experiences</p>
                 <div class="hero-buttons">
                     <a href="#projects" class="btn primary">View Projects <i class="fas fa-arrow-right"></i></a>
@@ -75,8 +63,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Scroll Indicator (blinking) -->
         <div class="scroll-indicator">
             <span>Scroll</span>
             <i class="fas fa-chevron-down"></i>
@@ -191,33 +177,59 @@
                     </div>
                     <div class="social-links" id="social-links"></div>
                 </div>
+
+                <!-- Contact Form & Mode Switcher -->
                 <div class="contact-form-wrapper">
-                    <form id="contact-form" class="contact-form">
-                        <h3>Send a Message</h3>
-                        <div class="form-group">
-                            <label for="form-name"><i class="fas fa-user"></i> Your Name</label>
-                            <input type="text" id="form-name" placeholder="Enter your full name" required>
+                    <h3>Send a Message</h3>
+                    <div class="contact-mode">
+                        <button class="active" data-mode="out">Out Conversation</button>
+                        <button data-mode="in">In Conversation</button>
+                    </div>
+
+                    <!-- OUT CONVERSATION -->
+                    <div id="out-conversation" class="conversation-mode">
+                        <div class="channel-select">
+                            <button class="active-channel" data-channel="email">Email</button>
+                            <button data-channel="whatsapp">WhatsApp</button>
+                            <button data-channel="phone">Phone</button>
                         </div>
-                        <div class="form-group">
-                            <label for="form-email"><i class="fas fa-envelope"></i> Your Email</label>
-                            <input type="email" id="form-email" placeholder="Enter your email address" required>
+                        <form id="out-form" class="contact-form">
+                            <div class="form-group">
+                                <label for="out-name"><i class="fas fa-user"></i> Your Name</label>
+                                <input type="text" id="out-name" placeholder="Enter your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="out-email"><i class="fas fa-envelope"></i> Your Email</label>
+                                <input type="email" id="out-email" placeholder="Enter your email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="out-message"><i class="fas fa-comment"></i> Your Message</label>
+                                <textarea id="out-message" rows="4" placeholder="Tell me about your project..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn primary"><i class="fas fa-paper-plane"></i> Send via selected channel</button>
+                        </form>
+                    </div>
+
+                    <!-- IN CONVERSATION (chat) -->
+                    <div id="in-conversation" class="conversation-mode" style="display:none;">
+                        <div id="chat-container" class="chat-container">
+                            <div id="chat-messages" class="chat-messages">
+                                <p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Loading conversation...</p>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="chat-input" placeholder="Type your message..." disabled>
+                                <button id="chat-send" disabled>Send</button>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="form-subject"><i class="fas fa-tag"></i> Subject</label>
-                            <input type="text" id="form-subject" placeholder="What's this about?">
+                        <div style="margin-top:0.8rem; text-align:right;">
+                            <span id="chat-auth-status" style="font-size:0.85rem;color:var(--text-light);">Not logged in. <a href="#" id="chat-login-link">Login</a> or <a href="#" id="chat-register-link">Register</a></span>
                         </div>
-                        <div class="form-group">
-                            <label for="form-message"><i class="fas fa-comment"></i> Your Message</label>
-                            <textarea id="form-message" rows="5" placeholder="Tell me about your project..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn primary"><i class="fas fa-paper-plane"></i> Send Message</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
     <footer>
         <div class="container footer-content">
             <p id="footer-text">© 2025 Built with <i class="fas fa-heart"></i></p>

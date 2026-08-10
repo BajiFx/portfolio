@@ -64,6 +64,10 @@
             <button class="sidebar-btn" data-tab="messages">
                 <i class="fas fa-envelope"></i> <span>Messages</span>
             </button>
+            <!-- ===== CHAT TAB ===== -->
+            <button class="sidebar-btn" data-tab="chat">
+                <i class="fas fa-comment-dots"></i> <span>Chat</span>
+            </button>
         </div>
 
         <!-- Content Area -->
@@ -158,7 +162,6 @@
             <div id="tab-skills" class="tab-content">
                 <h2>🛠️ Skills</h2>
                 <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Manage your skill categories and the technologies you work with.</p>
-
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
                     <button onclick="showAddSkillCategory()" class="btn primary">
                         <i class="fas fa-plus"></i> Add Category
@@ -167,8 +170,6 @@
                         <i class="fas fa-save"></i> Save All Skills
                     </button>
                 </div>
-
-                <!-- Add/Edit Category Form -->
                 <div id="addSkillCategoryForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="skillCategoryFormTitle" style="margin-bottom:1.5rem;">➕ Add Skill Category</h3>
                     <form id="skillCategoryForm" class="admin-form">
@@ -186,8 +187,6 @@
                         <button type="button" onclick="hideAddSkillCategory()" class="btn secondary">Cancel</button>
                     </form>
                 </div>
-
-                <!-- Skills List -->
                 <div id="skillsList" class="admin-grid">
                     <p style="color:var(--text-secondary);text-align:center;padding:2rem;">No skill categories added yet.</p>
                 </div>
@@ -196,7 +195,6 @@
             <!-- ===== PROJECTS TAB ===== -->
             <div id="tab-projects" class="tab-content">
                 <h2>📁 Projects</h2>
-                
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
                     <button onclick="showAddGroup()" class="btn primary">
                         <i class="fas fa-folder-plus"></i> Create New Group
@@ -205,7 +203,6 @@
                         <i class="fas fa-plus"></i> Add Project
                     </button>
                 </div>
-
                 <!-- ===== CREATE GROUP FORM ===== -->
                 <div id="addGroupForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="groupFormTitle" style="margin-bottom:1.5rem;">📂 Create New Project Group</h3>
@@ -228,16 +225,13 @@
                         <button type="button" onclick="hideAddGroup()" class="btn secondary">Cancel</button>
                     </form>
                 </div>
-
                 <!-- ===== ADD PROJECT FORM ===== -->
                 <div id="addProjectForm" style="display:none;background:var(--bg-card);padding:2rem;border-radius:16px;margin-bottom:2rem;border:1px solid var(--border-color);">
                     <h3 id="projectFormTitle" style="margin-bottom:1.5rem;">📄 Add New Project</h3>
-                    
                     <div id="selectedGroupDisplay" style="display:none;padding:0.8rem 1.2rem;background:var(--accent-gradient);color:white;border-radius:12px;margin-bottom:1.5rem;font-weight:600;display:flex;align-items:center;gap:0.8rem;">
                         <i class="fas fa-folder"></i>
                         Adding project to: <span id="selectedGroupName">Web Development</span>
                     </div>
-                    
                     <div id="groupSelectWrapper" style="margin-bottom:1.5rem;padding:1rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);">
                         <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Select Which Group This Project Belongs To:</label>
                         <select id="projectGroupSelect" style="width:100%;padding:0.8rem 1rem;border:2px solid var(--border-color);border-radius:12px;background:var(--bg-primary);color:var(--text-primary);font-size:1rem;">
@@ -245,26 +239,21 @@
                         </select>
                         <small style="color:var(--text-light);">If no groups exist, create one first using "Create New Group"</small>
                     </div>
-                    
                     <form id="projectForm" class="admin-form" enctype="multipart/form-data">
                         <input type="hidden" id="projectEditId" value="">
                         <input type="hidden" id="projectGroupId" value="">
-                        
                         <div class="form-group">
                             <label>Project Title</label>
                             <input type="text" id="projectTitle" placeholder="e.g., E-commerce Platform" required>
                         </div>
-                        
                         <div class="form-group">
                             <label>Project Description</label>
                             <textarea id="projectDescription" rows="3" placeholder="Describe your project..." required></textarea>
                         </div>
-                        
                         <div class="form-group">
                             <label>Technologies Used (comma separated)</label>
                             <input type="text" id="projectTech" placeholder="React, Node.js, Python, TensorFlow">
                         </div>
-                        
                         <div class="form-group">
                             <label>Project Images</label>
                             <div id="imageUploadContainer"></div>
@@ -273,7 +262,6 @@
                             </button>
                             <small>Click "Add Image" to upload images one by one.</small>
                         </div>
-                        
                         <div class="form-group">
                             <label>Project Videos</label>
                             <div id="videoUploadContainer"></div>
@@ -282,35 +270,29 @@
                             </button>
                             <small>Click "Add Video" to upload videos one by one.</small>
                         </div>
-                        
                         <div class="form-group">
                             <label>GitHub Repository URL</label>
                             <input type="url" id="projectGithub" placeholder="https://github.com/username/repository-name">
                         </div>
-                        
                         <div class="form-group">
                             <label>Live Demo Link</label>
                             <input type="url" id="projectDemo" placeholder="https://demo.com">
                         </div>
-                        
                         <div class="form-group">
                             <label>README / Documentation (supports Markdown)</label>
                             <textarea id="projectReadme" rows="5" placeholder="Write detailed documentation, installation steps, features, etc..."></textarea>
                             <small>You can use Markdown formatting: headings, lists, code blocks, tables, etc.</small>
                         </div>
-                        
                         <div class="form-group">
                             <label>Attach Files (PDF, Documents, ZIP)</label>
                             <input type="file" id="projectFiles" accept=".pdf,.doc,.docx,.txt,.zip,.pptx" multiple>
                             <div id="projectFilesPreview" style="margin-top:0.5rem;"></div>
                             <small>You can select multiple files at once</small>
                         </div>
-                        
                         <button type="submit" class="btn primary" id="projectSubmitBtn">Save Project</button>
                         <button type="button" onclick="hideAddProject()" class="btn secondary">Cancel</button>
                     </form>
                 </div>
-
                 <div id="groupsList" class="admin-grid"></div>
             </div>
 
@@ -491,6 +473,14 @@
             <div id="tab-messages" class="tab-content">
                 <h2>Messages</h2>
                 <div id="messagesList" class="admin-grid"></div>
+            </div>
+
+            <!-- ===== CHAT TAB ===== -->
+            <div id="tab-chat" class="tab-content">
+                <h2>💬 Chat with Visitors</h2>
+                <div id="admin-chat-list">
+                    <!-- Conversations loaded here -->
+                </div>
             </div>
         </div>
     </div>
