@@ -14,6 +14,9 @@ let visitorToken = localStorage.getItem('visitorToken');
 let currentConversationId = null;
 let chatPollInterval = null;
 
+// Auth modal state
+let authMode = 'login'; // 'login' or 'register'
+
 // ============================================
 // LOAD PUBLIC DATA
 // ============================================
@@ -27,6 +30,7 @@ async function loadPublicData() {
         renderPublicPortfolio();
         initContactModes();
         initChat();
+        initAuthModal();
     } catch (error) {
         console.error('Error loading data:', error);
         document.getElementById('hero-title').innerHTML = `Hi, I'm <span>Loading...</span>`;
@@ -39,7 +43,7 @@ async function loadPublicData() {
 }
 
 // ============================================
-// RENDER PUBLIC PORTFOLIO (unchanged – keep your existing)
+// RENDER PUBLIC PORTFOLIO (unchanged)
 // ============================================
 
 function renderPublicPortfolio() {
@@ -276,9 +280,180 @@ function initContactModes() {
         })
         .catch(err => {
             console.error(err);
-            alert('Network error.');
+            alert('Network error. Please check your connection.');
         });
     });
+}
+
+// ============================================
+// AUTH MODAL
+// ============================================
+
+function initAuthModal() {
+    const modal = document.getElementById('authModal');
+    const closeBtn = document.getElementById('closeAuthModal');
+    const switchLink = document.getElementById('authSwitchLink');
+    const form = document.getElementById('authForm');
+    const title = document.getElementById('authModalTitle');
+    const sub = document.getElementById('authModalSub');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const confirmGroup = document.getElementById('confirmPasswordGroup');
+
+    // Open modal from chat links
+    document.getElementById('chat-login-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        openAuthModal('login');
+    });
+    document.getElementById('chat-register-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        openAuthModal('register');
+    });
+
+    // Close modal
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+
+    // Switch between login/register
+    switchLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (authMode === 'login') {
+            openAuthModal('register');
+        } else {
+            openAuthModal('login');
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value.trim();
+        const confirmPassword = document.getElementById('authConfirmPassword').value.trim();
+        const errorDiv = document.getElementById('authError');
+
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+
+        if (authMode === 'register') {
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+        }
+
+        const endpoint = authMode === 'login' ? '/api/visitor-login' : '/api/visitor-register';
+
+        try {
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                visitorToken = data.token;
+                localStorage.setItem('visitorToken', visitorToken);
+                alert(`✅ ${authMode === 'login' ? 'Logged in' : 'Registered'} successfully!`);
+                modal.classList.remove('active');
+                loadConversation();
+                // Update auth status
+                document.getElementById('chat-auth-status').innerHTML = `Logged in as <strong>${username}</strong> | <a href="#" id="chat-logout-link">Logout</a>`;
+                document.getElementById('chat-logout-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('visitorToken');
+                    visitorToken = null;
+                    location.reload();
+                });
+            } else {
+                errorDiv.textContent = data.error || 'Authentication failed.';
+                errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            console.error('Auth error:', err);
+            errorDiv.textContent = 'Network error. Please check your internet connection and try again.';
+            errorDiv.style.display = 'block';
+        }
+    });
+}
+
+function openAuthModal(mode) {
+    const modal = document.getElementById('authModal');
+    const title = document.getElementById('authModalTitle');
+    const sub = document.getElementById('authModalSub');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const switchLink = document.getElementById('authSwitchLink');
+    const confirmGroup = document.getElementById('confirmPasswordGroup');
+    const errorDiv = document.getElementById('authError');
+
+    authMode = mode;
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+
+    if (mode === 'login') {
+        title.textContent = 'Login';
+        sub.textContent = 'Enter your credentials';
+        submitBtn.textContent = 'Login';
+        switchLink.textContent = 'Register';
+        document.getElementById('authSwitchText').innerHTML = `Don't have an account? <a id="authSwitchLink">Register</a>`;
+        confirmGroup.style.display = 'none';
+        document.getElementById('authConfirmPassword').removeAttribute('required');
+    } else {
+        title.textContent = 'Register';
+        sub.textContent = 'Create an account to chat';
+        submitBtn.textContent = 'Register';
+        switchLink.textContent = 'Login';
+        document.getElementById('authSwitchText').innerHTML = `Already have an account? <a id="authSwitchLink">Login</a>`;
+        confirmGroup.style.display = 'block';
+        document.getElementById('authConfirmPassword').setAttribute('required', true);
+    }
+
+    // Reset form
+    document.getElementById('authForm').reset();
+    // Reset password visibility toggles
+    document.querySelectorAll('.toggle-password i').forEach(icon => {
+        icon.className = 'fas fa-eye';
+    });
+    document.querySelectorAll('.input-wrapper input[type="password"]').forEach(input => {
+        input.type = 'password';
+    });
+
+    modal.classList.add('active');
+    document.getElementById('authUsername').focus();
+
+    // Re-bind switch link
+    document.getElementById('authSwitchLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (authMode === 'login') {
+            openAuthModal('register');
+        } else {
+            openAuthModal('login');
+        }
+    });
+}
+
+// Toggle password visibility
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
 }
 
 // ============================================
@@ -286,14 +461,8 @@ function initContactModes() {
 // ============================================
 
 function initChat() {
-    document.getElementById('chat-login-link').addEventListener('click', function(e) {
-        e.preventDefault();
-        showVisitorAuth('login');
-    });
-    document.getElementById('chat-register-link').addEventListener('click', function(e) {
-        e.preventDefault();
-        showVisitorAuth('register');
-    });
+    // Links are now handled by the modal
+    // The chat-send and input are already set up
     document.getElementById('chat-send').addEventListener('click', sendChatMessage);
     document.getElementById('chat-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') sendChatMessage();
@@ -302,35 +471,6 @@ function initChat() {
     if (visitorToken) {
         loadConversation();
     }
-}
-
-function showVisitorAuth(mode) {
-    const username = prompt(mode === 'login' ? 'Enter your username:' : 'Choose a username:');
-    if (!username) return;
-    const password = prompt(mode === 'login' ? 'Enter your password:' : 'Choose a password:');
-    if (!password) return;
-
-    const url = mode === 'login' ? '/api/visitor-login' : '/api/visitor-register';
-    fetch(`${API_BASE}${url}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            visitorToken = data.token;
-            localStorage.setItem('visitorToken', visitorToken);
-            alert(`✅ ${mode === 'login' ? 'Logged in' : 'Registered'} successfully!`);
-            loadConversation();
-        } else {
-            alert('❌ ' + data.error);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Network error.');
-    });
 }
 
 function loadConversation() {
@@ -437,7 +577,7 @@ function sendChatMessage() {
     })
     .catch(err => {
         console.error(err);
-        alert('Network error.');
+        alert('Network error while sending.');
         input.disabled = false;
     });
 }
