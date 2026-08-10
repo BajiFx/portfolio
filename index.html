@@ -22,9 +22,7 @@
             align-items: center;
             justify-content: center;
         }
-        .auth-modal.active {
-            display: flex;
-        }
+        .auth-modal.active { display: flex; }
         .auth-modal-content {
             background: var(--bg-card);
             padding: 2.5rem;
@@ -53,12 +51,8 @@
             color: var(--text-secondary);
             margin-bottom: 1.5rem;
         }
-        .auth-modal-content .form-group {
-            margin-bottom: 1rem;
-        }
-        .auth-modal-content .input-wrapper {
-            position: relative;
-        }
+        .auth-modal-content .form-group { margin-bottom: 1rem; }
+        .auth-modal-content .input-wrapper { position: relative; }
         .auth-modal-content .input-wrapper i {
             position: absolute;
             left: 1rem;
@@ -89,22 +83,14 @@
             color: var(--text-light);
             cursor: pointer;
         }
-        .auth-modal-content .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 0.8rem;
-        }
+        .auth-modal-content .btn { width: 100%; justify-content: center; padding: 0.8rem; }
         .auth-modal-content .switch-mode {
             text-align: center;
             margin-top: 1rem;
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
-        .auth-modal-content .switch-mode a {
-            color: var(--accent-primary);
-            cursor: pointer;
-            font-weight: 600;
-        }
+        .auth-modal-content .switch-mode a { color: var(--accent-primary); cursor: pointer; font-weight: 600; }
         .auth-modal-content .error-msg {
             background: #ef4444;
             color: white;
@@ -183,14 +169,87 @@
         </div>
     </section>
 
-    <!-- ===== PROJECTS, SKILLS, ABOUT, EXPERIENCE, EDUCATION, CERTIFICATIONS ===== -->
-    <!-- (Keep your existing sections – they are unchanged) -->
-    <section id="projects"><!-- ... --></section>
-    <section id="skills"><!-- ... --></section>
-    <section id="about"><!-- ... --></section>
-    <section id="experience"><!-- ... --></section>
-    <section id="education"><!-- ... --></section>
-    <section id="certifications"><!-- ... --></section>
+    <!-- ===== PROJECTS ===== -->
+    <section id="projects">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">My Work</span>
+                <h2>Featured <span>Projects</span></h2>
+                <p>Each project is crafted with attention to detail and user experience</p>
+            </div>
+            <div id="projects-grid" class="projects-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading projects...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SKILLS ===== -->
+    <section id="skills">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Skills</span>
+                <h2>Tech <span>Stack</span></h2>
+            </div>
+            <div id="skills-grid" class="skills-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading skills...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ABOUT ===== -->
+    <section id="about">
+        <div class="container about-content">
+            <div class="about-image">
+                <img src="" alt="About" id="about-img" onerror="this.style.display='none'">
+            </div>
+            <div class="about-text">
+                <span class="label">About Me</span>
+                <h2>Passionate about <span>building</span> great software</h2>
+                <div id="about-text"><p>Loading about information...</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== EXPERIENCE ===== -->
+    <section id="experience">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Experience</span>
+                <h2>Work <span>Experience</span></h2>
+            </div>
+            <div id="timeline" class="timeline">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading experience...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== EDUCATION ===== -->
+    <section id="education">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Education</span>
+                <h2>My <span>Education</span></h2>
+                <p>My academic background and qualifications</p>
+            </div>
+            <div id="education-list" class="education-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading education...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CERTIFICATIONS ===== -->
+    <section id="certifications">
+        <div class="container">
+            <div class="section-header">
+                <span class="label">Certifications</span>
+                <h2>My <span>Certifications</span></h2>
+                <p>Professional certifications and credentials</p>
+            </div>
+            <div id="certifications-list" class="certifications-grid">
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading certifications...</p>
+            </div>
+        </div>
+    </section>
 
     <!-- ===== CONTACT ===== -->
     <section id="contact">
