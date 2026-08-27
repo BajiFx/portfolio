@@ -77,31 +77,7 @@ async function loadData() {
     } catch (error) {
         console.error('Error loading data:', error);
         alert('Failed to load portfolio data. Please check your internet connection.');
-        resetDefaultData();
     }
-}
-
-function resetDefaultData() {
-    portfolioData = {
-        personal: {
-            name: 'Your Name',
-            title: 'Web Designer & Developer',
-            badge: '🚀 Available for Freelance Work',
-            heroSubtitle: 'Building exceptional digital experiences.',
-            welcomeMessage: 'Welcome to my portfolio!',
-            email: 'your.email@gmail.com'
-        },
-        about: { paragraphs: ['I\'m a passionate developer...'] },
-        skills: [],
-        projectGroups: [],
-        experience: [],
-        education: [],
-        certifications: [],
-        social: {},
-        videos: {},
-        footer: '© 2025 Your Name. Built with ❤️'
-    };
-    saveData();
 }
 
 // ============================================
@@ -112,6 +88,7 @@ async function saveData() {
     try {
         const headers = getAuthHeaders();
 
+        // Save profile
         await fetch(`${API_BASE}/api/profile`, {
             method: 'PUT',
             headers: headers,
@@ -129,18 +106,21 @@ async function saveData() {
             })
         });
 
+        // Save about
         await fetch(`${API_BASE}/api/about`, {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({ paragraphs: portfolioData.about?.paragraphs || [] })
         });
 
+        // Save skills
         await fetch(`${API_BASE}/api/skills`, {
             method: 'PUT',
             headers: headers,
             body: JSON.stringify({ skills: portfolioData.skills || [] })
         });
 
+        // Save welcome video
         await fetch(`${API_BASE}/api/welcome-video`, {
             method: 'PUT',
             headers: headers,
@@ -156,75 +136,7 @@ async function saveData() {
 }
 
 // ============================================
-// RENDER ALL SECTIONS
-// ============================================
-
-function renderAll() {
-    renderProfileForm();
-    renderSkillsList();
-    renderGroupsList();
-    renderExperienceList();
-    renderEducationList();
-    renderCertificationsList();
-    renderSocialList();
-    renderMessages();
-    renderResumePreview();
-    renderWelcomeVideoPreview();
-    updateGroupSelect();
-    updateDashboard();
-}
-
-// ============================================
-// DASHBOARD
-// ============================================
-
-function updateDashboard() {
-    const groups = portfolioData.projectGroups || [];
-    const projects = groups.reduce((sum, g) => sum + (g.projects?.length || 0), 0);
-    document.getElementById('statGroups').textContent = groups.length;
-    document.getElementById('statProjects').textContent = projects;
-    document.getElementById('statExperience').textContent = portfolioData.experience?.length || 0;
-    document.getElementById('statEducation').textContent = portfolioData.education?.length || 0;
-    document.getElementById('statCertifications').textContent = portfolioData.certifications?.length || 0;
-    loadMessages();
-}
-
-// ============================================
-// TABS
-// ============================================
-
-function setupTabs() {
-    document.querySelectorAll('.sidebar-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.dataset.tab;
-            switchTab(tab);
-        });
-    });
-}
-
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.sidebar-btn').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById('tab-' + tabId);
-    if (target) target.classList.add('active');
-    const btn = document.querySelector(`.sidebar-btn[data-tab="${tabId}"]`);
-    if (btn) btn.classList.add('active');
-    if (tabId === 'skills') renderSkillsList();
-    if (tabId === 'projects') renderGroupsList();
-    if (tabId === 'experience') renderExperienceList();
-    if (tabId === 'education') renderEducationList();
-    if (tabId === 'certifications') renderCertificationsList();
-    if (tabId === 'social') renderSocialList();
-    if (tabId === 'messages') renderMessages();
-    if (tabId === 'profile') renderProfileForm();
-    if (tabId === 'chat') loadAdminChat();
-    if (tabId === 'out-messages') loadOutMessages();
-}
-
-function setupSidebarButtons() {}
-
-// ============================================
-// PROFILE
+// PROFILE FORM
 // ============================================
 
 function renderProfileForm() {
@@ -235,18 +147,32 @@ function renderProfileForm() {
     document.getElementById('profileSubtitle').value = p.heroSubtitle || '';
     document.getElementById('welcomeMessage').value = p.welcomeMessage || '';
     document.getElementById('profileEmail').value = p.email || '';
+    
     const bio = portfolioData.about?.paragraphs?.join('\n\n') || '';
     document.getElementById('profileBio').value = bio;
-    if (p.profileImage) {
+    
+    // Show profile image preview
+    if (p.profileImage && p.profileImage.startsWith('http')) {
         document.getElementById('profilePicturePreview').innerHTML = `<img src="${p.profileImage}" style="width:150px;height:150px;border-radius:50%;object-fit:cover;">`;
+    } else {
+        document.getElementById('profilePicturePreview').innerHTML = '<p style="color:var(--text-light);">No profile image uploaded</p>';
     }
-    if (p.aboutImage) {
+    
+    // Show about image preview
+    if (p.aboutImage && p.aboutImage.startsWith('http')) {
         document.getElementById('aboutImagePreview').innerHTML = `<img src="${p.aboutImage}" style="max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;">`;
+    } else {
+        document.getElementById('aboutImagePreview').innerHTML = '<p style="color:var(--text-light);">No about image uploaded</p>';
     }
 }
 
+// ============================================
+// PROFILE SAVE
+// ============================================
+
 document.getElementById('profileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
+    
     const p = portfolioData.personal || {};
     p.name = document.getElementById('profileName').value.trim();
     p.title = document.getElementById('profileTitle').value.trim();
@@ -255,17 +181,22 @@ document.getElementById('profileForm').addEventListener('submit', async function
     p.welcomeMessage = document.getElementById('welcomeMessage').value.trim();
     p.email = document.getElementById('profileEmail').value.trim();
     portfolioData.personal = p;
+    
     const bioText = document.getElementById('profileBio').value.trim();
     portfolioData.about = {
         paragraphs: bioText ? bioText.split('\n\n').filter(p => p.trim()) : []
     };
+    
     await saveData();
     alert('✅ Profile saved!');
     renderProfileForm();
     updateDashboard();
 });
 
-// ===== PROFILE PICTURE UPLOAD =====
+// ============================================
+// PROFILE PICTURE UPLOAD - FIXED VERSION
+// ============================================
+
 document.getElementById('profilePicture').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -280,15 +211,20 @@ document.getElementById('profilePicture').addEventListener('change', async funct
             body: formData
         });
         const result = await response.json();
+        
         if (result.success && result.url) {
+            // ✅ SAVE URL TO DATABASE IMMEDIATELY
+            portfolioData.personal.profileImage = result.url;
+            await saveData();
+            
+            // Show preview
             const img = document.createElement('img');
             img.src = result.url;
             img.style.cssText = 'width:150px;height:150px;border-radius:50%;object-fit:cover;';
             document.getElementById('profilePicturePreview').innerHTML = '';
             document.getElementById('profilePicturePreview').appendChild(img);
-            portfolioData.personal.profileImage = result.url;
-            await saveData();
-            alert('✅ Profile picture uploaded to Cloudinary!');
+            
+            alert('✅ Profile picture uploaded to Cloudinary and saved!');
         } else {
             alert('Upload failed: ' + (result.error || 'Unknown error'));
         }
@@ -298,7 +234,10 @@ document.getElementById('profilePicture').addEventListener('change', async funct
     }
 });
 
-// ===== ABOUT IMAGE UPLOAD =====
+// ============================================
+// ABOUT IMAGE UPLOAD - FIXED VERSION
+// ============================================
+
 document.getElementById('aboutImage').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -313,15 +252,20 @@ document.getElementById('aboutImage').addEventListener('change', async function(
             body: formData
         });
         const result = await response.json();
+        
         if (result.success && result.url) {
+            // ✅ SAVE URL TO DATABASE IMMEDIATELY
+            portfolioData.personal.aboutImage = result.url;
+            await saveData();
+            
+            // Show preview
             const img = document.createElement('img');
             img.src = result.url;
             img.style.cssText = 'max-width:200px;max-height:150px;object-fit:cover;border-radius:12px;';
             document.getElementById('aboutImagePreview').innerHTML = '';
             document.getElementById('aboutImagePreview').appendChild(img);
-            portfolioData.personal.aboutImage = result.url;
-            await saveData();
-            alert('✅ About image uploaded to Cloudinary!');
+            
+            alert('✅ About image uploaded to Cloudinary and saved!');
         } else {
             alert('Upload failed: ' + (result.error || 'Unknown error'));
         }
