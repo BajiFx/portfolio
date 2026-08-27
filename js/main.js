@@ -1,5 +1,5 @@
 // ============================================
-// MAIN.JS - Public View (Full Project Rendering)
+// MAIN.JS - Public View
 // ============================================
 
 console.log('✅ main.js loaded (API version)');
@@ -20,23 +20,47 @@ let authMode = 'login';
 // ============================================
 
 async function loadPublicData() {
+    console.log('🔍 Starting to load data...');
+    console.log('API_BASE:', API_BASE);
+    
     try {
         const response = await fetch(`${API_BASE}/api/data`);
-        if (!response.ok) throw new Error('Failed to fetch data');
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            console.error('Error status:', response.status);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         portfolioData = await response.json();
-        console.log('✅ Data loaded from backend');
+        console.log('✅ Data loaded successfully');
+        
+        // Check if we have data
+        if (!portfolioData.personal) {
+            console.warn('No personal data found');
+        }
+        
         renderPublicPortfolio();
         initContactModes();
         initChat();
         initAuthModal();
     } catch (error) {
-        console.error('Error loading data:', error);
-        document.getElementById('hero-title').innerHTML = `Hi, I'm <span>Loading...</span>`;
-        document.getElementById('projects-grid').innerHTML = `
-            <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">
-                ⚠️ Unable to load portfolio data. Please try again later.
-            </p>
-        `;
+        console.error('❌ Error loading data:', error);
+        
+        // Show error message on page
+        const heroTitle = document.getElementById('hero-title');
+        if (heroTitle) {
+            heroTitle.innerHTML = `Hi, I'm <span>Error Loading</span>`;
+        }
+        
+        const projectsGrid = document.getElementById('projects-grid');
+        if (projectsGrid) {
+            projectsGrid.innerHTML = `
+                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">
+                    ❌ Error loading data: ${error.message}
+                </p>
+            `;
+        }
     }
 }
 
@@ -45,40 +69,50 @@ async function loadPublicData() {
 // ============================================
 
 function renderPublicPortfolio() {
+    console.log('Rendering portfolio...');
     const data = portfolioData;
 
-    function setInnerHTML(id, html) {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = html;
-    }
-
-    // --- Hero ---
+    // --- Hero Section ---
     if (data.personal) {
-        setInnerHTML('hero-title', `Hi, I'm <span>${data.personal.name || 'Your Name'}</span>`);
-        setInnerHTML('hero-subtitle', data.personal.heroSubtitle || 'Web Developer');
-        setInnerHTML('hero-badge', data.personal.badge || '👋 Welcome');
-        setInnerHTML('logo', (data.personal.name || 'Dev').split(' ')[0] + '<span>.</span>');
-
+        const heroTitle = document.getElementById('hero-title');
+        if (heroTitle) {
+            heroTitle.innerHTML = `Hi, I'm <span>${data.personal.name || 'Your Name'}</span>`;
+        }
+        
+        const heroSubtitle = document.getElementById('hero-subtitle');
+        if (heroSubtitle) {
+            heroSubtitle.textContent = data.personal.heroSubtitle || 'Web Developer';
+        }
+        
+        const heroBadge = document.getElementById('hero-badge');
+        if (heroBadge) {
+            heroBadge.textContent = data.personal.badge || '👋 Welcome';
+        }
+        
+        const logo = document.getElementById('logo');
+        if (logo) {
+            logo.innerHTML = (data.personal.name || 'Dev').split(' ')[0] + '<span>.</span>';
+        }
+        
+        // Profile image
         const profileImg = document.getElementById('profile-img');
-        if (profileImg) {
-            if (data.personal.profileImage && data.personal.profileImage.startsWith('http')) {
-                profileImg.src = data.personal.profileImage;
-                profileImg.style.display = 'block';
-            } else {
-                profileImg.style.display = 'none';
-            }
+        if (profileImg && data.personal.profileImage) {
+            profileImg.src = data.personal.profileImage;
+            profileImg.style.display = 'block';
+        } else if (profileImg) {
+            profileImg.style.display = 'none';
         }
-
+        
+        // About image
         const aboutImg = document.getElementById('about-img');
-        if (aboutImg) {
-            if (data.personal.aboutImage && data.personal.aboutImage.startsWith('http')) {
-                aboutImg.src = data.personal.aboutImage;
-                aboutImg.style.display = 'block';
-            } else {
-                aboutImg.style.display = 'none';
-            }
+        if (aboutImg && data.personal.aboutImage) {
+            aboutImg.src = data.personal.aboutImage;
+            aboutImg.style.display = 'block';
+        } else if (aboutImg) {
+            aboutImg.style.display = 'none';
         }
-
+        
+        // Resume link
         if (data.personal.resume) {
             document.querySelectorAll('#resume-link, #resume-btn').forEach(link => {
                 if (link) {
@@ -87,7 +121,8 @@ function renderPublicPortfolio() {
                 }
             });
         }
-
+        
+        // Contact email
         const contactEmail = document.getElementById('contact-email');
         if (contactEmail && data.personal.email) {
             contactEmail.textContent = data.personal.email;
@@ -97,11 +132,17 @@ function renderPublicPortfolio() {
 
     // --- Stats ---
     const totalProjects = portfolioData.projectGroups?.reduce((sum, g) => sum + (g.projects?.length || 0), 0) || 0;
-    setInnerHTML('projects-count', totalProjects);
-    setInnerHTML('clients-count', portfolioData.projectGroups?.length || 0);
-    setInnerHTML('experience-count', portfolioData.experience?.length || 0);
+    
+    const projectsCount = document.getElementById('projects-count');
+    if (projectsCount) projectsCount.textContent = totalProjects;
+    
+    const clientsCount = document.getElementById('clients-count');
+    if (clientsCount) clientsCount.textContent = portfolioData.projectGroups?.length || 0;
+    
+    const experienceCount = document.getElementById('experience-count');
+    if (experienceCount) experienceCount.textContent = portfolioData.experience?.length || 0;
 
-    // --- About ---
+    // --- About Section ---
     if (data.about && data.about.paragraphs) {
         const container = document.getElementById('about-text');
         if (container) {
@@ -116,116 +157,74 @@ function renderPublicPortfolio() {
         }
     }
 
-    // --- Skills ---
-    if (data.skills && data.skills.length > 0) {
-        const grid = document.getElementById('skills-grid');
-        if (grid) {
-            grid.innerHTML = '';
-            data.skills.forEach(skill => {
-                const div = document.createElement('div');
-                div.className = 'skill-card';
-                div.innerHTML = `
-                    <div class="skill-icon"><i class="${skill.icon || 'fas fa-code'}"></i></div>
-                    <h3>${skill.category}</h3>
-                    <div class="skill-tags">
-                        ${skill.items ? skill.items.map(item => `<span class="skill-tag">${item}</span>`).join('') : ''}
-                    </div>
-                `;
-                grid.appendChild(div);
-            });
-        }
-    } else {
-        const grid = document.getElementById('skills-grid');
-        if (grid) {
-            grid.innerHTML = `
-                <div class="skill-card"><div class="skill-icon"><i class="fas fa-code"></i></div><h3>Frontend</h3><div class="skill-tags"><span class="skill-tag">HTML</span><span class="skill-tag">CSS</span><span class="skill-tag">JS</span></div></div>
-                <div class="skill-card"><div class="skill-icon"><i class="fas fa-server"></i></div><h3>Backend</h3><div class="skill-tags"><span class="skill-tag">Node.js</span><span class="skill-tag">Python</span><span class="skill-tag">SQL</span></div></div>
-            `;
-        }
-    }
+    // --- Skills Section ---
+    renderSkills(data);
 
-    // --- Project Groups ---
+    // --- Projects Section ---
     renderProjectGroups(data);
 
-    // --- Experience ---
-    if (data.experience) {
-        const timeline = document.getElementById('timeline');
-        if (timeline) {
-            timeline.innerHTML = '';
-            data.experience.forEach(exp => {
-                const div = document.createElement('div');
-                div.className = 'timeline-item';
-                div.innerHTML = `
-                    <h3>${exp.role}</h3>
-                    <div class="company">${exp.company}</div>
-                    <div class="period">${exp.period}</div>
-                    <p>${exp.description}</p>
-                `;
-                timeline.appendChild(div);
-            });
-        }
-    }
+    // --- Experience Section ---
+    renderExperience(data);
 
-    // --- Education ---
-    if (data.education) {
-        const grid = document.getElementById('education-list');
-        if (grid) {
-            grid.innerHTML = '';
-            data.education.forEach(edu => {
-                const div = document.createElement('div');
-                div.className = 'education-card';
-                div.innerHTML = `
-                    <div class="edu-icon"><i class="fas fa-graduation-cap"></i></div>
-                    <h3>${edu.institution}</h3>
-                    <div class="edu-degree">${edu.degree}</div>
-                    ${edu.field ? `<div class="edu-field">${edu.field}</div>` : ''}
-                    <div class="edu-period">${edu.period || ''}</div>
-                    ${edu.description ? `<div class="edu-description">${edu.description}</div>` : ''}
-                `;
-                grid.appendChild(div);
-            });
-        }
-    }
+    // --- Education Section ---
+    renderEducation(data);
 
-    // --- Certifications ---
-    if (data.certifications) {
-        const grid = document.getElementById('certifications-list');
-        if (grid) {
-            grid.innerHTML = '';
-            data.certifications.forEach(cert => {
-                const div = document.createElement('div');
-                div.className = 'certification-card';
-                let fileHtml = '';
-                if (cert.file) {
-                    if (cert.file.startsWith('data:image') || cert.file.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-                        fileHtml = `<div class="cert-file-preview"><img src="${cert.file}" alt="Certificate"></div>`;
-                    } else {
-                        fileHtml = `<div class="cert-file-preview"><a href="${cert.file}" download>📄 Download Certificate</a></div>`;
-                    }
-                }
-                div.innerHTML = `
-                    <div class="cert-icon"><i class="fas fa-certificate"></i></div>
-                    <h3>${cert.name}</h3>
-                    <div class="cert-issuer">${cert.issuer}</div>
-                    <div class="cert-date">${cert.date || ''}</div>
-                    ${cert.description ? `<div class="cert-description">${cert.description}</div>` : ''}
-                    ${fileHtml}
-                    <div class="cert-actions">
-                        ${cert.file ? `<a href="${cert.file}" download class="btn-view"><i class="fas fa-download"></i> Download</a>` : ''}
-                        ${cert.link ? `<a href="${cert.link}" target="_blank" class="btn-verify"><i class="fas fa-external-link-alt"></i> Verify</a>` : ''}
-                    </div>
-                `;
-                grid.appendChild(div);
-            });
-        }
-    }
+    // --- Certifications Section ---
+    renderCertifications(data);
 
     // --- Social Links ---
     renderSocialLinks(data);
 
     // --- Footer ---
     if (data.footer) {
-        setInnerHTML('footer-text', data.footer);
+        const footerText = document.getElementById('footer-text');
+        if (footerText) footerText.innerHTML = data.footer;
+    }
+}
+
+// ============================================
+// RENDER SKILLS
+// ============================================
+
+function renderSkills(data) {
+    const grid = document.getElementById('skills-grid');
+    if (!grid) return;
+
+    if (data.skills && data.skills.length > 0) {
+        grid.innerHTML = '';
+        data.skills.forEach(skill => {
+            const div = document.createElement('div');
+            div.className = 'skill-card';
+            div.innerHTML = `
+                <div class="skill-icon"><i class="${skill.icon || 'fas fa-code'}"></i></div>
+                <h3>${skill.category}</h3>
+                <div class="skill-tags">
+                    ${skill.items ? skill.items.map(item => `<span class="skill-tag">${item}</span>`).join('') : ''}
+                </div>
+            `;
+            grid.appendChild(div);
+        });
+    } else {
+        grid.innerHTML = `
+            <div class="skill-card">
+                <div class="skill-icon"><i class="fas fa-code"></i></div>
+                <h3>Frontend</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">HTML</span>
+                    <span class="skill-tag">CSS</span>
+                    <span class="skill-tag">JS</span>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div class="skill-icon"><i class="fas fa-server"></i></div>
+                <h3>Backend</h3>
+                <div class="skill-tags">
+                    <span class="skill-tag">Node.js</span>
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">SQL</span>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -235,10 +234,7 @@ function renderPublicPortfolio() {
 
 function renderProjectGroups(data) {
     const container = document.getElementById('projects-grid');
-    if (!container) {
-        console.warn('Projects container not found!');
-        return;
-    }
+    if (!container) return;
 
     const groups = data.projectGroups || [];
 
@@ -272,7 +268,134 @@ function renderProjectGroups(data) {
 }
 
 // ============================================
-// SHOW GROUP, SHOW PROJECT DETAIL
+// RENDER EXPERIENCE
+// ============================================
+
+function renderExperience(data) {
+    const timeline = document.getElementById('timeline');
+    if (!timeline) return;
+
+    if (data.experience && data.experience.length > 0) {
+        timeline.innerHTML = '';
+        data.experience.forEach(exp => {
+            const div = document.createElement('div');
+            div.className = 'timeline-item';
+            div.innerHTML = `
+                <h3>${exp.role}</h3>
+                <div class="company">${exp.company}</div>
+                <div class="period">${exp.period}</div>
+                <p>${exp.description}</p>
+            `;
+            timeline.appendChild(div);
+        });
+    } else {
+        timeline.innerHTML = `
+            <div style="text-align:center;padding:2rem;color:var(--text-secondary);">
+                No experience added yet.
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// RENDER EDUCATION
+// ============================================
+
+function renderEducation(data) {
+    const grid = document.getElementById('education-list');
+    if (!grid) return;
+
+    if (data.education && data.education.length > 0) {
+        grid.innerHTML = '';
+        data.education.forEach(edu => {
+            const div = document.createElement('div');
+            div.className = 'education-card';
+            div.innerHTML = `
+                <div class="edu-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3>${edu.institution}</h3>
+                <div class="edu-degree">${edu.degree}</div>
+                ${edu.field ? `<div class="edu-field">${edu.field}</div>` : ''}
+                <div class="edu-period">${edu.period || ''}</div>
+                ${edu.description ? `<div class="edu-description">${edu.description}</div>` : ''}
+            `;
+            grid.appendChild(div);
+        });
+    } else {
+        grid.innerHTML = `
+            <div style="text-align:center;padding:2rem;color:var(--text-secondary);">
+                No education added yet.
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// RENDER CERTIFICATIONS
+// ============================================
+
+function renderCertifications(data) {
+    const grid = document.getElementById('certifications-list');
+    if (!grid) return;
+
+    if (data.certifications && data.certifications.length > 0) {
+        grid.innerHTML = '';
+        data.certifications.forEach(cert => {
+            const div = document.createElement('div');
+            div.className = 'certification-card';
+            div.innerHTML = `
+                <div class="cert-icon"><i class="fas fa-certificate"></i></div>
+                <h3>${cert.name}</h3>
+                <div class="cert-issuer">${cert.issuer}</div>
+                <div class="cert-date">${cert.date || ''}</div>
+                ${cert.description ? `<div class="cert-description">${cert.description}</div>` : ''}
+                ${cert.link ? `<a href="${cert.link}" target="_blank" class="btn-verify"><i class="fas fa-external-link-alt"></i> Verify</a>` : ''}
+            `;
+            grid.appendChild(div);
+        });
+    } else {
+        grid.innerHTML = `
+            <div style="text-align:center;padding:2rem;color:var(--text-secondary);">
+                No certifications added yet.
+            </div>
+        `;
+    }
+}
+
+// ============================================
+// RENDER SOCIAL LINKS
+// ============================================
+
+function renderSocialLinks(data) {
+    const container = document.getElementById('social-links');
+    if (!container) return;
+    container.innerHTML = '';
+    const social = data.social || {};
+    const personal = data.personal || {};
+
+    const links = [
+        { key: 'whatsapp', icon: 'fab fa-whatsapp', label: 'WhatsApp', url: social.whatsapp ? `https://wa.me/${social.whatsapp.replace(/\D/g, '')}` : null },
+        { key: 'linkedin', icon: 'fab fa-linkedin-in', label: 'LinkedIn', url: social.linkedin },
+        { key: 'github', icon: 'fab fa-github', label: 'GitHub', url: social.github },
+        { key: 'twitter', icon: 'fab fa-twitter', label: 'Twitter', url: social.twitter },
+        { key: 'phone', icon: 'fas fa-phone', label: 'Phone', url: social.phone ? `tel:${social.phone.replace(/\s/g, '')}` : personal.phone ? `tel:${personal.phone.replace(/\s/g, '')}` : null },
+        { key: 'email', icon: 'fas fa-envelope', label: 'Email', url: personal.email ? `mailto:${personal.email}` : null }
+    ];
+
+    links.forEach(link => {
+        if (link.url) {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.target = '_blank';
+            a.className = `social-icon ${link.key}`;
+            a.title = link.label;
+            a.innerHTML = `<i class="${link.icon}"></i><span>${link.label}</span>`;
+            container.appendChild(a);
+        }
+    });
+}
+
+// ============================================
+// SHOW GROUP / PROJECT DETAIL
 // ============================================
 
 function showGroup(groupId) {
@@ -323,11 +446,6 @@ function showGroup(groupId) {
                     <span class="project-tag">${project.technologies?.length || 0} Technologies</span>
                     <h3>${project.title}</h3>
                     <p>${project.description}</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
-                        ${project.technologies ? project.technologies.map(tech => 
-                            `<span style="background:var(--bg-primary);padding:0.2rem 0.6rem;border-radius:50px;font-size:0.75rem;color:var(--text-secondary);">${tech}</span>`
-                        ).join('') : ''}
-                    </div>
                     <div style="margin-top:1rem;color:var(--accent-primary);font-weight:600;font-size:0.9rem;">
                         Click to view details <i class="fas fa-arrow-right"></i>
                     </div>
@@ -336,6 +454,13 @@ function showGroup(groupId) {
         `}).join('')}
     `;
 
+    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showGroups() {
+    currentGroup = null;
+    currentProject = null;
+    renderProjectGroups(portfolioData);
     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -350,209 +475,33 @@ function showProjectDetail(groupId, projectId) {
     const container = document.getElementById('projects-grid');
     if (!container) return;
 
-    // --- Images Gallery ---
-    let imagesHtml = '';
-    if (project.images && project.images.length > 0) {
-        imagesHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-images"></i> Project Gallery (${project.images.length})</h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
-                    ${project.images.map(img => `
-                        <img src="${img}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;box-shadow:var(--shadow-sm);cursor:pointer;" onclick="openLightbox('${img}')">
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- Videos ---
-    let videoHtml = '';
-    const videos = project.videos || [];
-    if (videos.length > 0) {
-        videoHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-video"></i> Project Videos (${videos.length})</h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;">
-                    ${videos.map(vid => `
-                        <video controls style="width:100%;border-radius:16px;box-shadow:var(--shadow-md);background:#000;">
-                            <source src="${vid}">
-                            Your browser does not support the video tag.
-                        </video>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- README (Markdown) ---
-    let readmeHtml = '';
-    if (project.readme) {
-        try {
-            const readmeHTML = marked.parse(project.readme);
-            readmeHtml = `
-                <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
-                    <h3 style="margin-bottom:1rem;"><i class="fas fa-book"></i> Documentation / README</h3>
-                    <div class="markdown-body" style="color:var(--text-secondary);line-height:1.8;background:transparent;padding:0;">
-                        ${readmeHTML}
-                    </div>
-                </div>
-            `;
-        } catch (e) {
-            console.warn('Failed to parse README:', e);
-            readmeHtml = `
-                <div style="grid-column:1/-1;background:var(--bg-card);padding:2rem;border-radius:16px;border:1px solid var(--border-color);">
-                    <h3 style="margin-bottom:1rem;"><i class="fas fa-book"></i> Documentation</h3>
-                    <pre style="white-space:pre-wrap;color:var(--text-secondary);">${project.readme}</pre>
-                </div>
-            `;
-        }
-    }
-
-    // --- Attached Files ---
-    let filesHtml = '';
-    if (project.files && project.files.length > 0) {
-        filesHtml = `
-            <div style="grid-column:1/-1;">
-                <h3 style="margin-bottom:1rem;"><i class="fas fa-paperclip"></i> Attached Files (${project.files.length})</h3>
-                <div style="display:flex;flex-wrap:wrap;gap:1rem;">
-                    ${project.files.map(file => `
-                        <a href="${file.data}" download="${file.name}" style="display:flex;align-items:center;gap:0.5rem;padding:0.8rem 1.2rem;background:var(--bg-primary);border-radius:12px;border:1px solid var(--border-color);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
-                            <i class="fas fa-${file.type?.includes('pdf') ? 'file-pdf' : file.type?.includes('zip') ? 'file-archive' : 'file'}" style="color:var(--accent-primary);"></i>
-                            ${file.name}
-                            <span style="font-size:0.8rem;color:var(--text-light);">(${(file.size / 1024).toFixed(1)} KB)</span>
-                        </a>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-    // --- GitHub & Demo Links ---
-    let linksHtml = '';
-    if (project.github || project.demo) {
-        linksHtml = `
-            <div style="grid-column:1/-1;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
-                ${project.github ? `
-                    <a href="${project.github}" target="_blank" class="btn-github" style="background:#24292e;color:white;display:inline-flex;align-items:center;gap:0.6rem;padding:0.9rem 2.2rem;border-radius:50px;text-decoration:none;font-weight:600;transition:all 0.3s;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(36,41,46,0.3);">
-                        <i class="fab fa-github" style="font-size:1.2rem;"></i> View on GitHub
-                    </a>
-                ` : ''}
-                ${project.demo ? `
-                    <a href="${project.demo}" target="_blank" class="btn primary" style="display:inline-flex;align-items:center;gap:0.6rem;padding:0.9rem 2.2rem;border-radius:50px;text-decoration:none;font-weight:600;transition:all 0.3s;border:none;cursor:pointer;background:var(--accent-gradient);color:white;box-shadow:0 4px 20px rgba(99,102,241,0.3);">
-                        <i class="fas fa-external-link-alt"></i> Live Demo
-                    </a>
-                ` : ''}
-            </div>
-        `;
-    }
-
-    // --- Main project detail card ---
     container.innerHTML = `
         <div style="grid-column:1/-1;">
             <button onclick="showGroup('${groupId}')" class="btn secondary" style="margin-bottom:2rem;">
                 <i class="fas fa-arrow-left"></i> Back to ${group.name}
             </button>
         </div>
-
         <div style="grid-column:1/-1;background:var(--bg-card);padding:2.5rem;border-radius:16px;border:1px solid var(--border-color);">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
-                <div>
-                    ${project.images && project.images.length > 0 ? 
-                        `<img src="${project.images[0]}" style="width:100%;border-radius:12px;box-shadow:var(--shadow-md);">` :
-                        `<div style="width:100%;height:300px;background:var(--bg-gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-code" style="font-size:4rem;color:var(--accent-primary);"></i>
-                        </div>`
-                    }
+            <h1 style="font-size:2.5rem;font-weight:800;margin-bottom:0.5rem;">${project.title}</h1>
+            <p style="color:var(--text-secondary);font-size:1.1rem;line-height:1.8;">${project.description}</p>
+            ${project.technologies ? `
+                <div style="margin-top:1.5rem;">
+                    <h4 style="margin-bottom:0.5rem;">Technologies</h4>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                        ${project.technologies.map(tech => `<span style="background:var(--bg-primary);padding:0.3rem 1rem;border-radius:50px;font-size:0.9rem;border:1px solid var(--border-color);">${tech}</span>`).join('')}
+                    </div>
                 </div>
-                <div>
-                    <span class="project-tag" style="background:var(--accent-gradient);color:white;padding:0.3rem 1rem;border-radius:50px;font-size:0.8rem;">
-                        ${group.name}
-                    </span>
-                    <h1 style="font-size:2.5rem;font-weight:800;margin:1rem 0 0.5rem;">${project.title}</h1>
-                    <p style="color:var(--text-secondary);font-size:1.1rem;line-height:1.8;">${project.description}</p>
-
-                    ${project.technologies ? `
-                        <div style="margin-top:1.5rem;">
-                            <h4 style="margin-bottom:0.5rem;">Technologies</h4>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-                                ${project.technologies.map(tech => 
-                                    `<span style="background:var(--bg-primary);padding:0.3rem 1rem;border-radius:50px;font-size:0.9rem;border:1px solid var(--border-color);">${tech}</span>`
-                                ).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${linksHtml}
+            ` : ''}
+            ${project.github || project.demo ? `
+                <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
+                    ${project.github ? `<a href="${project.github}" target="_blank" class="btn-github"><i class="fab fa-github"></i> View on GitHub</a>` : ''}
+                    ${project.demo ? `<a href="${project.demo}" target="_blank" class="btn primary"><i class="fas fa-external-link-alt"></i> Live Demo</a>` : ''}
                 </div>
-            </div>
+            ` : ''}
         </div>
-
-        ${imagesHtml}
-        ${videoHtml}
-        ${readmeHtml}
-        ${filesHtml}
     `;
 
     document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-}
-
-function showGroups() {
-    currentGroup = null;
-    currentProject = null;
-    renderProjectGroups(portfolioData);
-    document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-}
-
-function openLightbox(imageSrc) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 2rem;
-        cursor: pointer;
-    `;
-    modal.innerHTML = `
-        <img src="${imageSrc}" style="max-width:90%;max-height:90%;border-radius:12px;object-fit:contain;">
-        <button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:30px;background:none;border:none;color:white;font-size:2.5rem;cursor:pointer;">&times;</button>
-    `;
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) this.remove();
-    });
-    document.body.appendChild(modal);
-}
-
-function renderSocialLinks(data) {
-    const container = document.getElementById('social-links');
-    if (!container) return;
-    container.innerHTML = '';
-    const social = data.social || {};
-    const personal = data.personal || {};
-
-    const links = [
-        { key: 'whatsapp', icon: 'fab fa-whatsapp', label: 'WhatsApp', url: social.whatsapp ? `https://wa.me/${social.whatsapp.replace(/\D/g, '')}` : null },
-        { key: 'linkedin', icon: 'fab fa-linkedin-in', label: 'LinkedIn', url: social.linkedin },
-        { key: 'github', icon: 'fab fa-github', label: 'GitHub', url: social.github },
-        { key: 'twitter', icon: 'fab fa-twitter', label: 'Twitter', url: social.twitter },
-        { key: 'phone', icon: 'fas fa-phone', label: 'Phone', url: social.phone ? `tel:${social.phone.replace(/\s/g, '')}` : personal.phone ? `tel:${personal.phone.replace(/\s/g, '')}` : null },
-        { key: 'email', icon: 'fas fa-envelope', label: 'Email', url: personal.email ? `mailto:${personal.email}` : null }
-    ];
-
-    links.forEach(link => {
-        if (link.url) {
-            const a = document.createElement('a');
-            a.href = link.url;
-            a.target = '_blank';
-            a.className = `social-icon ${link.key}`;
-            a.title = link.label;
-            a.innerHTML = `<i class="${link.icon}"></i><span>${link.label}</span>`;
-            container.appendChild(a);
-        }
-    });
 }
 
 // ============================================
@@ -656,6 +605,63 @@ function initChat() {
     }
 }
 
+// ============================================
+// THEME, MOBILE, SMOOTH SCROLL
+// ============================================
+
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark');
+    if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
+}
+
+const hamburger = document.getElementById('hamburger');
+const navLinks = document.getElementById('navLinks');
+if (hamburger) {
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        if (navLinks) navLinks.classList.toggle('active');
+    });
+}
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        if (hamburger) hamburger.classList.remove('active');
+        if (navLinks) navLinks.classList.remove('active');
+    });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && href !== '#') {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+
+// ============================================
+// AUTH MODAL
+// ============================================
+
+function initAuthModal() {
+    const closeBtn = document.getElementById('closeAuthModal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('authModal').classList.remove('active');
+        });
+    }
+}
+
 function openAuthModal(mode) {
     const modal = document.getElementById('authModal');
     if (!modal) return;
@@ -679,4 +685,92 @@ function openAuthModal(mode) {
     }
 }
 
-// ... (rest of chat functions - sendChatMessage, loadConversation, etc.)
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.querySelector('i').className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+}
+
+// ============================================
+// CHAT MESSAGES
+// ============================================
+
+function loadConversation() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">Loading conversation...</p>';
+
+    fetch(`${API_BASE}/api/chat`, {
+        headers: { 'Authorization': `Bearer ${visitorToken}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            currentConversationId = data.conversationId;
+            renderChatMessages(data.messages);
+            // Enable input
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('chat-send').disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Error loading conversation:', err);
+        chatMessages.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">Please login to chat</p>';
+    });
+}
+
+function renderChatMessages(messages) {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = '';
+    if (!messages || messages.length === 0) {
+        chatMessages.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">No messages yet</p>';
+        return;
+    }
+
+    messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `chat-message ${msg.sender_type === 'visitor' ? 'visitor' : 'admin'}`;
+        div.textContent = msg.message;
+        chatMessages.appendChild(div);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    fetch(`${API_BASE}/api/chat/send`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${visitorToken}`
+        },
+        body: JSON.stringify({ message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            input.value = '';
+            loadConversation();
+        }
+    })
+    .catch(err => {
+        console.error('Error sending message:', err);
+        alert('Failed to send message.');
+    });
+}
+
+// ============================================
+// INIT
+// ============================================
+
+document.addEventListener('DOMContentLoaded', loadPublicData);
+console.log('✅ main.js loaded and ready!');
