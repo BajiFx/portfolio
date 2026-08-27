@@ -41,7 +41,6 @@
         .back-link { display: block; text-align: center; margin-top: 1.5rem; color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: var(--transition); }
         .back-link:hover { color: var(--accent-primary); }
         .login-footer { text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-light); }
-        @media (max-width: 480px) { .login-box { padding: 2rem 1.5rem; } .logo { font-size: 2.2rem; } }
     </style>
 </head>
 <body>
@@ -80,7 +79,6 @@
 <script>
     const API_BASE = 'https://portfolio-cms-k2at.onrender.com';
 
-    // Password visibility toggle
     document.querySelectorAll('.toggle-password').forEach(btn => {
         btn.addEventListener('click', function() {
             const input = this.closest('.input-wrapper').querySelector('input');

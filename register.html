@@ -45,7 +45,6 @@
         .back-link:hover { color: var(--accent-primary); }
         .login-footer { text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-light); }
         .password-hint { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
-        @media (max-width: 480px) { .login-box { padding: 2rem 1.5rem; } .logo { font-size: 2.2rem; } }
     </style>
 </head>
 <body>
@@ -98,7 +97,6 @@
 <script>
     const API_BASE = 'https://portfolio-cms-k2at.onrender.com';
 
-    // Password visibility toggle for all toggle buttons
     document.querySelectorAll('.toggle-password').forEach(btn => {
         btn.addEventListener('click', function() {
             const input = this.closest('.input-wrapper').querySelector('input');
@@ -126,11 +124,9 @@
         const successMsg = document.getElementById('successMsg');
         const btn = document.getElementById('registerBtn');
 
-        // Reset messages
         errorDiv.classList.remove('show');
         successDiv.classList.remove('show');
 
-        // Validate
         if (password.length < 6) {
             errorMsg.textContent = 'Password must be at least 6 characters.';
             errorDiv.classList.add('show');

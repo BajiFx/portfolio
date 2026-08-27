@@ -1,5 +1,5 @@
 // ============================================
-// MAIN.JS - Public View
+// MAIN.JS - Public View (Full Project Rendering)
 // ============================================
 
 console.log('✅ main.js loaded (API version)');
@@ -34,11 +34,6 @@ async function loadPublicData() {
         
         portfolioData = await response.json();
         console.log('✅ Data loaded successfully');
-        
-        // Check if we have data
-        if (!portfolioData.personal) {
-            console.warn('No personal data found');
-        }
         
         renderPublicPortfolio();
         initContactModes();
@@ -446,6 +441,11 @@ function showGroup(groupId) {
                     <span class="project-tag">${project.technologies?.length || 0} Technologies</span>
                     <h3>${project.title}</h3>
                     <p>${project.description}</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
+                        ${project.technologies ? project.technologies.map(tech => 
+                            `<span style="background:var(--bg-primary);padding:0.2rem 0.6rem;border-radius:50px;font-size:0.75rem;color:var(--text-secondary);">${tech}</span>`
+                        ).join('') : ''}
+                    </div>
                     <div style="margin-top:1rem;color:var(--accent-primary);font-weight:600;font-size:0.9rem;">
                         Click to view details <i class="fas fa-arrow-right"></i>
                     </div>
@@ -606,50 +606,6 @@ function initChat() {
 }
 
 // ============================================
-// THEME, MOBILE, SMOOTH SCROLL
-// ============================================
-
-const themeToggle = document.getElementById('theme-toggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
-}
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark');
-    if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
-}
-
-const hamburger = document.getElementById('hamburger');
-const navLinks = document.getElementById('navLinks');
-if (hamburger) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        if (navLinks) navLinks.classList.toggle('active');
-    });
-}
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (hamburger) hamburger.classList.remove('active');
-        if (navLinks) navLinks.classList.remove('active');
-    });
-});
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (href && href !== '#') {
-            e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
-
-// ============================================
 // AUTH MODAL
 // ============================================
 
@@ -711,7 +667,6 @@ function loadConversation() {
         if (data.success) {
             currentConversationId = data.conversationId;
             renderChatMessages(data.messages);
-            // Enable input
             document.getElementById('chat-input').disabled = false;
             document.getElementById('chat-send').disabled = false;
         }
@@ -767,6 +722,50 @@ function sendChatMessage() {
         alert('Failed to send message.');
     });
 }
+
+// ============================================
+// THEME, MOBILE, SMOOTH SCROLL
+// ============================================
+
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+}
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark');
+    if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
+}
+
+const hamburger = document.getElementById('hamburger');
+const navLinks = document.getElementById('navLinks');
+if (hamburger) {
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        if (navLinks) navLinks.classList.toggle('active');
+    });
+}
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        if (hamburger) hamburger.classList.remove('active');
+        if (navLinks) navLinks.classList.remove('active');
+    });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && href !== '#') {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
 
 // ============================================
 // INIT
