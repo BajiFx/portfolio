@@ -10,7 +10,6 @@
     <meta property="og:title" content="George Onyango Ochieng - Portfolio">
     <meta property="og:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ochiengportfolio.netlify.app">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="George Onyango Ochieng - Portfolio">
     <meta name="twitter:description" content="Data Scientist & Web Developer. Building fast, responsive websites.">
@@ -20,100 +19,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
-    <style>
-        /* Modal styles */
-        .auth-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-        .auth-modal.active { display: flex; }
-        .auth-modal-content {
-            background: var(--bg-card);
-            padding: 2.5rem;
-            border-radius: 24px;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--border-color);
-            position: relative;
-        }
-        .auth-modal-content .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            background: none;
-            border: none;
-        }
-        .auth-modal-content h2 { margin-bottom: 0.5rem; font-weight: 800; }
-        .auth-modal-content .sub { color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .auth-modal-content .form-group { margin-bottom: 1rem; }
-        .auth-modal-content .input-wrapper { position: relative; }
-        .auth-modal-content .input-wrapper i {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-        }
-        .auth-modal-content .input-wrapper input {
-            width: 100%;
-            padding: 0.8rem 1rem 0.8rem 3rem;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-        .auth-modal-content .input-wrapper input:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
-        .auth-modal-content .input-wrapper .toggle-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-light);
-            cursor: pointer;
-        }
-        .auth-modal-content .btn { width: 100%; justify-content: center; padding: 0.8rem; }
-        .auth-modal-content .switch-mode {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        .auth-modal-content .switch-mode a { color: var(--accent-primary); cursor: pointer; font-weight: 600; }
-        .auth-modal-content .error-msg {
-            background: #ef4444;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        .conversation-mode-desc {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.2rem;
-            margin-bottom: 1rem;
-            padding: 0.5rem 0.8rem;
-            background: var(--bg-primary);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent-secondary);
-        }
-    </style>
 </head>
 <body>
     <!-- ===== HIDDEN ADMIN DOT ===== -->
@@ -182,7 +87,7 @@
                 <p>Each project is crafted with attention to detail and user experience</p>
             </div>
             <div id="projects-grid" class="projects-grid">
-                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading projects...</p>
+                <!-- JavaScript will populate this -->
             </div>
         </div>
     </section>
@@ -195,7 +100,7 @@
                 <h2>Tech <span>Stack</span></h2>
             </div>
             <div id="skills-grid" class="skills-grid">
-                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading skills...</p>
+                <!-- JavaScript will populate this -->
             </div>
         </div>
     </section>
@@ -209,7 +114,7 @@
             <div class="about-text">
                 <span class="label">About Me</span>
                 <h2>Passionate about <span>building</span> great software</h2>
-                <div id="about-text"><p>Loading about information...</p></div>
+                <div id="about-text"></div>
             </div>
         </div>
     </section>
@@ -222,7 +127,7 @@
                 <h2>Work <span>Experience</span></h2>
             </div>
             <div id="timeline" class="timeline">
-                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading experience...</p>
+                <!-- JavaScript will populate this -->
             </div>
         </div>
     </section>
@@ -236,7 +141,7 @@
                 <p>My academic background and qualifications</p>
             </div>
             <div id="education-list" class="education-grid">
-                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading education...</p>
+                <!-- JavaScript will populate this -->
             </div>
         </div>
     </section>
@@ -250,7 +155,7 @@
                 <p>Professional certifications and credentials</p>
             </div>
             <div id="certifications-list" class="certifications-grid">
-                <p style="color:var(--text-secondary);text-align:center;width:100%;padding:2rem;">Loading certifications...</p>
+                <!-- JavaScript will populate this -->
             </div>
         </div>
     </section>
@@ -326,7 +231,7 @@
                         </div>
                         <div id="chat-container" class="chat-container">
                             <div id="chat-messages" class="chat-messages">
-                                <p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Loading conversation...</p>
+                                <p style="color:var(--text-light);text-align:center;width:100%;padding:1rem;">Login to start chatting</p>
                             </div>
                             <div class="chat-input-area">
                                 <input type="text" id="chat-input" placeholder="Type your message..." disabled>
