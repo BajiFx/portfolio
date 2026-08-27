@@ -329,11 +329,11 @@ async function setupDatabase() {
 setupDatabase();
 
 // ============================================
-// CORS
+// CORS - Allow your frontend
 // ============================================
 const allowedOrigins = [
-    'https://portfolio-cms-k2at.onrender.com',
-    'https://ochiengportfolio.netlify.app',
+    'https://portfolio-0umz.onrender.com',  // ✅ YOUR FRONTEND
+    'https://portfolio-cms-k2at.onrender.com',  // ✅ YOUR BACKEND
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:3000',
@@ -355,24 +355,6 @@ app.use(cors({
     credentials: true,
     optionsSuccessStatus: 200
 }));
-
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Multer
-const storage = multer.memoryStorage();
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
-
-// Helper: query with error logging
-const query = async (text, params) => {
-    try {
-        const res = await pool.query(text, params);
-        return res;
-    } catch (err) {
-        console.error('SQL Error:', err.message);
-        throw err;
-    }
-};
 
 // JWT Auth Middleware (Admin)
 function authenticateToken(req, res, next) {
