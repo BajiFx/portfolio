@@ -777,12 +777,12 @@ app.get('/api/messages', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
+    app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     try {
         await query('DELETE FROM messages WHERE id=$1', [req.params.id]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 // Upload endpoints (protected)
 app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
