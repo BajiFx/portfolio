@@ -25,13 +25,314 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
+
 pool.connect((err) => {
     if (err) console.error('DB connection failed:', err.stack);
     else console.log('Connected to PostgreSQL');
 });
 
+// ============================================
+// DATABASE SETUP - Auto-create tables
+// ============================================
+async function setupDatabase() {
+    try {
+        console.log('🔄 Setting up database tables...');
+        
+        // Users table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ users table');
+
+        // Visitors table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS visitors (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                email VARCHAR(255) DEFAULT '',
+                password_hash VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ visitors table');
+
+        // Profile table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS profile (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255),
+                title VARCHAR(255),
+                badge VARCHAR(255),
+                hero_subtitle TEXT,
+                welcome_message TEXT,
+                email VARCHAR(255),
+                profile_image TEXT,
+                about_image TEXT,
+                resume TEXT,
+                footer TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ profile table');
+
+        // About paragraphs
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS about_paragraphs (
+                id SERIAL PRIMARY KEY,
+                content TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ about_paragraphs table');
+
+        // Skills
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS skills (
+                id SERIAL PRIMARY KEY,
+                category VARCHAR(255),
+                icon VARCHAR(255),
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ skills table');
+
+        // Skill items
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS skill_items (
+                id SERIAL PRIMARY KEY,
+                skill_id INT REFERENCES skills(id) ON DELETE CASCADE,
+                name VARCHAR(255),
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ skill_items table');
+
+        // Project groups
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS project_groups (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255),
+                icon VARCHAR(255),
+                description TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ project_groups table');
+
+        // Projects
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS projects (
+                id SERIAL PRIMARY KEY,
+                group_id INT REFERENCES project_groups(id) ON DELETE CASCADE,
+                title VARCHAR(255),
+                description TEXT,
+                github TEXT,
+                demo TEXT,
+                readme TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ projects table');
+
+        // Project images
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS project_images (
+                id SERIAL PRIMARY KEY,
+                project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+                url TEXT
+            )
+        `);
+        console.log('✅ project_images table');
+
+        // Project videos
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS project_videos (
+                id SERIAL PRIMARY KEY,
+                project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+                url TEXT
+            )
+        `);
+        console.log('✅ project_videos table');
+
+        // Project technologies
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS project_technologies (
+                id SERIAL PRIMARY KEY,
+                project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+                name VARCHAR(255)
+            )
+        `);
+        console.log('✅ project_technologies table');
+
+        // Project files
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS project_files (
+                id SERIAL PRIMARY KEY,
+                project_id INT REFERENCES projects(id) ON DELETE CASCADE,
+                name VARCHAR(255),
+                data TEXT,
+                size BIGINT,
+                type VARCHAR(100)
+            )
+        `);
+        console.log('✅ project_files table');
+
+        // Experience
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS experience (
+                id SERIAL PRIMARY KEY,
+                company VARCHAR(255),
+                role VARCHAR(255),
+                period VARCHAR(100),
+                description TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ experience table');
+
+        // Education
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS education (
+                id SERIAL PRIMARY KEY,
+                institution VARCHAR(255),
+                degree VARCHAR(255),
+                field VARCHAR(255),
+                period VARCHAR(100),
+                description TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ education table');
+
+        // Certifications
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS certifications (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255),
+                issuer VARCHAR(255),
+                date VARCHAR(100),
+                description TEXT,
+                link TEXT,
+                file TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ certifications table');
+
+        // Social links
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS social_links (
+                id SERIAL PRIMARY KEY,
+                platform VARCHAR(100) UNIQUE,
+                icon VARCHAR(255),
+                url TEXT,
+                display_order INT DEFAULT 0
+            )
+        `);
+        console.log('✅ social_links table');
+
+        // Messages
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS messages (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255),
+                email VARCHAR(255),
+                subject VARCHAR(255),
+                message TEXT,
+                date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ messages table');
+
+        // Contact out
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS contact_out (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255),
+                email VARCHAR(255),
+                message TEXT,
+                channel VARCHAR(50),
+                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ contact_out table');
+
+        // Conversations
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS conversations (
+                id SERIAL PRIMARY KEY,
+                visitor_id INT REFERENCES visitors(id) ON DELETE CASCADE,
+                last_message_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ conversations table');
+
+        // Chat messages
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id SERIAL PRIMARY KEY,
+                conversation_id INT REFERENCES conversations(id) ON DELETE CASCADE,
+                sender_type VARCHAR(20),
+                sender_id INT,
+                message TEXT,
+                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('✅ chat_messages table');
+
+        // Welcome video
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS welcome_video (
+                id SERIAL PRIMARY KEY,
+                url TEXT
+            )
+        `);
+        console.log('✅ welcome_video table');
+
+        // Insert default profile
+        await pool.query(`
+            INSERT INTO profile (name, title, badge, hero_subtitle, welcome_message, email, footer)
+            VALUES (
+                'Your Name',
+                'Web Designer & Developer',
+                '🚀 Available for Freelance Work',
+                'Building exceptional digital experiences with modern web technologies.',
+                'Welcome to my portfolio!',
+                'your.email@gmail.com',
+                '© 2025 Your Name. Built with ❤️'
+            )
+            ON CONFLICT DO NOTHING
+        `);
+        console.log('✅ Default profile inserted');
+
+        // Insert default about paragraphs
+        await pool.query(`
+            INSERT INTO about_paragraphs (content, display_order) VALUES 
+            ('I am a passionate Web Designer & Developer with expertise in creating beautiful, functional digital experiences.', 1),
+            ('My journey started with a curiosity for design and technology, which evolved into a deep passion for creating software that makes a difference.', 2)
+            ON CONFLICT DO NOTHING
+        `);
+        console.log('✅ Default about paragraphs inserted');
+
+        console.log('🎉 Database setup complete!');
+    } catch (error) {
+        console.error('❌ Database setup error:', error.message);
+    }
+}
+
+// Run setup when server starts
+setupDatabase();
+
+// ============================================
 // CORS
+// ============================================
 const allowedOrigins = [
+    'https://portfolio-cms-k2at.onrender.com',
     'https://ochiengportfolio.netlify.app',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
@@ -108,7 +409,10 @@ function authenticateVisitor(req, res, next) {
     });
 }
 
+// ============================================
 // PUBLIC ROUTES
+// ============================================
+
 app.get('/', (req, res) => res.json({ message: 'Portfolio API running' }));
 app.get('/api/test', (req, res) => res.json({ status: 'OK' }));
 app.get('/api/db-test', async (req, res) => {
@@ -117,6 +421,16 @@ app.get('/api/db-test', async (req, res) => {
         res.json({ success: true, time: result.rows[0].now });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Database setup endpoint
+app.get('/api/setup-db', async (req, res) => {
+    try {
+        await setupDatabase();
+        res.json({ success: true, message: 'Database setup completed!' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
