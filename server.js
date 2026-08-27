@@ -10,36 +10,27 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============================================
-// JWT SECRET – set this in Render environment
-// ============================================
+// JWT SECRET
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_change_this';
 
-// ============================================
-// CLOUDINARY CONFIG
-// ============================================
+// Cloudinary config
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
 });
-console.log('✅ Cloudinary configured');
 
-// ============================================
-// DATABASE CONNECTION
-// ============================================
+// Database connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 pool.connect((err) => {
-    if (err) console.error('❌ DB connection failed:', err.stack);
-    else console.log('✅ Connected to PostgreSQL');
+    if (err) console.error('DB connection failed:', err.stack);
+    else console.log('Connected to PostgreSQL');
 });
 
-// ============================================
-// CORS – explicit allowed origins
-// ============================================
+// CORS
 const allowedOrigins = [
     'https://ochiengportfolio.netlify.app',
     'http://localhost:5500',
@@ -54,7 +45,7 @@ app.use(cors({
         if (allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            console.warn('❌ CORS blocked origin:', origin);
+            console.warn('CORS blocked origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -67,30 +58,22 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// ============================================
-// MULTER
-// ============================================
+// Multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 
-// ============================================
-// HELPER: query with error logging
-// ============================================
+// Helper: query with error logging
 const query = async (text, params) => {
     try {
         const res = await pool.query(text, params);
         return res;
     } catch (err) {
-        console.error('❌ SQL Error:', err.message);
-        console.error('   Query:', text);
-        console.error('   Params:', params);
+        console.error('SQL Error:', err.message);
         throw err;
     }
 };
 
-// ============================================
-// JWT AUTH MIDDLEWARE (Admin)
-// ============================================
+// JWT Auth Middleware (Admin)
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -106,9 +89,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// ============================================
-// JWT AUTH MIDDLEWARE (Visitor)
-// ============================================
+// JWT Auth Middleware (Visitor)
 function authenticateVisitor(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -127,10 +108,7 @@ function authenticateVisitor(req, res, next) {
     });
 }
 
-// ============================================
-// PUBLIC ROUTES (no auth)
-// ============================================
-
+// PUBLIC ROUTES
 app.get('/', (req, res) => res.json({ message: 'Portfolio API running' }));
 app.get('/api/test', (req, res) => res.json({ status: 'OK' }));
 app.get('/api/db-test', async (req, res) => {
@@ -142,11 +120,7 @@ app.get('/api/db-test', async (req, res) => {
     }
 });
 
-// ============================================
-// ADMIN AUTH ROUTES (public)
-// ============================================
-
-// Register – only allow if no admin users exist yet
+// ADMIN AUTH ROUTES
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -216,10 +190,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ============================================
-// VISITOR AUTH ROUTES (public)
-// ============================================
-
 // Visitor Registration
 app.post('/api/visitor-register', async (req, res) => {
     try {
@@ -278,10 +248,7 @@ app.post('/api/visitor-login', async (req, res) => {
     }
 });
 
-// ============================================
-// PUBLIC PORTFOLIO DATA (no auth)
-// ============================================
-
+// PUBLIC PORTFOLIO DATA
 app.get('/api/data', async (req, res) => {
     try {
         const profileRes = await query('SELECT * FROM profile LIMIT 1');
@@ -363,12 +330,12 @@ app.get('/api/data', async (req, res) => {
         };
         res.json(result);
     } catch (err) {
-        console.error('❌ /api/data error:', err);
+        console.error('/api/data error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// POST messages (public – contact form)
+// POST messages
 app.post('/api/messages', async (req, res) => {
     try {
         const { name, email, subject, message } = req.body;
@@ -382,7 +349,7 @@ app.post('/api/messages', async (req, res) => {
     }
 });
 
-// Out Conversation – store contact message with channel
+// Out Conversation
 app.post('/api/contact-out', async (req, res) => {
     try {
         const { name, email, message, channel } = req.body;
@@ -400,11 +367,7 @@ app.post('/api/contact-out', async (req, res) => {
     }
 });
 
-// ============================================
-// CHAT ROUTES (Visitor)
-// ============================================
-
-// Get conversation and messages (visitor)
+// CHAT ROUTES
 app.get('/api/chat', authenticateVisitor, async (req, res) => {
     try {
         const visitorId = req.user.id;
@@ -431,7 +394,6 @@ app.get('/api/chat', authenticateVisitor, async (req, res) => {
     }
 });
 
-// Send message (visitor)
 app.post('/api/chat/send', authenticateVisitor, async (req, res) => {
     try {
         const visitorId = req.user.id;
@@ -456,7 +418,6 @@ app.post('/api/chat/send', authenticateVisitor, async (req, res) => {
     }
 });
 
-// Poll for new messages (visitor)
 app.get('/api/chat/messages', authenticateVisitor, async (req, res) => {
     try {
         const visitorId = req.user.id;
@@ -477,11 +438,7 @@ app.get('/api/chat/messages', authenticateVisitor, async (req, res) => {
     }
 });
 
-// ============================================
-// ADMIN CHAT ENDPOINTS (require admin JWT)
-// ============================================
-
-// Get all conversations with messages
+// ADMIN CHAT ENDPOINTS
 app.get('/api/admin/chat/conversations', authenticateToken, async (req, res) => {
     try {
         const convs = await query(`
@@ -499,7 +456,6 @@ app.get('/api/admin/chat/conversations', authenticateToken, async (req, res) => 
     }
 });
 
-// Admin reply to a conversation
 app.post('/api/admin/chat/reply', authenticateToken, async (req, res) => {
     try {
         const { conversationId, message } = req.body;
@@ -518,10 +474,7 @@ app.post('/api/admin/chat/reply', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================
-// ADMIN – OUT MESSAGES (contact_out)
-// ============================================
-
+// ADMIN OUT MESSAGES
 app.get('/api/admin/out-messages', authenticateToken, async (req, res) => {
     try {
         const result = await query('SELECT * FROM contact_out ORDER BY sent_at DESC');
@@ -532,7 +485,6 @@ app.get('/api/admin/out-messages', authenticateToken, async (req, res) => {
     }
 });
 
-// Delete out message
 app.delete('/api/admin/out-messages/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -544,9 +496,7 @@ app.delete('/api/admin/out-messages/:id', authenticateToken, async (req, res) =>
     }
 });
 
-// ============================================
-// ADMIN CRUD ROUTES (all protected)
-// ============================================
+// ADMIN CRUD ROUTES
 
 // Profile
 app.put('/api/profile', authenticateToken, async (req, res) => {
@@ -564,7 +514,7 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
         }
         res.json({ success: true });
     } catch (err) {
-        console.error('❌ /api/profile error:', err);
+        console.error('/api/profile error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -579,7 +529,7 @@ app.put('/api/about', authenticateToken, async (req, res) => {
         }
         res.json({ success: true });
     } catch (err) {
-        console.error('❌ /api/about error:', err);
+        console.error('/api/about error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -604,7 +554,7 @@ app.put('/api/skills', authenticateToken, async (req, res) => {
         }
         res.json({ success: true });
     } catch (err) {
-        console.error('❌ /api/skills error:', err);
+        console.error('/api/skills error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -777,13 +727,13 @@ app.get('/api/messages', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
-    app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     try {
         await query('DELETE FROM messages WHERE id=$1', [req.params.id]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-// Upload endpoints (protected)
+
+// Upload endpoints
 app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file' });
@@ -808,9 +758,7 @@ app.post('/api/upload-multiple', authenticateToken, upload.array('images', 10), 
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ============================================
 // START SERVER
-// ============================================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
