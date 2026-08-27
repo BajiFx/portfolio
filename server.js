@@ -328,16 +328,11 @@ async function setupDatabase() {
 // Run setup when server starts
 setupDatabase();
 
-// ============================================
-// CORS - Allow your frontend
-// ============================================
 const allowedOrigins = [
-    'https://portfolio-0umz.onrender.com',  // ✅ YOUR FRONTEND
-    'https://portfolio-cms-k2at.onrender.com',  // ✅ YOUR BACKEND
+    'https://portfolio-0umz.onrender.com',
+    'https://portfolio-cms-k2at.onrender.com',
     'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000',
-    'http://localhost:5000'
+    'http://127.0.0.1:5500'
 ];
 
 app.use(cors({
@@ -355,7 +350,6 @@ app.use(cors({
     credentials: true,
     optionsSuccessStatus: 200
 }));
-
 // JWT Auth Middleware (Admin)
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
