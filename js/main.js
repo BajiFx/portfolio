@@ -4,7 +4,7 @@
 
 console.log('✅ main.js loaded (API version)');
 
-const API_BASE = 'https://portfolio-oqqu.onrender.com';
+const API_BASE = 'https://portfolio-cms-k2at.onrender.com';
 let portfolioData = {};
 let currentGroup = null;
 let currentProject = null;
@@ -230,7 +230,7 @@ function renderPublicPortfolio() {
 }
 
 // ============================================
-// RENDER PROJECT GROUPS (FULL IMPLEMENTATION)
+// RENDER PROJECT GROUPS
 // ============================================
 
 function renderProjectGroups(data) {
@@ -272,7 +272,7 @@ function renderProjectGroups(data) {
 }
 
 // ============================================
-// SHOW GROUP, SHOW PROJECT DETAIL, etc.
+// SHOW GROUP, SHOW PROJECT DETAIL
 // ============================================
 
 function showGroup(groupId) {
@@ -556,88 +556,127 @@ function renderSocialLinks(data) {
 }
 
 // ============================================
-// CONTACT MODES (unchanged)
+// CONTACT MODES
 // ============================================
 
 function initContactModes() {
-    // ... (keep your existing implementation)
+    const modeButtons = document.querySelectorAll('.contact-mode button');
+    if (modeButtons.length === 0) return;
+
+    modeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            modeButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const mode = this.dataset.mode;
+            document.getElementById('out-conversation').style.display = mode === 'out' ? 'block' : 'none';
+            document.getElementById('in-conversation').style.display = mode === 'in' ? 'block' : 'none';
+        });
+    });
+
+    // Channel selection
+    const channelButtons = document.querySelectorAll('.channel-select button');
+    if (channelButtons.length > 0) {
+        channelButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                channelButtons.forEach(b => b.classList.remove('active-channel'));
+                this.classList.add('active-channel');
+            });
+        });
+    }
+
+    // Out form submit
+    const outForm = document.getElementById('out-form');
+    if (outForm) {
+        outForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('out-name').value.trim();
+            const email = document.getElementById('out-email').value.trim();
+            const message = document.getElementById('out-message').value.trim();
+            const activeChannel = document.querySelector('.channel-select button.active-channel');
+            const channel = activeChannel ? activeChannel.dataset.channel : 'email';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/contact-out`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, message, channel })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Message sent successfully!');
+                    outForm.reset();
+                } else {
+                    alert('❌ Failed to send message: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('❌ Network error. Please try again.');
+            }
+        });
+    }
 }
+
+// ============================================
+// CHAT FUNCTIONALITY
+// ============================================
 
 function initChat() {
-    // ... (keep your existing implementation)
-}
+    const chatLoginLink = document.getElementById('chat-login-link');
+    const chatRegisterLink = document.getElementById('chat-register-link');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
 
-function initAuthModal() {
-    // ... (keep your existing implementation)
+    if (chatLoginLink) {
+        chatLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openAuthModal('login');
+        });
+    }
+
+    if (chatRegisterLink) {
+        chatRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openAuthModal('register');
+        });
+    }
+
+    if (chatSend) {
+        chatSend.addEventListener('click', sendChatMessage);
+    }
+
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+    }
+
+    // Check if already logged in
+    if (visitorToken) {
+        loadConversation();
+    }
 }
 
 function openAuthModal(mode) {
-    // ... (keep your existing implementation)
-}
+    const modal = document.getElementById('authModal');
+    if (!modal) return;
 
-function togglePasswordVisibility(inputId, btn) {
-    // ... (keep your existing implementation)
-}
+    authMode = mode;
+    modal.classList.add('active');
+    document.getElementById('authModalTitle').textContent = mode === 'login' ? 'Login' : 'Register';
+    document.getElementById('authModalSub').textContent = mode === 'login' ? 'Enter your credentials' : 'Create an account';
+    document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Login' : 'Register';
+    document.getElementById('confirmPasswordGroup').style.display = mode === 'register' ? 'block' : 'none';
+    document.getElementById('authSwitchText').innerHTML = mode === 'login' 
+        ? `Don't have an account? <a id="authSwitchLink">Register</a>`
+        : `Already have an account? <a id="authSwitchLink">Login</a>`;
 
-function loadConversation() {
-    // ... (keep your existing implementation)
-}
-
-function renderChatMessages(messages) {
-    // ... (keep your existing implementation)
-}
-
-function fetchNewMessages() {
-    // ... (keep your existing implementation)
-}
-
-function sendChatMessage() {
-    // ... (keep your existing implementation)
-}
-
-// ============================================
-// THEME, MOBILE, SMOOTH SCROLL
-// ============================================
-
-const themeToggle = document.getElementById('theme-toggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    });
-}
-if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark');
-    if (themeToggle) themeToggle.querySelector('i').className = 'fas fa-sun';
-}
-
-const hamburger = document.getElementById('hamburger');
-const navLinks = document.getElementById('navLinks');
-if (hamburger) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        if (navLinks) navLinks.classList.toggle('active');
-    });
-}
-document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-        if (hamburger) hamburger.classList.remove('active');
-        if (navLinks) navLinks.classList.remove('active');
-    });
-});
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (href && href !== '#') {
+    const switchLink = document.getElementById('authSwitchLink');
+    if (switchLink) {
+        switchLink.addEventListener('click', (e) => {
             e.preventDefault();
-            const target = document.querySelector(href);
-            if (target) target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
+            openAuthModal(authMode === 'login' ? 'register' : 'login');
+        });
+    }
+}
 
-document.addEventListener('DOMContentLoaded', loadPublicData);
-console.log('✅ main.js loaded and ready!');
+// ... (rest of chat functions - sendChatMessage, loadConversation, etc.)

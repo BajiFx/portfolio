@@ -1,14 +1,10 @@
 // ============================================
-// ADMIN.JS - Complete Admin Panel (with Out Messages)
+// ADMIN.JS - Complete Admin Panel
 // ============================================
 
 console.log('✅ admin.js loaded (API version)');
 
-// ============================================
-// CONFIGURATION
-// ============================================
-
-const API_BASE = 'https://portfolio-oqqu.onrender.com';
+const API_BASE = 'https://portfolio-cms-k2at.onrender.com';
 let portfolioData = {};
 let imageCounter = 0;
 let videoCounter = 0;
@@ -109,7 +105,7 @@ function resetDefaultData() {
 }
 
 // ============================================
-// SAVE DATA TO BACKEND (all protected)
+// SAVE DATA TO BACKEND
 // ============================================
 
 async function saveData() {
@@ -269,7 +265,7 @@ document.getElementById('profileForm').addEventListener('submit', async function
     updateDashboard();
 });
 
-// ===== PROFILE PICTURE UPLOAD (Cloudinary) =====
+// ===== PROFILE PICTURE UPLOAD =====
 document.getElementById('profilePicture').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -302,7 +298,7 @@ document.getElementById('profilePicture').addEventListener('change', async funct
     }
 });
 
-// ===== ABOUT IMAGE UPLOAD (Cloudinary) =====
+// ===== ABOUT IMAGE UPLOAD =====
 document.getElementById('aboutImage').addEventListener('change', async function(e) {
     const file = this.files[0];
     if (!file) return;
@@ -1496,7 +1492,7 @@ document.getElementById('welcomeVideoForm').addEventListener('submit', async fun
 });
 
 // ============================================
-// MESSAGES (from backend)
+// MESSAGES
 // ============================================
 
 async function loadMessages() {
@@ -1619,7 +1615,7 @@ async function adminReply(convId) {
 }
 
 // ============================================
-// OUT MESSAGES (contact_out)
+// OUT MESSAGES
 // ============================================
 
 async function loadOutMessages() {
