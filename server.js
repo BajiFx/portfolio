@@ -329,16 +329,9 @@ async function setupDatabase() {
 setupDatabase();
 
 // ============================================
-// CORS - Allow your frontend
+// CORS - Use environment variable
 // ============================================
-const allowedOrigins = [
-    'https://portfolio-0umz.onrender.com',
-    'https://portfolio-cms-k2at.onrender.com',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000',
-    'http://localhost:5000'
-];
+const allowedOrigins = (process.env.CORS_ORIGINS || 'https://portfolio-0umz.onrender.com,https://portfolio-cms-k2at.onrender.com').split(',');
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -359,9 +352,14 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Multer
+// ============================================
+// MULTER - File upload configuration
+// ============================================
 const storage = multer.memoryStorage();
-const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({ 
+    storage, 
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
 
 // Helper: query with error logging
 const query = async (text, params) => {
@@ -1047,7 +1045,11 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Upload endpoints
+// ============================================
+// UPLOAD ENDPOINTS
+// ============================================
+
+// Upload single file
 app.post('/api/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file' });
@@ -1059,6 +1061,8 @@ app.post('/api/upload', authenticateToken, upload.single('image'), async (req, r
         res.status(500).json({ error: err.message });
     }
 });
+
+// Upload multiple files
 app.post('/api/upload-multiple', authenticateToken, upload.array('images', 10), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files' });
@@ -1072,7 +1076,9 @@ app.post('/api/upload-multiple', authenticateToken, upload.array('images', 10), 
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ============================================
 // START SERVER
+// ============================================
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
